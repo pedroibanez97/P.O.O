@@ -1,0 +1,7 @@
+# Material de origen que no es propio (infografías de @noveira.dev) y el PDF de referencia.
+# La presentación no los necesita: todo su contenido es HTML/CSS propio.
+*.jpg
+*.jpeg
+*.png
+*.pdf
+.DS_Store
