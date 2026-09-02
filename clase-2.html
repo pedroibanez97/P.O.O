@@ -1,0 +1,2258 @@
+<title>Relacionar Objetos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --paper:#e7eaef; --sheet:#fbfcfd; --sheet-2:#f1f4f8;
+  --ink:#111a26; --ink-2:#546275; --ink-3:#626f80;
+  --line:#ccd4e0; --line-soft:#e2e8f0;
+  --grid:rgba(21,72,200,.055);
+  --blue:#1548c8; --flame:#bf400e; --teal:#0a7566; --violet:#5d34c9; --rose:#bd1f62;
+  --good:#0f7d55; --warn:#b26a00;
+  --chip:rgba(21,72,200,.08);
+  --shadow:0 1px 2px rgba(17,26,38,.06), 0 18px 50px -22px rgba(17,26,38,.35);
+  --bar:56px;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Instrument Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --cd-k:#8b2bb9; --cd-s:#b0450f; --cd-n:#1548c8; --cd-c:#7b8794; --cd-fn:#0a6a86;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#080d14; --sheet:#111924; --sheet-2:#18212e;
+    --ink:#e9eef6; --ink-2:#9aa9bd; --ink-3:#6f7f94;
+    --line:#2a3543; --line-soft:#1f2937;
+    --grid:rgba(140,180,255,.055);
+    --blue:#7ba4ff; --flame:#ff8a5c; --teal:#3fcfb5; --violet:#b49bff; --rose:#ff7aae;
+    --good:#4fd08a; --warn:#e8b552;
+    --chip:rgba(123,164,255,.12);
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 24px 60px -24px rgba(0,0,0,.8);
+    --cd-k:#d99bf0; --cd-s:#ffab7d; --cd-n:#8fb4ff; --cd-c:#6f7f94; --cd-fn:#67d6e8;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#080d14; --sheet:#111924; --sheet-2:#18212e;
+  --ink:#e9eef6; --ink-2:#9aa9bd; --ink-3:#6f7f94;
+  --line:#2a3543; --line-soft:#1f2937;
+  --grid:rgba(140,180,255,.055);
+  --blue:#7ba4ff; --flame:#ff8a5c; --teal:#3fcfb5; --violet:#b49bff; --rose:#ff7aae;
+  --good:#4fd08a; --warn:#e8b552;
+  --chip:rgba(123,164,255,.12);
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 24px 60px -24px rgba(0,0,0,.8);
+  --cd-k:#d99bf0; --cd-s:#ffab7d; --cd-n:#8fb4ff; --cd-c:#6f7f94; --cd-fn:#67d6e8;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);overflow:hidden}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:4px}
+
+/* ============ STAGE ============ */
+.viewport{position:fixed;inset:0 0 var(--bar) 0;display:grid;place-items:center;overflow:hidden;
+  transition:bottom .28s cubic-bezier(.2,.7,.3,1)}
+body.notes-open .viewport{bottom:calc(var(--bar) + 38vh)}
+.stage{position:relative;width:1280px;height:720px;flex:none;transform-origin:center center;
+  background:var(--sheet);box-shadow:var(--shadow);border:1px solid var(--line);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:40px 40px}
+.stage::after{content:"";position:absolute;inset:14px;border:1px solid var(--line-soft);pointer-events:none}
+
+/* chrome inside the sheet */
+.eyebrow{position:absolute;top:34px;left:44px;z-index:3;display:flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)}
+.eyebrow b{color:var(--accent,var(--blue));font-weight:700}
+.plate{position:absolute;right:14px;bottom:14px;z-index:3;display:flex;align-items:stretch;
+  border-left:1px solid var(--line-soft);border-top:1px solid var(--line-soft);background:var(--sheet)}
+.plate div{padding:9px 16px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--ink-3);
+  text-transform:uppercase;display:flex;align-items:center}
+.plate div+div{border-left:1px solid var(--line-soft)}
+.plate .pnum{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+
+/* ============ SLIDES ============ */
+.slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;
+  padding:80px 84px 92px;gap:26px}
+.slide.active{display:flex;animation:in .34s cubic-bezier(.2,.7,.3,1) both}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.slide[data-b="1"]{--accent:var(--blue)}
+.slide[data-b="2"]{--accent:var(--flame)}
+.slide[data-b="3"]{--accent:var(--teal)}
+.slide[data-b="4"]{--accent:var(--violet)}
+.slide[data-b="5"]{--accent:var(--rose)}
+.slide[data-b="6"]{--accent:var(--blue)}
+.slide.mid{justify-content:center}
+.slide.top{justify-content:flex-start;padding-top:96px}
+
+h1,h2,h3{margin:0;font-family:var(--display);text-wrap:balance;letter-spacing:-.025em;line-height:1.02}
+h1{font-size:88px;font-weight:800}
+h2{font-size:50px;font-weight:700}
+h3{font-size:30px;font-weight:600;letter-spacing:-.015em}
+p{margin:0}
+.lead{font-size:26px;line-height:1.45;color:var(--ink-2);max-width:56ch}
+.huge{font-family:var(--display);font-weight:800;font-size:72px;line-height:1.04;letter-spacing:-.03em}
+.tag{display:inline-flex;align-items:center;gap:9px;align-self:flex-start;padding:7px 15px;border-radius:999px;
+  background:var(--chip);color:var(--accent);font-family:var(--mono);font-size:13px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase}
+.hl{color:var(--accent)}
+.u{background:linear-gradient(transparent 62%,var(--chip) 62%);padding:0 .12em}
+
+/* question */
+.ask{display:flex;gap:16px;align-items:flex-start;font-size:34px;line-height:1.25;font-weight:600;
+  font-family:var(--display);letter-spacing:-.015em;max-width:26ch}
+.ask::before{content:"?";flex:none;width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--sheet);
+  font-family:var(--display);font-weight:800;font-size:27px;display:grid;place-items:center;margin-top:2px}
+.ask.sm{font-size:27px}
+.ask.sm::before{width:36px;height:36px;font-size:22px}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(8px);transition:opacity .3s ease,transform .3s cubic-bezier(.2,.7,.3,1)}
+.rv.on{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .rv{transition:opacity .01s}.slide.active{animation:none}
+  *{scroll-behavior:auto!important}
+}
+
+/* layout helpers */
+.cols{display:grid;gap:34px;align-items:start}
+.c2{grid-template-columns:1fr 1fr}
+.c2u{grid-template-columns:1.05fr .95fr}
+.c3{grid-template-columns:repeat(3,1fr)}
+.c4{grid-template-columns:repeat(4,1fr)}
+.row{display:flex;gap:18px;flex-wrap:wrap}
+.stack{display:flex;flex-direction:column;gap:18px}
+.gap-s{gap:12px}
+.center{align-items:center;text-align:center}
+.mid-all{justify-content:center;align-items:center;text-align:center}
+
+/* cards */
+.card{background:var(--sheet-2);border:1px solid var(--line-soft);border-radius:14px;padding:22px 24px}
+.card.acc{border-color:color-mix(in srgb,var(--accent) 38%,transparent);
+  background:color-mix(in srgb,var(--accent) 6%,var(--sheet-2))}
+.card h3{margin-bottom:8px}
+.card p{font-size:20px;line-height:1.4;color:var(--ink-2)}
+.lbl{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+
+/* pill list (attributes / methods) */
+.pills{display:flex;flex-wrap:wrap;gap:10px}
+.pill{font-family:var(--mono);font-size:20px;padding:9px 16px;border-radius:10px;
+  background:var(--sheet-2);border:1px solid var(--line-soft)}
+.pill.a{color:var(--flame);border-color:color-mix(in srgb,var(--flame) 34%,transparent);
+  background:color-mix(in srgb,var(--flame) 7%,var(--sheet-2))}
+.pill.m{color:var(--teal);border-color:color-mix(in srgb,var(--teal) 34%,transparent);
+  background:color-mix(in srgb,var(--teal) 7%,var(--sheet-2))}
+.pill.big{font-size:24px;padding:12px 20px}
+
+/* UML-ish class box */
+.uml{border:2px solid var(--ink);border-radius:12px;overflow:hidden;background:var(--sheet);min-width:210px}
+.uml-h{background:var(--ink);color:var(--sheet);font-family:var(--display);font-weight:700;font-size:24px;
+  padding:10px 18px;text-align:center;letter-spacing:.01em}
+.uml ul{margin:0;padding:12px 18px;list-style:none;display:flex;flex-direction:column;gap:5px;
+  font-family:var(--mono);font-size:17px;color:var(--ink-2)}
+.uml ul+ul{border-top:1px solid var(--line)}
+.uml ul.at li{color:var(--flame)}
+.uml ul.me li{color:var(--teal)}
+.uml.ghost{border-style:dashed;opacity:.85}
+
+/* code */
+pre{margin:0;background:var(--sheet-2);border:1px solid var(--line-soft);border-radius:14px;
+  padding:24px 26px;overflow-x:auto;font-family:var(--mono);font-size:22px;line-height:1.6;color:var(--ink)}
+pre.sm{font-size:19px;padding:18px 20px}
+pre.lg{font-size:25px}
+.cd-k{color:var(--cd-k);font-weight:700}
+.cd-s{color:var(--cd-s)}
+.cd-n{color:var(--cd-n)}
+.cd-c{color:var(--cd-c);font-style:italic}
+.cd-fn{color:var(--cd-fn);font-weight:700}
+.cd-hl{background:color-mix(in srgb,var(--accent) 14%,transparent);border-radius:4px;padding:1px 4px;margin:0 -4px}
+
+/* diagram connectors */
+.link{display:block;width:100%;height:56px;color:var(--ink-3)}
+.link path{stroke:currentColor;stroke-width:2;fill:none;vector-effect:non-scaling-stroke}
+.link.dash path{stroke-dasharray:6 6}
+.arrow-d{display:grid;place-items:center;font-size:34px;color:var(--accent);line-height:1}
+
+/* big statement */
+.statement{font-family:var(--display);font-weight:800;font-size:62px;line-height:1.06;letter-spacing:-.03em;
+  text-wrap:balance;max-width:20ch}
+.quote{font-family:var(--display);font-weight:600;font-size:44px;line-height:1.15;letter-spacing:-.02em}
+
+/* activity banner */
+.actbar{position:absolute;left:0;top:0;bottom:0;width:8px;background:var(--accent)}
+
+/* answer box */
+.answer{border:2px dashed color-mix(in srgb,var(--accent) 55%,transparent);border-radius:14px;padding:18px 22px;
+  background:color-mix(in srgb,var(--accent) 6%,transparent)}
+.answer .lbl{color:var(--accent)}
+.answer p{font-size:23px;line-height:1.4;margin-top:6px}
+
+/* misc */
+.emoji{font-size:64px;line-height:1}
+.emoji.sm{font-size:40px}
+.num{font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:.1em;color:var(--accent)}
+.mono{font-family:var(--mono)}
+.dim{color:var(--ink-2)}
+.strike{text-decoration:line-through;text-decoration-thickness:2px;color:var(--ink-3)}
+.kbd{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-bottom-width:2px;
+  border-radius:5px;padding:2px 6px;background:var(--sheet-2);color:var(--ink-2)}
+
+.slide > aside.notes{display:none}
+
+/* marca de lámina opcional */
+.optchip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;
+  border:1px dashed var(--ink-3);color:var(--ink-3);font-family:var(--mono);font-size:11px;
+  letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.optchip[hidden]{display:none!important}
+.ov-i.opt{border-style:dashed}
+.ov-i .oflag{color:var(--ink-3);font-weight:700}
+.ov-legend{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.1em}
+
+/* ============ BOTTOM BAR ============ */
+.bar{position:fixed;left:0;right:0;bottom:0;height:var(--bar);z-index:20;display:flex;align-items:center;
+  gap:16px;padding:0 16px;background:var(--sheet);border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.bar .seg{display:flex;gap:3px;flex:1;align-items:center}
+.seg .b{flex:var(--w,1);height:6px;border-radius:3px;background:var(--line-soft);overflow:hidden;position:relative;
+  cursor:pointer}
+.seg .b i{position:absolute;inset:0;transform-origin:left;transform:scaleX(var(--p,0));
+  background:var(--c);transition:transform .25s ease}
+.bar button{font:inherit;font-family:var(--mono);background:transparent;border:1px solid var(--line);color:var(--ink-2);
+  border-radius:7px;padding:5px 10px;cursor:pointer;letter-spacing:.04em}
+.bar button:hover{border-color:var(--blue);color:var(--blue)}
+.bar button[aria-pressed="true"]{background:var(--chip);border-color:var(--blue);color:var(--blue)}
+.count{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:700;min-width:62px;text-align:right}
+.clock{font-variant-numeric:tabular-nums;letter-spacing:.06em}
+.hint{color:var(--ink-3)}
+@media (max-width:820px){.hint,.blockname{display:none}}
+
+/* ============ NOTES DRAWER ============ */
+.notes-drawer{position:fixed;left:0;right:0;bottom:var(--bar);height:38vh;z-index:19;background:var(--sheet-2);
+  border-top:2px solid var(--accent-n,var(--blue));transform:translateY(101%);
+  transition:transform .28s cubic-bezier(.2,.7,.3,1);overflow:auto;padding:20px 26px 26px}
+body.notes-open .notes-drawer{transform:none}
+.nd-head{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;position:sticky;top:-20px;
+  background:var(--sheet-2);padding:4px 0 10px}
+.nd-head b{font-family:var(--display);font-size:19px}
+.nd-head span{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.notes{display:grid;grid-template-columns:150px 1fr;gap:10px 22px;max-width:1100px;align-items:baseline}
+.notes dt{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-n,var(--blue));
+  font-weight:700;padding-top:3px}
+.notes dd{margin:0;font-size:16px;line-height:1.5;color:var(--ink)}
+.notes dd em{color:var(--ink-2);font-style:normal}
+.notes dd code{font-family:var(--mono);font-size:14px;background:var(--sheet);border:1px solid var(--line-soft);
+  border-radius:4px;padding:1px 5px}
+
+/* ============ OVERVIEW ============ */
+.overview{position:fixed;inset:0;z-index:30;background:color-mix(in srgb,var(--paper) 94%,transparent);
+  backdrop-filter:blur(8px);overflow:auto;padding:28px 32px 90px;display:none}
+.overview.on{display:block}
+.ov-head{display:flex;align-items:baseline;gap:16px;margin-bottom:22px}
+.ov-head h2{font-size:30px}
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.ov-b{grid-column:1/-1;font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--c);font-weight:700;margin-top:14px;display:flex;align-items:center;gap:12px}
+.ov-b::after{content:"";flex:1;height:1px;background:var(--line)}
+.ov-i{text-align:left;background:var(--sheet);border:1px solid var(--line-soft);border-left:4px solid var(--c);
+  border-radius:10px;padding:12px 14px;cursor:pointer;font:inherit;color:var(--ink);display:flex;flex-direction:column;gap:6px}
+.ov-i:hover{border-color:var(--c);transform:translateY(-2px)}
+.ov-i b{font-family:var(--display);font-size:16px;font-weight:600;line-height:1.2}
+.ov-i span{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.1em}
+.ov-i.cur{background:color-mix(in srgb,var(--c) 10%,var(--sheet));border-color:var(--c)}
+
+/* ============ CLASE 2 · COMPONENTES NUEVOS ============ */
+.slide[data-b="7"]{--accent:var(--good)}
+
+/* chip de paso, para construir código de a poco */
+.step{display:inline-flex;align-items:center;gap:8px;padding:5px 13px;border-radius:8px;
+  background:var(--accent);color:var(--sheet);font-family:var(--mono);font-size:12px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;align-self:flex-start}
+.step.off{background:var(--line);color:var(--ink-3)}
+
+/* cadena de herencia vertical */
+.chain{display:flex;flex-direction:column;align-items:center;gap:0}
+.chain .uml{width:230px}
+.chain .down{height:34px;width:2px;background:var(--ink-3);position:relative}
+.chain .down::after{content:"";position:absolute;left:-5px;bottom:-1px;border:6px solid transparent;
+  border-top-color:var(--ink-3)}
+.chain .down.acc{background:var(--accent)}
+.chain .down.acc::after{border-top-color:var(--accent)}
+
+/* relación ES UN / TIENE UN */
+.rel{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:15px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;padding:6px 14px;border-radius:999px;border:2px solid currentColor}
+.rel.isa{color:var(--violet)}
+.rel.hasa{color:var(--rose)}
+
+/* caja de objeto en memoria */
+.objbox{border:2px solid var(--accent);border-radius:12px;background:var(--sheet);min-width:250px;overflow:hidden}
+.objbox > b{display:block;background:var(--accent);color:var(--sheet);font-family:var(--mono);font-size:17px;
+  font-weight:700;padding:8px 14px;letter-spacing:.04em}
+.objbox ul{margin:0;padding:12px 14px;list-style:none;display:flex;flex-direction:column;gap:8px;
+  font-family:var(--mono);font-size:18px;color:var(--ink)}
+.objbox li{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.objbox li i{color:var(--ink-3);font-style:normal}
+.objbox li b{color:var(--flame);font-weight:400}
+.objbox.two{border-color:var(--teal)}
+.objbox.two > b{background:var(--teal)}
+
+/* flecha horizontal larga entre objetos */
+.harrow{flex:none;display:flex;align-items:center;color:var(--accent);font-family:var(--mono);font-size:13px;
+  font-weight:700;letter-spacing:.12em;gap:6px}
+.harrow::before{content:"";width:40px;height:2px;background:currentColor}
+.harrow::after{content:"";width:0;height:0;border:7px solid transparent;border-left-color:currentColor}
+
+/* print vs return */
+.flowbox{border:2px solid var(--line);border-radius:14px;padding:20px 22px;background:var(--sheet-2);
+  display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
+.flowbox .head{font-family:var(--mono);font-size:24px;font-weight:700}
+.flowbox.p{border-color:var(--flame)} .flowbox.p .head{color:var(--flame)}
+.flowbox.r{border-color:var(--teal)} .flowbox.r .head{color:var(--teal)}
+.flowbox .dn{font-size:24px;color:var(--ink-3);line-height:1}
+.flowbox .end{font-family:var(--display);font-weight:800;font-size:26px;letter-spacing:-.02em}
+.flowbox ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px;
+  font-size:18px;color:var(--ink-2);text-align:left}
+
+/* consola */
+.term{background:#0d1420;border:1px solid #223046;border-radius:12px;padding:16px 20px;font-family:var(--mono);
+  font-size:20px;color:#cfe0ff;line-height:1.55;white-space:pre}
+.term .ok{color:#4fd08a} .term .bad{color:#ff8a8a} .term .dimt{color:#7b8ca8}
+
+/* veredicto sí / no */
+.verdict{display:flex;align-items:center;gap:12px;font-family:var(--display);font-weight:700;font-size:26px}
+.verdict .mk{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:22px;
+  color:var(--sheet)}
+.verdict.no .mk{background:var(--flame)} .verdict.si .mk{background:var(--good)}
+.verdict.no{color:var(--ink-2)}
+
+/* la pregunta: bloque en lugar de flex, para que el texto largo corte solo */
+.ask{display:block;position:relative;padding-left:60px;gap:0}
+.ask::before{position:absolute;left:0;top:2px;margin-top:0}
+.ask.sm{padding-left:52px}
+
+/* tarjeta numerada de checklist */
+.qcard{background:var(--sheet-2);border:1px solid var(--line-soft);border-left:4px solid var(--accent);
+  border-radius:10px;padding:14px 16px;font-size:20px;line-height:1.35}
+.qcard > b:first-child{font-family:var(--mono);font-size:13px;color:var(--accent);display:block;letter-spacing:.14em;margin-bottom:4px}
+</style>
+
+<div class="viewport">
+  <div class="stage" id="stage">
+    <div class="eyebrow"><b id="ebNum">01</b><span id="ebName">Recuperamos lo aprendido</span><span class="optchip" id="ebOpt" hidden>◇ opcional</span></div>
+    <div class="plate"><div id="plBlock">BLOQUE 1</div><div class="pnum"><span id="plNum">1</span>&nbsp;/&nbsp;<span id="plTot">52</span></div></div>
+
+<!-- ══════════ BLOQUE 1 · RECUPERAMOS LO APRENDIDO ══════════ -->
+
+<section class="slide" data-b="1" data-t="Portada">
+  <div class="stack" style="gap:22px">
+    <span class="tag">Clase 2 · Programación</span>
+    <h1>Relacionar<br><span class="hl">Objetos</span></h1>
+    <p class="lead">La clase pasada aprendimos a <b>pensar en objetos</b>.<br>Hoy vamos a hacer que <b>trabajen juntos</b>.</p>
+    <div class="row rv" style="margin-top:14px">
+      <span class="pill">🧬 super()</span><span class="pill">🪜 varios niveles</span><span class="pill">📦 return</span><span class="pill">🎁 objetos adentro de objetos</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Portada. Marca continuidad: mismo estilo, mismo recorrido, un escalón más arriba.</dd>
+      <dt>Decí</dt><dd>“La clase pasada no aprendimos comandos: aprendimos a mirar. Hoy tampoco vamos a memorizar sintaxis.”</dd>
+      <dt>Preguntá</dt><dd>“Sin mirar la carpeta: ¿qué es un objeto?” Escuchá dos o tres respuestas antes de avanzar.</dd>
+      <dt>Revelá cuando</dt><dd>Después de esas respuestas. Las cuatro pastillas son el mapa del día: leelas y no las expliques todavía.</dd>
+      <dt>Duración</dt><dd>~2 min.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="1" data-t="La idea de hoy">
+  <div class="stack mid-all">
+    <p class="lbl">La frase de la clase de hoy</p>
+    <p class="statement" style="text-align:center;max-width:24ch;margin-top:6px">Ya sabemos pensar en objetos.</p>
+    <p class="quote rv" style="text-align:center;max-width:26ch;margin-top:18px;color:var(--accent)">Ahora vamos a aprender a <b>relacionarlos</b>.</p>
+    <p class="lead rv" style="text-align:center;margin-top:22px;max-width:46ch">Un objeto solo no hace un programa.<br>Un programa es un montón de objetos <b>hablando entre ellos</b>.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El propósito del día en una frase. Es el cartel que justifica todo lo que sigue.</dd>
+      <dt>Decí</dt><dd>“La clase pasada cada objeto vivía solo: un auto, un perro. Hoy los conectamos.”</dd>
+      <dt>Revelá cuando</dt><dd>Enseguida. Es un cartel de 40 segundos, no una actividad.</dd>
+      <dt>Anclá</dt><dd>Dejá escrito en el pizarrón: <b>PENSAR → DIBUJAR → EXPLICAR → PROGRAMAR</b>. Es el mismo orden de la clase 1.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="1" data-t="Calentamiento · ¿Qué objetos hay acá?">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Calentamiento · 3 minutos</span>
+    <div class="row" style="align-items:center;gap:16px"><span class="emoji">☕</span><h2>Una cafetería, sábado a la mañana</h2></div>
+    <p class="ask" style="margin-top:8px">¿Qué <span class="hl">objetos</span> hay acá?</p>
+    <div class="pills rv" style="margin-top:14px">
+      <span class="pill big">🧍 Cliente</span><span class="pill big">🧑‍🍳 Mozo</span><span class="pill big">🧾 Pedido</span>
+      <span class="pill big">🪑 Mesa</span><span class="pill big">☕ Café</span><span class="pill big">💰 Caja</span><span class="pill big">📋 Menú</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La escena y la pregunta. <b>No reveles las pastillas todavía.</b></dd>
+      <dt>Preguntá</dt><dd>“Cerrá los ojos y entrá a la cafetería. ¿Qué cosas hay? Tírenme seis.”</dd>
+      <dt>Respuesta esperada</dt><dd>Cliente, mozo, mesa, café, pedido, caja, menú. Todas valen.</dd>
+      <dt>Revelá cuando</dt><dd>Juntaste cinco o seis. Celebrá las coincidencias: ya piensan en objetos sin darse cuenta.</dd>
+      <dt>Ojo</dt><dd>Si dicen “precio” o “propina”, repreguntá: “¿eso es un objeto o es un <b>dato</b> de otro objeto?” Buenísima discusión de 30 segundos.</dd>
+      <dt>Guardate esto</dt><dd>Alguien va a decir que el <b>Pedido tiene</b> un Café adentro. No lo desarrolles ahora: anotalo en el pizarrón, lo usamos en el Bloque 5.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="1" data-t="Las dos preguntas de siempre">
+  <div class="stack">
+    <h2>Elegimos uno: el <span class="hl">Cliente</span></h2>
+    <div class="cols c2" style="margin-top:10px">
+      <div class="stack">
+        <p class="ask sm">¿Qué información <b>tiene</b>?</p>
+        <div class="pills rv" style="margin-top:6px">
+          <span class="pill a">nombre</span><span class="pill a">mesa</span><span class="pill a">dinero</span>
+        </div>
+      </div>
+      <div class="stack">
+        <p class="ask sm">¿Qué <b>puede hacer</b>?</p>
+        <div class="pills rv" style="margin-top:6px">
+          <span class="pill m">pedir()</span><span class="pill m">pagar()</span><span class="pill m">irse()</span>
+        </div>
+      </div>
+    </div>
+    <p class="lead rv" style="text-align:center;margin-top:20px">Datos → <b style="color:var(--flame)">atributos</b> &nbsp;·&nbsp; Acciones → <b style="color:var(--teal)">métodos</b>.<br><b>Las mismas dos preguntas de la clase pasada.</b></p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Las dos columnas vacías. Se llenan con lo que digan ellos.</dd>
+      <dt>Preguntá</dt><dd>Primero “¿qué tiene?”, recién después “¿qué hace?”. Nunca las dos juntas.</dd>
+      <dt>Respuesta esperada</dt><dd>Nombre, mesa, plata / pedir, pagar, irse.</dd>
+      <dt>Revelá cuando</dt><dd>Una columna por vez, después de cada ronda.</dd>
+      <dt>Objetivo real</dt><dd>Que comprueben que <b>no se olvidaron nada</b>. Esta lámina es para que entren con confianza, no para enseñar.</dd>
+      <dt>Duración</dt><dd>~2 min. No te quedes más.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="1" data-t="Quiz relámpago">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Quiz relámpago · a mano alzada</span>
+    <h2>Tres preguntas, tres segundos cada una</h2>
+    <div class="stack gap-s" style="margin-top:10px">
+      <div class="cols c2" style="gap:18px;align-items:center">
+        <p class="ask sm" style="font-size:24px"><span class="mono">Perro</span> es una clase. <span class="mono">firulais</span> ¿qué es?</p>
+        <div class="answer rv"><p style="font-size:22px">Un <b>objeto</b>. La clase es el molde; el objeto es lo fabricado.</p></div>
+      </div>
+      <div class="cols c2" style="gap:18px;align-items:center">
+        <p class="ask sm" style="font-size:24px">¿Un <span class="mono">Gato</span> puede heredar de <span class="mono">Animal</span>?</p>
+        <div class="answer rv"><p style="font-size:22px">Sí: un gato <b>ES UN</b> animal. Hereda todo lo que Animal ya tenía.</p></div>
+      </div>
+      <div class="cols c2" style="gap:18px;align-items:center">
+        <p class="ask sm" style="font-size:24px">¿Y una <span class="mono">Rueda</span> puede heredar de <span class="mono">Auto</span>?</p>
+        <div class="answer rv"><p style="font-size:22px"><b>No.</b> Una rueda no <b>es un</b> auto… está <b>adentro</b> del auto. 👀</p></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Las tres preguntas. Revelá una respuesta por vez, nunca antes de escucharlos.</dd>
+      <dt>Preguntá</dt><dd>A mano alzada y rápido. Ritmo de juego, no de examen.</dd>
+      <dt>Respuesta esperada</dt><dd>Objeto · Sí · No.</dd>
+      <dt>Error típico</dt><dd>En la tercera, algunos dicen que sí “porque van juntos”. Ahí está el oro: “van juntos, pero no es lo mismo <b>ser</b> que <b>tener</b>”.</dd>
+      <dt>Revelá cuando</dt><dd>Después de cada votación. La tercera respuesta dejala en pantalla un segundo de más: es la semilla del Bloque 5.</dd>
+      <dt>Momento clave</dt><dd>Ese 👀 es tuyo: decí “guarden esta pregunta, hoy la contestamos bien”.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="1" data-t="Lo que quedó pendiente">
+  <div class="stack">
+    <span class="tag">Dónde quedamos la clase pasada</span>
+    <h2>Sabemos hacer esto…</h2>
+    <div class="cols c2" style="margin-top:6px;align-items:start">
+      <div class="stack" style="gap:10px">
+        <p class="lbl" style="color:var(--good)">✓ Ya podemos</p>
+        <div class="stack gap-s">
+          <div class="card"><p>Crear una clase y objetos.</p></div>
+          <div class="card"><p>Darles atributos y métodos.</p></div>
+          <div class="card"><p>Hacer que una clase herede de otra.</p></div>
+        </div>
+      </div>
+      <div class="stack rv" style="gap:10px">
+        <p class="lbl" style="color:var(--flame)">✗ Todavía no</p>
+        <div class="stack gap-s">
+          <div class="card acc"><p>Que el hijo agregue <b>sus propios</b> atributos sin repetir los del padre.</p></div>
+          <div class="card acc"><p>Que un método nos <b>devuelva</b> un resultado para seguir usándolo.</p></div>
+          <div class="card acc"><p>Que un objeto <b>tenga adentro</b> a otro objeto.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La columna izquierda es lo que ya saben; la derecha, el programa del día. Es el contrato de la clase.</dd>
+      <dt>Preguntá</dt><dd>Antes de revelar: “¿qué les quedó dando vueltas de la clase pasada? ¿Qué no cerraba?”</dd>
+      <dt>Respuesta esperada</dt><dd>Suele salir “para qué sirve <code>self</code>” o “cómo se conectan las clases”. Cualquiera sirve de puerta.</dd>
+      <dt>Revelá cuando</dt><dd>Después de escucharlos. Que vean su propia duda escrita en la columna derecha vale oro.</dd>
+      <dt>Decí</dt><dd>“Estas tres cosas son la clase de hoy. Nada más. Pero cambian todo lo que podemos construir.”</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="1" data-t="El plan de hoy">
+  <div class="stack">
+    <h2>El plan de hoy: <span class="hl">cuatro herramientas</span></h2>
+    <div class="cols c4" style="margin-top:16px">
+      <div class="card acc"><p class="emoji sm">🧬</p><p class="huge" style="font-size:24px;margin-top:8px">super()</p><p style="margin-top:6px;font-size:19px">El hijo aprovecha lo que el padre ya hace.</p></div>
+      <div class="card acc"><p class="emoji sm">🪜</p><p class="huge" style="font-size:24px;margin-top:8px">Varios niveles</p><p style="margin-top:6px;font-size:19px">Heredar de quien ya heredó.</p></div>
+      <div class="card acc"><p class="emoji sm">📦</p><p class="huge" style="font-size:24px;margin-top:8px">return</p><p style="margin-top:6px;font-size:19px">Que el método me <b>entregue</b> el resultado.</p></div>
+      <div class="card acc"><p class="emoji sm">🎁</p><p class="huge" style="font-size:24px;margin-top:8px">Composición</p><p style="margin-top:6px;font-size:19px">Un objeto adentro de otro objeto.</p></div>
+    </div>
+    <p class="quote rv" style="text-align:center;margin-top:22px;font-size:32px">Y al final las usamos <b>las cuatro juntas</b> en un mismo programa.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El mapa del día. Volvé a esta lámina cada vez que cierres un bloque.</dd>
+      <dt>Decí</dt><dd>“Cuatro herramientas. Ninguna es difícil. Lo difícil es saber <b>cuándo</b> usar cada una, y eso es lo que vamos a practicar.”</dd>
+      <dt>Revelá cuando</dt><dd>Después de nombrar las cuatro. La frase final es la promesa del Bloque 6.</dd>
+      <dt>Tip</dt><dd>Lámina para sacarle foto. Decíselo.</dd>
+      <dt>Duración</dt><dd>~1 min. Arrancá el bloque 2 con energía.</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 2 · super() ══════════ -->
+
+<section class="slide" data-b="2" data-t="Un jugador es una persona">
+  <div class="stack">
+    <span class="tag">Bloque 2 · Herramienta 1</span>
+    <div class="cols c2u" style="align-items:center;margin-top:4px">
+      <div class="stack">
+        <h2>Estamos armando un juego</h2>
+        <p class="lead">Tenemos una clase <span class="mono">Persona</span>.<br>Ahora queremos una clase <span class="mono">Jugador</span>.</p>
+        <p class="ask rv" style="margin-top:14px">Un jugador… ¿<b>es una</b> persona?</p>
+      </div>
+      <div class="chain">
+        <div class="uml">
+          <div class="uml-h">Persona</div>
+          <ul class="at"><li>nombre</li><li>edad</li></ul>
+        </div>
+        <div class="down acc"></div>
+        <div class="uml" style="border-color:var(--accent)">
+          <div class="uml-h" style="background:var(--accent)">Jugador 🎮</div>
+          <ul class="at"><li>nombre</li><li>edad</li><li>nivel</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El árbol más simple posible. Persona arriba, Jugador abajo.</dd>
+      <dt>Preguntá</dt><dd>“¿Un jugador es una persona? ¿Entonces qué corresponde: herencia o no?”</dd>
+      <dt>Respuesta esperada</dt><dd>Sí, herencia. Ya conocen la regla ES UN de la clase pasada.</dd>
+      <dt>Señalá</dt><dd>Que Jugador tiene <b>los mismos dos atributos</b> de Persona <b>más uno propio</b>: <code>nivel</code>. Ese “más uno” es el tema del bloque.</dd>
+      <dt>Revelá cuando</dt><dd>Confirmen el “es un”. Después pasá enseguida: el problema está en la lámina siguiente.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="El problema · repetir código">
+  <div class="stack">
+    <p class="ask">Si <span class="mono">Jugador</span> hereda de <span class="mono">Persona</span>… ¿tenemos que volver a escribir <span class="mono">nombre</span> y <span class="mono">edad</span>?</p>
+    <div class="cols c2" style="margin-top:14px;align-items:start">
+      <pre class="sm" style="font-size:18px"><span class="cd-k">class</span> <span class="cd-fn">Persona</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, edad):
+        <span class="cd-hl"><span class="cd-k">self</span>.nombre = nombre</span>
+        <span class="cd-hl"><span class="cd-k">self</span>.edad = edad</span></pre>
+      <div class="stack rv" style="gap:10px">
+        <p class="lbl" style="color:var(--flame)">✗ Primer intento</p>
+        <pre class="sm" style="font-size:18px"><span class="cd-k">class</span> <span class="cd-fn">Jugador</span>(<span class="cd-fn">Persona</span>):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, edad, nivel):
+        <span class="cd-hl"><span class="cd-k">self</span>.nombre = nombre</span>
+        <span class="cd-hl"><span class="cd-k">self</span>.edad = edad</span>
+        <span class="cd-k">self</span>.nivel = nivel</pre>
+      </div>
+    </div>
+    <p class="quote rv" style="text-align:center;margin-top:16px;font-size:30px">Funciona… pero <span class="hl">escribimos lo mismo dos veces</span>.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Primero la pregunta sola. Que arriesguen antes de ver el código.</dd>
+      <dt>Preguntá</dt><dd>“¿Hay que volver a escribir <code>nombre</code> y <code>edad</code>? ¿Sí o no?”</dd>
+      <dt>Respuesta esperada</dt><dd>Se dividen. Muchos dicen “no, ya los heredó”. <em>Tienen razón en la intuición: falta la herramienta.</em></dd>
+      <dt>Revelá cuando</dt><dd>Votaron. Mostrá el intento repetido y preguntá: “¿les gusta cómo se ve esto?”</dd>
+      <dt>Idea clave</dt><dd>Que vean las <b>dos líneas resaltadas idénticas</b>. Repetir código es la señal de que falta una herramienta.</dd>
+      <dt>Error típico</dt><dd>Si alguien dice “y si no escribo el <code>__init__</code> del hijo”, respondé: “entonces no podés pedir <code>nivel</code>”. Probalo en vivo si tenés el intérprete a mano.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="¿Por qué repetir es peligroso?">
+  <div class="stack">
+    <span class="tag">El problema de verdad</span>
+    <h2>Ahora imaginemos que mañana…</h2>
+    <p class="lead">…queremos que toda <span class="mono">Persona</span> tenga también <span class="mono">dni</span>.</p>
+    <p class="ask rv" style="margin-top:14px">¿En cuántos lugares hay que tocar el código?</p>
+    <div class="row rv" style="gap:20px;margin-top:14px">
+      <div class="card acc" style="flex:1"><p class="huge" style="font-size:44px;color:var(--accent)">2</p><p style="margin-top:6px">Con 1 hijo</p></div>
+      <div class="card acc" style="flex:1"><p class="huge" style="font-size:44px;color:var(--accent)">6</p><p style="margin-top:6px">Con 5 hijos</p></div>
+      <div class="card acc" style="flex:1"><p class="huge" style="font-size:44px;color:var(--accent)">😱</p><p style="margin-top:6px">Y alguno te lo vas a olvidar</p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El costo real de repetir. No es escribir de más: es <b>mantener</b> de más.</dd>
+      <dt>Preguntá</dt><dd>“Si agrego <code>dni</code> a Persona, ¿alcanza con tocar Persona?”</dd>
+      <dt>Respuesta esperada</dt><dd>No: hay que tocar también cada hijo que repitió el código.</dd>
+      <dt>Revelá cuando</dt><dd>Lo digan ellos. Las tarjetas solo confirman.</dd>
+      <dt>Remate</dt><dd>“El problema de copiar y pegar no es hoy. Es dentro de tres meses, cuando cambiás una copia y te olvidás de las otras cuatro.”</dd>
+      <dt>Duración</dt><dd>~2 min. No te extiendas: la solución está a una lámina.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="La idea antes del código">
+  <div class="stack mid-all">
+    <p class="ask" style="max-width:34ch;text-align:left">¿Y si le <span class="hl">pedimos al padre</span> que haga la parte que él ya sabe hacer?</p>
+    <div class="row rv" style="align-items:center;justify-content:center;gap:24px;margin-top:26px">
+      <div class="card" style="min-width:210px"><p class="lbl">El padre hace</p><p class="mono" style="font-size:21px;margin-top:8px;color:var(--flame)">nombre<br>edad</p></div>
+      <div class="huge" style="font-size:48px;color:var(--accent)">+</div>
+      <div class="card" style="min-width:210px"><p class="lbl">El hijo agrega</p><p class="mono" style="font-size:21px;margin-top:8px;color:var(--flame)">nivel</p></div>
+      <div class="huge" style="font-size:48px;color:var(--accent)">=</div>
+      <div class="card acc" style="min-width:210px"><p class="lbl">Un jugador completo</p><p class="huge" style="font-size:28px;margin-top:8px;color:var(--accent)">sin repetir<br>nada</p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La pregunta bisagra del bloque. Dejala sola unos segundos, sin revelar.</dd>
+      <dt>Preguntá</dt><dd>“Si el padre ya sabe guardar nombre y edad… ¿no podríamos simplemente <b>pedírselo</b>?”</dd>
+      <dt>Respuesta esperada</dt><dd>Alguno dice “llamar a la clase de arriba”. Está a un centímetro de <code>super()</code>.</dd>
+      <dt>Revelá cuando</dt><dd>Alguien proponga la idea con sus palabras. Recién ahí mostrás la suma.</dd>
+      <dt>Idea clave</dt><dd>Esta es la frase de todo el bloque, y todavía <b>sin una línea de código</b>: “el padre hace su parte, el hijo agrega lo suyo”.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="super() en Python">
+  <div class="stack">
+    <span class="tag">🧬 La herramienta</span>
+    <h2>Se llama <span class="mono hl">super()</span></h2>
+    <div class="cols c2u" style="margin-top:4px;align-items:start">
+      <pre class="sm" style="font-size:18px"><span class="cd-k">class</span> <span class="cd-fn">Persona</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, edad):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.edad = edad
+
+
+<span class="cd-k">class</span> <span class="cd-fn">Jugador</span>(<span class="cd-fn">Persona</span>):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, edad, nivel):
+        <span class="cd-hl"><span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>(nombre, edad)</span>
+        <span class="cd-k">self</span>.nivel = nivel</pre>
+      <div class="stack" style="gap:14px">
+        <div class="card acc"><p style="font-size:23px;color:var(--ink)"><span class="mono">super()</span> quiere decir<br><b>“la clase de arriba”</b>.</p></div>
+        <div class="answer rv">
+          <p class="lbl">Cómo se lee esa línea</p>
+          <p style="margin-top:6px">“Padre, encargate vos de <b>nombre</b> y <b>edad</b>. Yo me ocupo de <b>nivel</b>.”</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Una sola línea nueva en toda la sintaxis. Señalala con el dedo y no expliques nada más.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué desapareció del <code>__init__</code> de Jugador respecto de la lámina anterior?”</dd>
+      <dt>Respuesta esperada</dt><dd>Las dos líneas repetidas. Quedó una sola línea en su lugar.</dd>
+      <dt>Revelá cuando</dt><dd>Lo noten solos. Después leé la traducción al castellano en voz alta.</dd>
+      <dt>Ojo</dt><dd>No expliques MRO, ni herencia múltiple, ni por qué <code>super()</code> va sin argumentos. Hoy <code>super()</code> = “la clase de arriba”. Punto.</dd>
+      <dt>Si preguntan</dt><dd>“¿Y el <code>self</code>?” → “Python lo pasa solo, igual que siempre.” Y seguí.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="El orden de ejecución">
+  <div class="stack">
+    <h2>¿Qué pasa, paso a paso?</h2>
+    <div class="cols c2u" style="margin-top:6px;align-items:start">
+      <pre class="sm" style="font-size:19px">jugador = <span class="cd-fn">Jugador</span>(<span class="cd-s">"Pedro"</span>, <span class="cd-n">28</span>, <span class="cd-n">5</span>)</pre>
+      <div class="stack gap-s">
+        <div class="qcard"><b>Paso 1</b>Python entra al <span class="mono">__init__</span> de <b>Jugador</b>.</div>
+        <div class="qcard rv"><b>Paso 2</b><span class="mono">super().__init__(nombre, edad)</span> sube a <b>Persona</b> y guarda <span class="mono">nombre</span> y <span class="mono">edad</span>.</div>
+        <div class="qcard rv"><b>Paso 3</b>Vuelve a <b>Jugador</b> y guarda <span class="mono">nivel</span>.</div>
+      </div>
+    </div>
+    <div class="row rv" style="justify-content:center;margin-top:18px;gap:18px">
+      <span class="pill big mono">jugador.nombre → "Pedro"</span>
+      <span class="pill big mono">jugador.edad → 28</span>
+      <span class="pill big mono">jugador.nivel → 5</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Una sola línea de código y el recorrido que hace Python. Revelá paso por paso.</dd>
+      <dt>Preguntá</dt><dd>Antes del último reveal: “¿cuántos atributos tiene ahora <code>jugador</code>? ¿Dos o tres?”</dd>
+      <dt>Respuesta esperada</dt><dd>Tres. Dos los puso el padre, uno el hijo.</dd>
+      <dt>Revelá cuando</dt><dd>Arriesgaron el número. Ahí aparecen las tres pastillas.</dd>
+      <dt>Idea clave</dt><dd>El objeto es <b>uno solo</b>. No hay “un jugador” y “una persona”: hay un jugador armado entre los dos <code>__init__</code>.</dd>
+      <dt>Actividad express</dt><dd>Pedí que dibujen la flechita: baja a Persona, vuelve a Jugador. Treinta segundos en la carpeta.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="La frase para llevarse">
+  <div class="stack mid-all">
+    <p class="emoji" style="font-size:72px">🧬</p>
+    <p class="statement" style="text-align:center;max-width:22ch;margin-top:10px;font-size:54px">El padre hace lo que ya sabe hacer.</p>
+    <p class="quote rv" style="text-align:center;max-width:24ch;margin-top:16px;color:var(--accent)">El hijo agrega lo que necesita.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La frase memorable del bloque. Bajá la voz y dejá silencio entre las dos mitades.</dd>
+      <dt>Decí</dt><dd>“Si dentro de un mes se olvidan cómo se escribe <code>super()</code>, lo googlean. Si se olvidan de esta frase, no entienden para qué existe.”</dd>
+      <dt>Revelá cuando</dt><dd>Después del silencio.</dd>
+      <dt>Tip</dt><dd>Lámina para sacarle foto.</dd>
+      <dt>Duración</dt><dd>~40 segundos.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="¿Qué pasa si me olvido super()?">
+  <div class="stack">
+    <span class="tag">Predicción · antes de ejecutar</span>
+    <h2>¿Y si me <span class="hl">olvido</span> de <span class="mono">super()</span>?</h2>
+    <div class="cols c2" style="margin-top:6px;align-items:start">
+      <pre class="sm" style="font-size:18px"><span class="cd-k">class</span> <span class="cd-fn">Jugador</span>(<span class="cd-fn">Persona</span>):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, edad, nivel):
+        <span class="cd-c"># me olvidé del super()</span>
+        <span class="cd-k">self</span>.nivel = nivel
+
+
+jugador = <span class="cd-fn">Jugador</span>(<span class="cd-s">"Pedro"</span>, <span class="cd-n">28</span>, <span class="cd-n">5</span>)
+<span class="cd-fn">print</span>(jugador.nombre)</pre>
+      <div class="stack" style="gap:14px">
+        <p class="ask sm">¿Qué va a pasar en la última línea?</p>
+        <div class="term rv"><span class="bad">AttributeError:</span> 'Jugador' object
+has no attribute 'nombre'</div>
+        <div class="answer rv">
+          <p class="lbl">Por qué</p>
+          <p style="margin-top:6px">Nadie ejecutó el <span class="mono">__init__</span> de Persona.<br><b>El padre nunca hizo su parte.</b></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El error que van a cometer sí o sí en la práctica. Mejor que lo vean acá primero.</dd>
+      <dt>Preguntá</dt><dd>“¿Va a explotar o va a andar? Y si explota, ¿en qué línea?” Que voten.</dd>
+      <dt>Respuesta esperada</dt><dd>Muchos creen que anda “porque hereda”. Hereda los <b>métodos</b>, pero el atributo no existe si nadie lo creó.</dd>
+      <dt>Revelá cuando</dt><dd>Votaron. Primero el error, después la explicación.</dd>
+      <dt>Idea clave</dt><dd><b>Heredar no es lo mismo que ejecutar.</b> El hijo hereda la receta del padre, pero si no la llama, no se cocina.</dd>
+      <dt>Error típico</dt><dd>Este error les va a aparecer en la tarea. Decíles: “cuando vean <code>has no attribute</code>, lo primero que miran es si falta el <code>super()</code>”.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="2" data-t="Mini desafío · Vehículo y Moto">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Mini desafío · 4 minutos</span>
+    <h2>Ahora ustedes: <span class="mono">Vehiculo</span> → <span class="mono">Moto</span></h2>
+    <div class="cols c2u" style="margin-top:4px;align-items:start">
+      <div class="stack gap-s">
+        <pre class="sm" style="font-size:18px"><span class="cd-k">class</span> <span class="cd-fn">Vehiculo</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, marca, ruedas):
+        <span class="cd-k">self</span>.marca = marca
+        <span class="cd-k">self</span>.ruedas = ruedas</pre>
+        <div class="card"><p style="font-size:21px;color:var(--ink)">Escribí <span class="mono">Moto</span>, que hereda de <span class="mono">Vehiculo</span> y agrega <span class="mono">cilindrada</span>.</p></div>
+      </div>
+      <div class="answer rv">
+        <p class="lbl">Una solución</p>
+        <pre class="sm" style="font-size:17px;margin-top:8px;background:transparent;border:0;padding:0"><span class="cd-k">class</span> <span class="cd-fn">Moto</span>(<span class="cd-fn">Vehiculo</span>):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, marca, ruedas, cilindrada):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>(marca, ruedas)
+        <span class="cd-k">self</span>.cilindrada = cilindrada</pre>
+        <p style="margin-top:10px;font-size:19px;color:var(--ink-2)">Bonus: ¿y si <b>todas</b> las motos tienen 2 ruedas?<br><span class="mono">super().__init__(marca, 2)</span> ← el hijo puede <b>decidir</b> qué le pasa al padre.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El enunciado. La solución <b>no se revela</b> hasta que la mayoría lo intentó en la carpeta.</dd>
+      <dt>Preguntá</dt><dd>Mientras trabajan: “¿cuántos parámetros lleva el <code>__init__</code> de Moto?” (cuatro con <code>self</code>).</dd>
+      <dt>Respuesta esperada</dt><dd>La solución del cuadro. Se acepta cualquier orden de parámetros coherente.</dd>
+      <dt>Error típico</dt><dd>Escribir <code>super().__init__(self, marca, ruedas)</code>. El <code>self</code> no va: Python lo pone solo.</dd>
+      <dt>Revelá cuando</dt><dd>Pasaron 3–4 minutos o alguien lo resolvió en el pizarrón.</dd>
+      <dt>El bonus</dt><dd>Es la parte jugosa: el hijo no está obligado a reenviar los parámetros tal cual. Si nadie lo pregunta, planteálo vos.</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 3 · HERENCIA DE VARIOS NIVELES ══════════ -->
+
+<section class="slide" data-b="3" data-t="Dos preguntas encadenadas">
+  <div class="stack">
+    <span class="tag">Bloque 3 · Herramienta 2</span>
+    <div class="cols c2u" style="align-items:center;margin-top:4px">
+      <div class="stack" style="gap:18px">
+        <p class="ask">¿Un <b>perro</b> es un <b>mamífero</b>?</p>
+        <p class="ask">¿Un <b>mamífero</b> es un <b>animal</b>?</p>
+        <p class="ask rv" style="color:var(--accent)">Entonces… ¿qué cosas recibe el <b>perro</b>?</p>
+      </div>
+      <div class="chain">
+        <div class="uml"><div class="uml-h">Animal</div></div>
+        <div class="down"></div>
+        <div class="uml"><div class="uml-h">Mamífero</div></div>
+        <div class="down acc"></div>
+        <div class="uml" style="border-color:var(--accent)"><div class="uml-h" style="background:var(--accent)">Perro 🐶</div></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Las dos preguntas obvias y la cadena dibujada. Nada de código todavía.</dd>
+      <dt>Preguntá</dt><dd>Las dos primeras en voz alta, esperando el “sí” del curso. Después la tercera, y <b>callate</b>.</dd>
+      <dt>Respuesta esperada</dt><dd>Sí / Sí / “todo lo de mamífero y todo lo de animal”.</dd>
+      <dt>Revelá cuando</dt><dd>Contestaron las dos primeras. La tercera es la única que importa.</dd>
+      <dt>Idea clave</dt><dd>Lo heredado <b>se transmite hacia abajo sin límite</b>: no se queda en el primer escalón.</dd>
+      <dt>Actividad express</dt><dd>Pediles otra cadena de tres niveles de su propia vida (Instrumento → Cuerda → Guitarra; Comida → Postre → Helado).</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="Todo lo de arriba, se suma">
+  <div class="stack">
+    <h2>Cada escalón <span class="hl">suma</span>, no reemplaza</h2>
+    <div class="cols c3" style="margin-top:14px;align-items:start">
+      <div class="stack" style="gap:10px">
+        <p class="lbl">Animal aporta</p>
+        <div class="pills"><span class="pill a">nombre</span><span class="pill m">comer()</span></div>
+      </div>
+      <div class="stack rv" style="gap:10px">
+        <p class="lbl">Mamífero agrega</p>
+        <div class="pills"><span class="pill a">pelaje</span><span class="pill m">amamantar()</span></div>
+      </div>
+      <div class="stack rv" style="gap:10px">
+        <p class="lbl">Perro agrega</p>
+        <div class="pills"><span class="pill a">raza</span><span class="pill m">ladrar()</span></div>
+      </div>
+    </div>
+    <div class="answer rv" style="margin-top:20px">
+      <p class="lbl">Entonces un Perro tiene</p>
+      <div class="pills" style="margin-top:10px">
+        <span class="pill a">nombre</span><span class="pill a">pelaje</span><span class="pill a">raza</span>
+        <span class="pill m">comer()</span><span class="pill m">amamantar()</span><span class="pill m">ladrar()</span>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Tres aportes que se van sumando. Revelá columna por columna.</dd>
+      <dt>Preguntá</dt><dd>Antes del último reveal: “¿cuántos atributos tiene un Perro? ¿Y cuántos métodos?”</dd>
+      <dt>Respuesta esperada</dt><dd>Tres y tres. Que los cuenten en voz alta señalando las pastillas.</dd>
+      <dt>Revelá cuando</dt><dd>Arriesgaron los números. La caja final confirma la suma.</dd>
+      <dt>Repregunta</dt><dd>“¿El Animal puede <code>ladrar()</code>?” → No. <b>Lo heredado baja, nunca sube.</b> Es la asimetría de la clase pasada.</dd>
+      <dt>Anotá</dt><dd>Escribí en el pizarrón: HEREDAR ES ACUMULAR.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="La cadena en Python">
+  <div class="stack">
+    <span class="tag">🪜 Ahora sí, al código</span>
+    <div class="cols c2u" style="align-items:start">
+      <pre class="sm" style="font-size:16px"><span class="cd-k">class</span> <span class="cd-fn">Animal</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre):
+        <span class="cd-k">self</span>.nombre = nombre
+
+
+<span class="cd-k">class</span> <span class="cd-fn">Mamifero</span>(<span class="cd-fn">Animal</span>):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, pelaje):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>(nombre)
+        <span class="cd-k">self</span>.pelaje = pelaje
+
+
+<span class="cd-k">class</span> <span class="cd-fn">Perro</span>(<span class="cd-fn">Mamifero</span>):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, pelaje, raza):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>(nombre, pelaje)
+        <span class="cd-k">self</span>.raza = raza</pre>
+      <div class="stack" style="gap:14px">
+        <p class="ask sm">¿Qué hay de nuevo acá?</p>
+        <div class="answer rv">
+          <p class="lbl">Nada</p>
+          <p style="margin-top:6px">Es <b>exactamente</b> lo mismo del bloque anterior, dos veces.<br><span class="mono">Perro</span> le pide a <span class="mono">Mamifero</span>, y <span class="mono">Mamifero</span> le pide a <span class="mono">Animal</span>.</p>
+        </div>
+        <div class="card acc rv"><p style="font-size:21px;color:var(--ink)">Cada clase <b>solo se ocupa de lo suyo</b>. Nadie repite el trabajo de otro.</p></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Tres clases, pero <b>ninguna herramienta nueva</b>. Ese es el mensaje.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué hay acá que no vimos hace diez minutos?” Dejá que lo busquen.</dd>
+      <dt>Respuesta esperada</dt><dd>Nada. Es el mismo <code>super()</code> aplicado dos veces.</dd>
+      <dt>Revelá cuando</dt><dd>Alguien diga “es lo mismo”. Es una gran señal de comprensión: festejala.</dd>
+      <dt>Señalá</dt><dd>Que <code>Mamifero</code> es <b>hijo y padre a la vez</b>: recibe de Animal y le da a Perro.</dd>
+      <dt>Ojo</dt><dd>No leas el código línea por línea. Señalá solo los dos <code>super()</code>.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="Predecí el resultado">
+  <div class="stack">
+    <span class="tag">Predicción · antes de ejecutar</span>
+    <h2>¿Qué imprime cada línea?</h2>
+    <div class="cols c2" style="margin-top:6px;align-items:start">
+      <pre class="sm" style="font-size:19px">firu = <span class="cd-fn">Perro</span>(<span class="cd-s">"Firulais"</span>, <span class="cd-s">"corto"</span>, <span class="cd-s">"beagle"</span>)
+
+<span class="cd-fn">print</span>(firu.nombre)
+<span class="cd-fn">print</span>(firu.pelaje)
+<span class="cd-fn">print</span>(firu.raza)</pre>
+      <div class="stack" style="gap:14px">
+        <div class="term rv">Firulais   <span class="dimt"># lo puso Animal</span>
+corto      <span class="dimt"># lo puso Mamifero</span>
+beagle     <span class="dimt"># lo puso Perro</span></div>
+        <div class="answer rv">
+          <p class="lbl">Lo importante</p>
+          <p style="margin-top:6px">Los tres atributos viven en <b>un solo objeto</b>.<br>Al usarlo, no se nota quién puso cada cosa.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Solo el código. <b>Que predigan antes de revelar la consola.</b></dd>
+      <dt>Preguntá</dt><dd>“¿Las tres líneas funcionan? ¿Alguna va a explotar?”</dd>
+      <dt>Respuesta esperada</dt><dd>Las tres funcionan. Si alguien duda de <code>pelaje</code>, mejor: es la pregunta correcta.</dd>
+      <dt>Revelá cuando</dt><dd>Arriesgaron. Primero la salida, después los comentarios de quién puso cada dato.</dd>
+      <dt>Idea clave</dt><dd>Desde afuera, el objeto es uno solo. La cadena de herencia es cómo se <b>construyó</b>, no cómo se <b>usa</b>.</dd>
+      <dt>Si tenés compu</dt><dd>Ejecutalo en vivo. Y borrá un <code>super()</code> para que vean caer el atributo del medio.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="Ojo · no exageremos">
+  <div class="stack">
+    <span class="tag">Una advertencia</span>
+    <h2>Que se pueda… no significa que convenga</h2>
+    <div class="cols c2" style="margin-top:8px;align-items:center">
+      <div class="stack" style="gap:6px">
+        <p class="lbl" style="color:var(--flame)">✗ Nadie necesita esto</p>
+        <pre class="sm" style="font-size:16px">SerVivo
+  → Animal
+    → Vertebrado
+      → Mamifero
+        → Canido
+          → Perro
+            → Beagle
+              → BeagleChico</pre>
+      </div>
+      <div class="stack" style="gap:14px">
+        <p class="ask sm">¿Cuál es el problema de una cadena tan larga?</p>
+        <div class="answer rv">
+          <p style="font-size:21px">Para entender <b>una</b> clase hay que leer <b>ocho</b>.<br>Y para encontrar un dato, subir ocho escalones.</p>
+        </div>
+        <div class="card acc rv"><p style="font-size:21px;color:var(--ink)"><b>Regla práctica:</b> dos o tres niveles alcanzan casi siempre. Si necesitás más, casi seguro no era herencia lo que buscabas.</p></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La exageración deliberada. Sirve para que la herramienta no se convierta en un martillo.</dd>
+      <dt>Preguntá</dt><dd>“¿Alguien quiere leer ocho archivos para saber qué tiene un Beagle?”</dd>
+      <dt>Respuesta esperada</dt><dd>Risas y un “no”. Con eso alcanza.</dd>
+      <dt>Revelá cuando</dt><dd>Se rían. Después la regla práctica.</dd>
+      <dt>Adelanto</dt><dd>“Cuando la herencia se estira de más, casi siempre lo que hacía falta era <b>otra cosa</b>… y esa otra cosa la vemos en el bloque que viene.” (Es composición.)</dd>
+      <dt>Duración</dt><dd>~1,5 min.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="3" data-t="Mini desafío · ¿Está bien esta cadena?">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Mini desafío · 3 minutos</span>
+    <h2>¿Cuál de estas cadenas tiene sentido?</h2>
+    <div class="cols c3" style="margin-top:10px;align-items:start">
+      <div class="stack gap-s">
+        <pre class="sm" style="font-size:17px">Instrumento
+  → Cuerda
+    → Guitarra</pre>
+        <div class="verdict si rv"><span class="mk">✓</span><span style="font-size:22px">Cada uno <b>es un</b> anterior</span></div>
+      </div>
+      <div class="stack gap-s">
+        <pre class="sm" style="font-size:17px">Empleado
+  → Gerente
+    → Oficina</pre>
+        <div class="verdict no rv"><span class="mk">✕</span><span style="font-size:22px">Una oficina <b>no es un</b> gerente</span></div>
+      </div>
+      <div class="stack gap-s">
+        <pre class="sm" style="font-size:17px">Personaje
+  → Enemigo
+    → Jefe Final</pre>
+        <div class="verdict si rv"><span class="mk">✓</span><span style="font-size:22px">El jefe <b>es un</b> enemigo especial</span></div>
+      </div>
+    </div>
+    <p class="quote rv" style="text-align:center;margin-top:18px;font-size:28px">El test no cambió nunca: <span class="hl">“¿ES UN?”</span> en cada escalón.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Tres cadenas. Revelá un veredicto por vez, después de que voten.</dd>
+      <dt>Preguntá</dt><dd>“Leelo en voz alta con el ‘es un’ entre medio. ¿Suena bien o suena raro?”</dd>
+      <dt>Respuesta esperada</dt><dd>Sí / No / Sí. La del medio es la interesante.</dd>
+      <dt>Momento clave</dt><dd>En la segunda: “una oficina no <b>es</b> un gerente… pero un gerente <b>tiene</b> una oficina”. Anotá esa frase: es la puerta del Bloque 5.</dd>
+      <dt>Revelá cuando</dt><dd>Votaron cada una. No adelantes el remate.</dd>
+      <dt>Variante</dt><dd>Si sobra tiempo, que inventen una cadena correcta y una incorrecta en parejas.</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 4 · print() vs return ══════════ -->
+
+<section class="slide" data-b="4" data-t="Una función que suma">
+  <div class="stack">
+    <span class="tag">Bloque 4 · Herramienta 3</span>
+    <h2>Miremos esta función</h2>
+    <div class="cols c2u" style="margin-top:6px;align-items:center">
+      <pre class="lg"><span class="cd-k">def</span> <span class="cd-fn">sumar</span>(a, b):
+    <span class="cd-fn">print</span>(a + b)
+
+
+<span class="cd-fn">sumar</span>(<span class="cd-n">5</span>, <span class="cd-n">3</span>)</pre>
+      <div class="stack" style="gap:14px">
+        <p class="ask sm">¿Funciona?</p>
+        <div class="term rv">8</div>
+        <p class="lead rv">Sí. Aparece el <b>8</b> en pantalla y todos contentos.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Una función que ya saben escribir. Deliberadamente inocente.</dd>
+      <dt>Preguntá</dt><dd>“¿Esto está bien? ¿Funciona?”</dd>
+      <dt>Respuesta esperada</dt><dd>“Sí, obvio.” Perfecto: queremos que se confíen.</dd>
+      <dt>Revelá cuando</dt><dd>Digan que sí. Confirmá con la consola: sale 8.</dd>
+      <dt>Preparate</dt><dd>La lámina siguiente rompe esta confianza. No adelantes nada.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="Predicción · el problema">
+  <div class="stack">
+    <span class="tag">Predicción · antes de ejecutar</span>
+    <h2>Ahora quiero <span class="hl">guardar</span> ese resultado</h2>
+    <div class="cols c2u" style="margin-top:6px;align-items:center">
+      <pre class="lg"><span class="cd-k">def</span> <span class="cd-fn">sumar</span>(a, b):
+    <span class="cd-fn">print</span>(a + b)
+
+
+resultado = <span class="cd-fn">sumar</span>(<span class="cd-n">5</span>, <span class="cd-n">3</span>)
+<span class="cd-fn">print</span>(resultado)</pre>
+      <div class="stack" style="gap:14px">
+        <p class="ask sm">¿Qué imprime la última línea?</p>
+        <div class="term rv">8
+<span class="bad">None</span></div>
+        <p class="lead rv" style="font-size:24px">El 8 se vio… pero <span class="mono">resultado</span> quedó <b>vacío</b>.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El momento incómodo del bloque. <b>No reveles la consola</b> hasta que voten.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué va a imprimir la última línea? Escribilo en la carpeta antes de que lo muestre.”</dd>
+      <dt>Respuesta esperada</dt><dd>Casi todos dicen 8. Es la respuesta natural… y es la equivocada.</dd>
+      <dt>Revelá cuando</dt><dd>Ya escribieron su predicción. El impacto de este <code>None</code> es lo que hace entender <code>return</code>.</dd>
+      <dt>Ojo</dt><dd>Aparecen <b>dos</b> líneas: el 8 lo imprimió la función; el <code>None</code> lo imprimió la última línea.</dd>
+      <dt>Si tenés compu</dt><dd>Ejecutalo en vivo. Ver el <code>None</code> real vale más que cualquier explicación.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="¿Por qué None?">
+  <div class="stack mid-all">
+    <p class="ask" style="max-width:30ch;text-align:left">¿Por qué <span class="mono">resultado</span> quedó vacío, si el 8 apareció en la pantalla?</p>
+    <div class="answer rv" style="margin-top:24px;max-width:70ch">
+      <p class="lbl">Porque</p>
+      <p style="font-size:26px;margin-top:8px">La función <b>mostró</b> el 8, pero nunca lo <b>entregó</b>.</p>
+    </div>
+    <p class="quote rv" style="text-align:center;margin-top:24px;max-width:34ch;font-size:34px">Mostrar y entregar<br><b class="hl">no son lo mismo</b>.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La pregunta sola. Este es el concepto del bloque entero, sin código.</dd>
+      <dt>Preguntá</dt><dd>“El 8 lo vimos todos. ¿Por qué la variable quedó vacía?”</dd>
+      <dt>Respuesta esperada</dt><dd>Cuesta. Ayudá con una analogía: “te mostré una foto de una pizza. ¿Ya tenés la pizza?”</dd>
+      <dt>Revelá cuando</dt><dd>Aparezca la idea de “lo mostró pero no me lo dio”. Con esa frase alcanza.</dd>
+      <dt>Idea clave</dt><dd><b>MOSTRAR ≠ ENTREGAR.</b> Escribilo en el pizarrón: es la frase de todo el bloque.</dd>
+      <dt>Error típico</dt><dd>Creer que <code>print</code> “devuelve” lo que muestra. Es la confusión número uno de todo el año.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="return · la herramienta">
+  <div class="stack">
+    <span class="tag">📦 La herramienta</span>
+    <h2>Se llama <span class="mono hl">return</span></h2>
+    <div class="cols c2" style="margin-top:6px;align-items:start">
+      <div class="stack" style="gap:10px">
+        <p class="lbl" style="color:var(--flame)">✗ Antes</p>
+        <pre class="sm"><span class="cd-k">def</span> <span class="cd-fn">sumar</span>(a, b):
+    <span class="cd-fn">print</span>(a + b)</pre>
+        <div class="term">8
+<span class="bad">None</span></div>
+      </div>
+      <div class="stack rv" style="gap:10px">
+        <p class="lbl" style="color:var(--good)">✓ Ahora</p>
+        <pre class="sm"><span class="cd-k">def</span> <span class="cd-fn">sumar</span>(a, b):
+    <span class="cd-k">return</span> a + b</pre>
+        <div class="term"><span class="ok">8</span></div>
+      </div>
+    </div>
+    <div class="row rv" style="justify-content:center;margin-top:16px">
+      <pre class="sm" style="font-size:20px">resultado = <span class="cd-fn">sumar</span>(<span class="cd-n">5</span>, <span class="cd-n">3</span>)   <span class="cd-c"># resultado vale 8</span></pre>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Un solo cambio: <code>print</code> por <code>return</code>. Señalá esa palabra y nada más.</dd>
+      <dt>Preguntá</dt><dd>“¿Cuántos caracteres cambiaron entre las dos versiones?”</dd>
+      <dt>Respuesta esperada</dt><dd>Una palabra. El efecto es enorme.</dd>
+      <dt>Revelá cuando</dt><dd>Miraron la versión de la izquierda otra vez. El contraste es el aprendizaje.</dd>
+      <dt>Ojo</dt><dd>La versión con <code>return</code> <b>no imprime nada sola</b>. El 8 de la consola sale del <code>print(resultado)</code>. Aclaralo o se confunden.</dd>
+      <dt>Repregunta</dt><dd>“¿Y si quiero las dos cosas: verlo y guardarlo?” → <code>print(sumar(5, 3))</code>. Buenísima pregunta para que la hagan ellos.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="El dibujo · print vs return">
+  <div class="stack">
+    <h2>La diferencia, dibujada</h2>
+    <div class="cols c2" style="margin-top:14px;gap:40px">
+      <div class="flowbox p">
+        <span class="head">print()</span>
+        <span class="dn">↓</span>
+        <span class="end" style="color:var(--flame)">PANTALLA</span>
+        <p style="font-size:19px;color:var(--ink-2)">Lo veo… y se terminó ahí.</p>
+      </div>
+      <div class="flowbox r rv">
+        <span class="head">return</span>
+        <span class="dn">↓</span>
+        <span class="end" style="color:var(--teal)">RESULTADO</span>
+        <ul>
+          <li>✅ puedo guardarlo</li>
+          <li>✅ puedo compararlo</li>
+          <li>✅ puedo usarlo en otra cuenta</li>
+          <li>✅ puedo devolverlo de nuevo</li>
+        </ul>
+      </div>
+    </div>
+    <p class="quote rv" style="text-align:center;margin-top:18px;font-size:30px"><span class="mono">print()</span> me <b>muestra</b> algo. <span class="mono">return</span> me <b>entrega</b> algo.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El esquema para copiar en la carpeta. Pediles que lo dibujen: sirve todo el año.</dd>
+      <dt>Preguntá</dt><dd>Señalando la lista de la derecha: “¿alguna de estas cuatro cosas la puedo hacer con <code>print</code>?”</dd>
+      <dt>Respuesta esperada</dt><dd>Ninguna.</dd>
+      <dt>Revelá cuando</dt><dd>Primero la columna de <code>print</code> sola —que se vea pobre—, después la de <code>return</code>.</dd>
+      <dt>Tip</dt><dd>Lámina para sacarle foto. Es la referencia del bloque.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-opt="1" data-t="La analogía del mozo">
+  <div class="stack mid-all">
+    <p class="emoji" style="font-size:66px">🧑‍🍳</p>
+    <div class="cols c2 rv" style="margin-top:14px;gap:30px;max-width:940px">
+      <div class="card" style="border-color:var(--flame)">
+        <p class="lbl" style="color:var(--flame)">print()</p>
+        <p style="font-size:23px;margin-top:8px;color:var(--ink)">El mozo te <b>dice</b>: “el café sale 2000”.</p>
+        <p style="margin-top:8px">Lo escuchaste. Pero no tenés nada en la mano.</p>
+      </div>
+      <div class="card" style="border-color:var(--teal)">
+        <p class="lbl" style="color:var(--teal)">return</p>
+        <p style="font-size:23px;margin-top:8px;color:var(--ink)">El mozo te <b>trae</b> el café.</p>
+        <p style="margin-top:8px">Ahora sí: podés tomarlo, compartirlo, guardarlo.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La analogía que fija el concepto. Retoma la cafetería del calentamiento.</dd>
+      <dt>Preguntá</dt><dd>“¿Cuál de los dos mozos les sirve más?”</dd>
+      <dt>Respuesta esperada</dt><dd>El segundo, obviamente. Ahí se entiende para qué existe <code>return</code>.</dd>
+      <dt>Revelá cuando</dt><dd>Enseguida: es un remate, no una actividad.</dd>
+      <dt>◇ Si vas corto</dt><dd>Contá la analogía de palabra sobre la lámina anterior y pasá directo al método con <code>return</code>.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="return dentro de un método">
+  <div class="stack">
+    <span class="tag">Ahora en un objeto</span>
+    <h2>Un método que <span class="hl">devuelve</span> un valor</h2>
+    <div class="cols c2u" style="margin-top:4px;align-items:start">
+      <pre class="sm" style="font-size:18px"><span class="cd-k">class</span> <span class="cd-fn">Jugador</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.vida = vida
+
+    <span class="cd-k">def</span> <span class="cd-fn">esta_vivo</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.vida &gt; <span class="cd-n">0</span></pre>
+      <div class="stack" style="gap:14px">
+        <pre class="sm" style="font-size:18px"><span class="cd-k">if</span> jugador.<span class="cd-fn">esta_vivo</span>():
+    <span class="cd-fn">print</span>(<span class="cd-s">"Seguí jugando"</span>)
+<span class="cd-k">else</span>:
+    <span class="cd-fn">print</span>(<span class="cd-s">"Game Over"</span>)</pre>
+        <div class="answer rv">
+          <p class="lbl">Acá está la gracia</p>
+          <p style="margin-top:6px">Con <span class="mono">return</span>, el objeto puede <b>contestarle</b> al programa.<br>Y con esa respuesta, el programa <b>decide</b>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El salto que importa: <code>return</code> deja de ser un detalle de funciones y pasa a ser cómo un objeto <b>responde</b>.</dd>
+      <dt>Preguntá</dt><dd>“Si <code>esta_vivo()</code> hiciera <code>print</code> en vez de <code>return</code>, ¿funcionaría el <code>if</code>?”</dd>
+      <dt>Respuesta esperada</dt><dd>No. El <code>if</code> necesita <b>recibir</b> un valor, no verlo en pantalla.</dd>
+      <dt>Revelá cuando</dt><dd>Alguien conteste esa pregunta. Es la justificación completa de <code>return</code>.</dd>
+      <dt>Idea clave</dt><dd>“Los objetos que solo imprimen sirven para mirarlos. Los objetos que devuelven sirven para <b>construir</b> con ellos.”</dd>
+      <dt>Prepara</dt><dd>El bloque que viene usa esto todo el tiempo: <code>arma.atacar()</code> va a devolver el daño.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="4" data-t="Mini desafío · ¿print o return?">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Mini desafío · a mano alzada</span>
+    <h2>¿Acá necesitamos <span class="mono">print()</span> o <span class="mono">return</span>?</h2>
+    <div class="cols c2" style="margin-top:10px;gap:14px 26px">
+      <div class="qcard"><b>Caso 1</b>Un método que calcula el <b>precio final</b> con IVA.</div>
+      <div class="answer rv" style="padding:12px 16px"><p style="font-size:21px"><span class="mono" style="color:var(--teal)">return</span> — después quiero sumarlo al total.</p></div>
+      <div class="qcard"><b>Caso 2</b>Un método que <b>saluda</b> al usuario al entrar al juego.</div>
+      <div class="answer rv" style="padding:12px 16px"><p style="font-size:21px"><span class="mono" style="color:var(--flame)">print()</span> — solo hay que verlo, nadie lo reutiliza.</p></div>
+      <div class="qcard"><b>Caso 3</b>Un método que dice si al jugador le <b>alcanza la plata</b>.</div>
+      <div class="answer rv" style="padding:12px 16px"><p style="font-size:21px"><span class="mono" style="color:var(--teal)">return</span> — la respuesta va adentro de un <span class="mono">if</span>.</p></div>
+      <div class="qcard"><b>Caso 4</b>Un método que muestra el <b>menú</b> de opciones.</div>
+      <div class="answer rv" style="padding:12px 16px"><p style="font-size:21px"><span class="mono" style="color:var(--flame)">print()</span> — es información para la persona, no para el programa.</p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Cuatro casos. Revelá <b>uno por vez</b>, después de votar a mano alzada.</dd>
+      <dt>Preguntá</dt><dd>La pregunta guía siempre es la misma: “¿alguien más va a <b>usar</b> ese resultado, o solo hay que <b>verlo</b>?”</dd>
+      <dt>Respuesta esperada</dt><dd>return · print · return · print.</dd>
+      <dt>Error típico</dt><dd>Contestar “return” a todo porque “es lo nuevo”. Aclará: <code>print</code> no está mal, tiene otro trabajo.</dd>
+      <dt>Repregunta de oro</dt><dd>“¿Se puede hacer las dos cosas?” Sí: <code>print(objeto.metodo())</code>. Que lo vean escrito.</dd>
+      <dt>Duración</dt><dd>~5 min. Es la actividad principal del bloque.</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 5 · OBJETOS DENTRO DE OBJETOS ══════════ -->
+
+<section class="slide" data-b="5" data-t="¿ES un arma o TIENE un arma?">
+  <div class="stack">
+    <span class="tag">Bloque 5 · Herramienta 4</span>
+    <div class="row" style="align-items:center;gap:18px"><span class="emoji">🧍</span><span class="emoji">⚔️</span><h2>Volvemos al juego</h2></div>
+    <div class="cols c2" style="margin-top:16px;gap:34px">
+      <div class="stack" style="gap:12px">
+        <p class="ask sm">¿Un Jugador <b>ES</b> un Arma?</p>
+        <div class="verdict no rv"><span class="mk">✕</span><span>No. Son cosas distintas.</span></div>
+      </div>
+      <div class="stack" style="gap:12px">
+        <p class="ask sm">¿Un Jugador <b>TIENE</b> un Arma?</p>
+        <div class="verdict si rv"><span class="mk">✓</span><span>Sí. Eso sí.</span></div>
+      </div>
+    </div>
+    <p class="quote rv" style="text-align:center;margin-top:24px;font-size:32px">Entonces acá <b>no</b> va herencia.<br>Va otra cosa.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Las dos preguntas. Revelá un veredicto por vez, después de que voten.</dd>
+      <dt>Preguntá</dt><dd>“¿Un jugador es un arma?” Se ríen. “¿Y tiene un arma?” Obvio que sí. <b>Esa obviedad es el concepto.</b></dd>
+      <dt>Respuesta esperada</dt><dd>No / Sí.</dd>
+      <dt>Revelá cuando</dt><dd>Contestaron las dos. Recién ahí la frase final.</dd>
+      <dt>Volvé atrás</dt><dd>Recordá la pregunta del quiz del principio: “¿una rueda hereda de auto?”. Es exactamente el mismo caso.</dd>
+      <dt>Idea clave</dt><dd>Hay <b>dos maneras</b> de relacionar clases. Hasta hoy conocían una sola.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="ES UN vs TIENE UN">
+  <div class="stack">
+    <h2>Las dos formas de relacionar objetos</h2>
+    <div class="cols c2" style="margin-top:18px;gap:40px">
+      <div class="stack center" style="gap:14px">
+        <span class="rel isa">🧬 ES UN</span>
+        <p class="huge" style="font-size:30px;margin-top:4px">HERENCIA</p>
+        <div class="chain" style="margin-top:4px">
+          <div class="uml" style="width:200px"><div class="uml-h">Animal</div></div>
+          <div class="down"></div>
+          <div class="uml" style="width:200px"><div class="uml-h">Perro 🐶</div></div>
+        </div>
+        <p style="font-size:20px;color:var(--ink-2);margin-top:6px">El perro <b>es</b> un animal.<br>Recibe lo que el animal ya tenía.</p>
+      </div>
+      <div class="stack center rv" style="gap:14px">
+        <span class="rel hasa">🎁 TIENE UN</span>
+        <p class="huge" style="font-size:30px;margin-top:4px">COMPOSICIÓN</p>
+        <div class="row" style="align-items:center;justify-content:center;gap:0;margin-top:4px">
+          <div class="uml" style="width:170px"><div class="uml-h">Jugador 🧍</div></div>
+          <span class="harrow" style="color:var(--rose)">tiene</span>
+          <div class="uml" style="width:170px"><div class="uml-h">Arma ⚔️</div></div>
+        </div>
+        <p style="font-size:20px;color:var(--ink-2);margin-top:6px">El jugador <b>tiene</b> un arma.<br>Son dos objetos distintos, conectados.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La comparación más importante de la clase. Que quede varios minutos en pantalla.</dd>
+      <dt>Preguntá</dt><dd>“¿Ven la diferencia en las flechas? Una va <b>para abajo</b>, la otra va <b>para el costado</b>.”</dd>
+      <dt>Respuesta esperada</dt><dd>Que noten que en la herencia hay una sola cosa; en la composición, dos cosas conectadas.</dd>
+      <dt>Revelá cuando</dt><dd>Repasaron la columna izquierda (que ya conocen) antes de mostrar la derecha.</dd>
+      <dt>Actividad express</dt><dd>Que dibujen las dos flechas en la carpeta y escriban al lado ES UN / TIENE UN.</dd>
+      <dt>Tip</dt><dd>Lámina para sacarle foto. Es el resumen del día.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="5" data-t="¿Herencia o composición?">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Actividad · a mano alzada</span>
+    <h2>Leelo en voz alta y decidí</h2>
+    <div class="cols c2" style="margin-top:2px;gap:8px 26px">
+      <div class="qcard"><b>1</b>Un <span class="mono">Gato</span> y un <span class="mono">Animal</span></div>
+      <div class="answer rv" style="padding:9px 16px"><p style="font-size:21px"><b style="color:var(--violet)">ES UN</b> → herencia</p></div>
+      <div class="qcard"><b>2</b>Un <span class="mono">Auto</span> y un <span class="mono">Motor</span></div>
+      <div class="answer rv" style="padding:9px 16px"><p style="font-size:21px"><b style="color:var(--rose)">TIENE UN</b> → composición</p></div>
+      <div class="qcard"><b>3</b>Una <span class="mono">Casa</span> y una <span class="mono">Puerta</span></div>
+      <div class="answer rv" style="padding:9px 16px"><p style="font-size:21px"><b style="color:var(--rose)">TIENE UNA</b> → composición</p></div>
+      <div class="qcard"><b>4</b>Un <span class="mono">Profesor</span> y una <span class="mono">Persona</span></div>
+      <div class="answer rv" style="padding:9px 16px"><p style="font-size:21px"><b style="color:var(--violet)">ES UNA</b> → herencia</p></div>
+      <div class="qcard"><b>5</b>Un <span class="mono">Celular</span> y una <span class="mono">Bateria</span></div>
+      <div class="answer rv" style="padding:9px 16px"><p style="font-size:21px"><b style="color:var(--rose)">TIENE UNA</b> → composición</p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Cinco pares. Revelá uno por vez, después de votar.</dd>
+      <dt>Preguntá</dt><dd>Siempre igual: “armá la frase en voz alta. ¿Suena mejor <b>es un</b> o <b>tiene un</b>?”</dd>
+      <dt>Respuesta esperada</dt><dd>Herencia · composición · composición · herencia · composición.</dd>
+      <dt>Error típico</dt><dd>Decir que el motor hereda del auto “porque van juntos”. Ir juntos no es ser lo mismo.</dd>
+      <dt>Momento clave</dt><dd>Que noten que la composición aparece <b>mucho más seguido</b> que la herencia. En programas reales, es así.</dd>
+      <dt>Duración</dt><dd>~4 min. Ritmo rápido, tipo juego.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="Paso 1 · La clase Arma">
+  <div class="stack">
+    <span class="step">Paso 1 de 3</span>
+    <h2>Primero, el arma sola</h2>
+    <div class="cols c2u" style="margin-top:4px;align-items:start">
+      <pre class="sm" style="font-size:19px"><span class="cd-k">class</span> <span class="cd-fn">Arma</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, daño):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.daño = daño
+
+    <span class="cd-k">def</span> <span class="cd-fn">atacar</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.daño</pre>
+      <div class="stack" style="gap:14px">
+        <p class="ask sm">¿Por qué <span class="mono">return</span> y no <span class="mono">print</span>?</p>
+        <div class="answer rv">
+          <p style="font-size:22px">Porque el daño no es para mirarlo:<br>es para <b>restárselo a la vida del enemigo</b>.</p>
+        </div>
+        <div class="card acc rv"><p style="font-size:20px;color:var(--ink)">Un arma es un objeto <b>completo</b>: tiene sus datos y sabe hacer lo suyo. Todavía no sabe nada de ningún jugador.</p></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Una clase que ya podrían escribir solos. Empezamos por lo fácil, a propósito.</dd>
+      <dt>Preguntá</dt><dd>“¿Por qué <code>atacar()</code> devuelve en vez de imprimir?” Es el repaso del bloque anterior en vivo.</dd>
+      <dt>Respuesta esperada</dt><dd>Porque el número lo va a usar otro pedazo del programa.</dd>
+      <dt>Revelá cuando</dt><dd>Alguien lo justifique. Si nadie lo hace, volvé una lámina a la del mozo.</dd>
+      <dt>Señalá</dt><dd>El <code>Arma</code> no menciona a <code>Jugador</code> por ningún lado. Eso está bien: se puede usar en cualquier juego.</dd>
+      <dt>Ojo</dt><dd>La <code>ñ</code> de <code>daño</code> es válida en Python 3. Si les molesta, que escriban <code>danio</code>.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="Paso 2 · El Jugador recibe un arma">
+  <div class="stack">
+    <span class="step">Paso 2 de 3</span>
+    <h2>Ahora el jugador… <span class="hl">recibe</span> un arma</h2>
+    <div class="cols c2u" style="margin-top:4px;align-items:start">
+      <pre class="sm" style="font-size:19px"><span class="cd-k">class</span> <span class="cd-fn">Jugador</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, arma):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-hl"><span class="cd-k">self</span>.arma = arma</span></pre>
+      <div class="stack" style="gap:14px">
+        <p class="ask sm">Esa línea resaltada… ¿qué guarda?</p>
+        <div class="answer rv">
+          <p class="lbl">Guarda</p>
+          <p style="margin-top:6px">Un <b>objeto entero</b>, no un texto ni un número.<br>Un atributo también puede ser <b>otro objeto</b>.</p>
+        </div>
+        <div class="card acc rv"><p style="font-size:20px;color:var(--ink)">Es la misma línea de siempre: <span class="mono">self.algo = algo</span>. Lo único distinto es <b>qué</b> estamos guardando.</p></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Dos líneas. La segunda es todo el concepto de composición.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué tipo de dato va a entrar en <code>arma</code>? ¿Un texto? ¿Un número?”</dd>
+      <dt>Respuesta esperada</dt><dd>Muchos dicen “el nombre del arma”. Ahí está la corrección importante: entra <b>el arma entera</b>.</dd>
+      <dt>Revelá cuando</dt><dd>Salga esa duda. Es el punto exacto donde se entiende o no se entiende.</dd>
+      <dt>Idea clave</dt><dd>“Un atributo no es solo un dato suelto. Puede ser <b>otro objeto completo</b>, con sus datos y sus métodos.”</dd>
+      <dt>Error típico</dt><dd>Escribir <code>self.arma = Arma(...)</code> adentro del <code>__init__</code>. Se puede, pero entonces el jugador nunca podría cambiar de arma. Guardá esa discusión para dos láminas más adelante.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="Paso 3 · Los conectamos">
+  <div class="stack">
+    <span class="step">Paso 3 de 3</span>
+    <h2>Y ahora los <span class="hl">conectamos</span></h2>
+    <div class="cols c2u" style="margin-top:6px;align-items:center">
+      <pre class="lg">espada = <span class="cd-fn">Arma</span>(<span class="cd-s">"Espada"</span>, <span class="cd-n">20</span>)
+
+jugador = <span class="cd-fn">Jugador</span>(<span class="cd-s">"Pedro"</span>, espada)</pre>
+      <div class="stack" style="gap:14px">
+        <p class="ask sm">¿Qué pasa en la segunda línea?</p>
+        <div class="answer rv">
+          <p style="font-size:22px">El objeto <span class="mono">espada</span> <b>entra adentro</b> del objeto <span class="mono">jugador</span>.</p>
+        </div>
+        <p class="lead rv" style="font-size:22px">Primero fabricamos el arma. Después fabricamos el jugador <b>con</b> el arma.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Dos líneas. Este es el momento en que la composición pasa de idea a código.</dd>
+      <dt>Preguntá</dt><dd>“¿Podría escribir las dos líneas al revés?” No: el arma tiene que existir antes.</dd>
+      <dt>Respuesta esperada</dt><dd>“Primero el arma.” Es una buena intuición sobre el orden de las cosas.</dd>
+      <dt>Revelá cuando</dt><dd>Contesten. Después reforzá que <code>espada</code> no es un texto: es un objeto de la clase <code>Arma</code>.</dd>
+      <dt>Actividad express</dt><dd>Pediles que agreguen un segundo jugador con otra arma. Dos líneas más, y ya tienen un juego.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="El dibujo · un objeto adentro de otro">
+  <div class="stack">
+    <h2>Cómo queda esto por dentro</h2>
+    <div class="row" style="align-items:center;justify-content:center;gap:0;margin-top:22px">
+      <div class="objbox">
+        <b>jugador</b>
+        <ul>
+          <li>nombre <i>→</i> <b>"Pedro"</b></li>
+          <li>arma <i>→</i> <span style="color:var(--teal)">◆</span></li>
+        </ul>
+      </div>
+      <span class="harrow" style="align-self:flex-end;margin-bottom:20px">apunta a</span>
+      <div class="objbox two rv">
+        <b>espada</b>
+        <ul>
+          <li>nombre <i>→</i> <b>"Espada"</b></li>
+          <li>daño <i>→</i> <b>20</b></li>
+        </ul>
+      </div>
+    </div>
+    <p class="quote rv" style="text-align:center;margin-top:26px;font-size:32px">Un objeto puede <span class="hl">tener otro objeto adentro</span>.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El dibujo que tienen que copiar sí o sí en la carpeta. Dibujalo también en el pizarrón mientras hablás.</dd>
+      <dt>Preguntá</dt><dd>“¿Cuántos objetos hay en este dibujo?”</dd>
+      <dt>Respuesta esperada</dt><dd>Dos. Es la respuesta clave: la composición <b>no</b> fusiona objetos, los conecta.</dd>
+      <dt>Revelá cuando</dt><dd>Cuenten los objetos. Después la caja de la espada, después la frase.</dd>
+      <dt>Compará</dt><dd>Con la herencia: allá había <b>un</b> objeto armado entre varias clases. Acá hay <b>dos</b> objetos, uno adentro del otro.</dd>
+      <dt>Duración</dt><dd>~3 min. Vale la pena quedarse acá.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="Usar el objeto de adentro">
+  <div class="stack">
+    <span class="tag">El punto significa “de”</span>
+    <h2>¿Y cómo lo uso?</h2>
+    <div class="cols c2u" style="margin-top:6px;align-items:start">
+      <pre class="sm" style="font-size:19px"><span class="cd-fn">print</span>(jugador.nombre)
+<span class="cd-c"># Pedro</span>
+
+<span class="cd-fn">print</span>(jugador.arma.nombre)
+<span class="cd-c"># Espada</span>
+
+<span class="cd-fn">print</span>(jugador.arma.<span class="cd-fn">atacar</span>())
+<span class="cd-c"># 20</span></pre>
+      <div class="stack" style="gap:14px">
+        <p class="ask sm">¿Cómo se lee <span class="mono">jugador.arma.nombre</span>?</p>
+        <div class="answer rv">
+          <p style="font-size:23px">“El <b>nombre</b> del <b>arma</b> del <b>jugador</b>.”</p>
+          <p style="margin-top:8px;font-size:20px;color:var(--ink-2)">Se lee de derecha a izquierda, poniendo “de” en cada punto.</p>
+        </div>
+        <div class="card acc rv"><p style="font-size:20px;color:var(--ink)">El jugador no sabe cuánto daño hace. <b>Le pregunta al arma.</b></p></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El doble punto asusta la primera vez. Desarmalo despacio.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué me devuelve <code>jugador.arma</code>, sin el <code>.nombre</code>?” → El objeto arma entero.</dd>
+      <dt>Respuesta esperada</dt><dd>Que <code>jugador.arma</code> ya es un <code>Arma</code>, y por eso se le puede pedir todo lo que un arma sabe.</dd>
+      <dt>Revelá cuando</dt><dd>Lean la cadena en voz alta con los “de”. Que la digan ellos.</dd>
+      <dt>Idea clave</dt><dd>Cada objeto se ocupa de lo suyo: el arma sabe su daño, el jugador solo sabe <b>a quién preguntarle</b>. Eso es repartir responsabilidades.</dd>
+      <dt>Error típico</dt><dd>Escribir <code>jugador.arma.atacar</code> sin paréntesis. Volvé a la regla de la clase 1: con paréntesis es acción.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="La ventaja · cambiar de arma">
+  <div class="stack">
+    <span class="tag">Por qué esto es tan útil</span>
+    <h2>El jugador cambia de arma… y no tocamos nada</h2>
+    <div class="cols c2u" style="margin-top:6px;align-items:start">
+      <pre class="sm" style="font-size:19px">hacha = <span class="cd-fn">Arma</span>(<span class="cd-s">"Hacha"</span>, <span class="cd-n">35</span>)
+
+jugador.arma = hacha
+
+<span class="cd-fn">print</span>(jugador.arma.<span class="cd-fn">atacar</span>())
+<span class="cd-c"># 35</span></pre>
+      <div class="stack" style="gap:14px">
+        <p class="ask sm">¿Qué línea de la clase <span class="mono">Jugador</span> tuvimos que cambiar?</p>
+        <div class="answer rv">
+          <p style="font-size:24px"><b>Ninguna.</b></p>
+          <p style="margin-top:8px;font-size:20px;color:var(--ink-2)">El jugador siempre supo lo mismo: “tengo un arma y le pido que ataque”. Qué arma sea, no es su problema.</p>
+        </div>
+        <div class="card acc rv"><p style="font-size:20px;color:var(--ink)">Con 50 armas distintas, la clase <span class="mono">Jugador</span> sigue igual de corta.</p></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El premio de la composición. Sin esta lámina, parece solo una forma más de escribir.</dd>
+      <dt>Preguntá</dt><dd>“¿Cuántas líneas de <code>Jugador</code> hay que tocar para agregar un arma nueva?”</dd>
+      <dt>Respuesta esperada</dt><dd>Cero. Que lo digan ellos y lo festejen.</dd>
+      <dt>Revelá cuando</dt><dd>Arriesguen un número. Casi siempre dicen “una o dos”.</dd>
+      <dt>Conectá</dt><dd>Con la clase pasada: esto es <b>polimorfismo</b> otra vez. Cualquier objeto que sepa <code>atacar()</code> sirve como arma.</dd>
+      <dt>Repregunta</dt><dd>“¿Y si le paso un <code>Hechizo</code> en vez de un <code>Arma</code>?” Funciona igual, mientras sepa <code>atacar()</code>. Si el curso está enganchado, es una gran discusión de 2 minutos.</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 6 · LO JUNTAMOS TODO ══════════ -->
+
+<section class="slide" data-b="6" data-t="Juntamos las cuatro herramientas">
+  <div class="stack mid-all">
+    <span class="tag">Bloque 6 · Todo junto</span>
+    <p class="emoji" style="font-size:76px">🎮</p>
+    <p class="statement" style="text-align:center;max-width:22ch;margin-top:8px">Ahora las usamos <span class="hl">las cuatro juntas</span>.</p>
+    <p class="lead rv" style="text-align:center;margin-top:14px;max-width:46ch">Un mismo sistema con herencia, <span class="mono">super()</span>, <span class="mono">return</span> y composición.<br><b>Primero lo pensamos. Después lo dibujamos. Recién después lo escribimos.</b></p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Cambio de energía: dejamos de aprender herramientas y empezamos a construir.</dd>
+      <dt>Decí</dt><dd>“No voy a escribir nada que ustedes no me hayan dicho antes.”</dd>
+      <dt>Revelá cuando</dt><dd>Enseguida. Repetí en voz alta el orden: pensar → dibujar → explicar → programar.</dd>
+      <dt>Preparate</dt><dd>Pizarrón libre. Vas a anotar el diseño antes de mostrar cualquier código.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="6" data-t="Pensamos · ¿qué va en cada clase?">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Primero pensamos · sin código</span>
+    <h2>Tres clases: <span class="mono">Personaje</span>, <span class="mono">Jugador</span>, <span class="mono">Arma</span></h2>
+    <div class="cols c3" style="margin-top:12px;gap:20px;align-items:start">
+      <div class="stack" style="gap:10px">
+        <p class="ask sm" style="font-size:22px">¿Qué tiene <b>todo</b> personaje?</p>
+        <div class="pills rv"><span class="pill a">nombre</span><span class="pill a">vida</span><span class="pill m">esta_vivo()</span><span class="pill m">recibir_daño()</span></div>
+      </div>
+      <div class="stack" style="gap:10px">
+        <p class="ask sm" style="font-size:22px">¿Qué agrega el <b>jugador</b>?</p>
+        <div class="pills rv"><span class="pill a">arma</span><span class="pill m">atacar_a()</span></div>
+      </div>
+      <div class="stack" style="gap:10px">
+        <p class="ask sm" style="font-size:22px">¿Y el <b>arma</b>?</p>
+        <div class="pills rv"><span class="pill a">nombre</span><span class="pill a">daño</span><span class="pill m">atacar()</span></div>
+      </div>
+    </div>
+    <p class="lead rv" style="text-align:center;margin-top:20px">En <span class="mono">Personaje</span> va <b>solo lo que comparten todos</b>. El arma no va ahí: no todos los personajes tienen.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Las tres preguntas vacías. Se llenan con lo que digan ellos, columna por columna.</dd>
+      <dt>Preguntá</dt><dd>En orden: primero Personaje, después Jugador, último Arma. No mezcles.</dd>
+      <dt>Respuesta esperada</dt><dd>Nombre y vida para todos; arma solo para el jugador.</dd>
+      <dt>La pregunta difícil</dt><dd>“¿<code>arma</code> va en Personaje?” Que discutan. Un enemigo desarmado también es un personaje.</dd>
+      <dt>Revelá cuando</dt><dd>Cada columna, después de su ronda de respuestas.</dd>
+      <dt>Momento clave</dt><dd>Es la misma pregunta de la Actividad de instrumentos de la clase 1: <b>arriba va solo lo común</b>.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="6" data-t="Dibujamos · el diseño completo">
+  <div class="stack">
+    <span class="tag">Después lo dibujamos</span>
+    <div class="row" style="align-items:center;justify-content:center;gap:0;margin-top:10px">
+      <div class="chain">
+        <div class="uml" style="width:250px">
+          <div class="uml-h">Personaje</div>
+          <ul class="at"><li>nombre</li><li>vida</li></ul>
+          <ul class="me"><li>esta_vivo()</li><li>recibir_daño()</li></ul>
+        </div>
+        <div class="down acc"></div>
+        <div class="uml" style="width:250px;border-color:var(--accent)">
+          <div class="uml-h" style="background:var(--accent)">Jugador 🧍</div>
+          <ul class="at"><li>arma</li></ul>
+          <ul class="me"><li>atacar_a()</li></ul>
+        </div>
+      </div>
+      <span class="harrow" style="color:var(--rose);align-self:flex-end;margin-bottom:66px">tiene</span>
+      <div class="uml rv" style="width:210px;border-color:var(--rose);align-self:flex-end;margin-bottom:26px">
+        <div class="uml-h" style="background:var(--rose)">Arma ⚔️</div>
+        <ul class="at"><li>nombre</li><li>daño</li></ul>
+        <ul class="me"><li>atacar()</li></ul>
+      </div>
+    </div>
+    <div class="row rv" style="justify-content:center;gap:20px;margin-top:18px">
+      <span class="rel isa">🧬 Jugador ES UN Personaje</span>
+      <span class="rel hasa">🎁 Jugador TIENE UN Arma</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El diseño completo en un solo dibujo: una flecha para abajo y una para el costado.</dd>
+      <dt>Preguntá</dt><dd>“Señalen la flecha de la herencia. Ahora la de la composición.” Que las distingan a simple vista.</dd>
+      <dt>Respuesta esperada</dt><dd>Abajo = herencia. Al costado = composición.</dd>
+      <dt>Revelá cuando</dt><dd>Ubicaron las dos relaciones. Las etiquetas de abajo son la confirmación.</dd>
+      <dt>Idea clave</dt><dd>Este dibujo <b>es</b> el programa. Escribir el código después es casi transcribir.</dd>
+      <dt>Actividad</dt><dd>Que lo copien antes de seguir. Lo vamos a usar en el desafío final.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="6" data-t="Código · Personaje">
+  <div class="stack">
+    <span class="step">Paso 1 · la clase de arriba</span>
+    <div class="cols c2u" style="margin-top:4px;align-items:start">
+      <pre class="sm" style="font-size:19px"><span class="cd-k">class</span> <span class="cd-fn">Personaje</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.vida = vida
+
+    <span class="cd-k">def</span> <span class="cd-fn">esta_vivo</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.vida &gt; <span class="cd-n">0</span>
+
+    <span class="cd-k">def</span> <span class="cd-fn">recibir_daño</span>(<span class="cd-k">self</span>, cantidad):
+        <span class="cd-k">self</span>.vida = <span class="cd-k">self</span>.vida - cantidad</pre>
+      <div class="stack" style="gap:14px">
+        <div class="card acc"><p style="font-size:20px;color:var(--ink)">Todo lo que comparten <b>todos</b> los personajes: jugadores, enemigos, jefes.</p></div>
+        <p class="ask sm">¿Por qué <span class="mono">esta_vivo()</span> usa <span class="mono">return</span> y <span class="mono">recibir_daño()</span> no?</p>
+        <div class="answer rv">
+          <p style="font-size:21px"><span class="mono">esta_vivo()</span> <b>contesta una pregunta</b> → hay que devolver la respuesta.<br><span class="mono">recibir_daño()</span> <b>hace un cambio</b> en el objeto → no tiene nada que entregar.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La clase base. Nada nuevo: es la clase 1 más un <code>return</code>.</dd>
+      <dt>Preguntá</dt><dd>La pregunta del cuadro. Es el mejor repaso posible del bloque 4.</dd>
+      <dt>Respuesta esperada</dt><dd>Uno responde, el otro modifica. Los métodos que solo cambian el objeto no necesitan devolver nada.</dd>
+      <dt>Revelá cuando</dt><dd>Alguien distinga “preguntar” de “hacer”. Es un criterio que les va a servir siempre.</dd>
+      <dt>Señalá</dt><dd><code>recibir_daño()</code> modifica <code>self.vida</code>: el objeto se cambia a sí mismo, como <code>acelerar()</code> del auto de la clase pasada.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="6" data-t="Código · Jugador">
+  <div class="stack">
+    <span class="step">Paso 2 · el hijo, con arma</span>
+    <div class="cols c2u" style="margin-top:4px;align-items:start">
+      <pre class="sm" style="font-size:19px"><span class="cd-k">class</span> <span class="cd-fn">Jugador</span>(<span class="cd-fn">Personaje</span>):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida, arma):
+        <span class="cd-hl"><span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>(nombre, vida)</span>
+        <span class="cd-hl"><span class="cd-k">self</span>.arma = arma</span>
+
+    <span class="cd-k">def</span> <span class="cd-fn">atacar_a</span>(<span class="cd-k">self</span>, otro):
+        daño = <span class="cd-k">self</span>.arma.<span class="cd-fn">atacar</span>()
+        otro.<span class="cd-fn">recibir_daño</span>(daño)
+        <span class="cd-k">return</span> daño</pre>
+      <div class="stack" style="gap:12px">
+        <div class="card acc"><p style="font-size:20px;color:var(--ink)"><b>Línea 3:</b> el padre pone <span class="mono">nombre</span> y <span class="mono">vida</span>.<br><b>Línea 4:</b> el hijo agrega su arma.</p></div>
+        <p class="ask sm">En <span class="mono">atacar_a()</span>, ¿cuántos objetos participan?</p>
+        <div class="answer rv">
+          <p style="font-size:21px"><b>Tres.</b> El jugador le pide el daño a <b>su arma</b>, y se lo aplica al <b>otro personaje</b>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La lámina donde se cruzan las cuatro herramientas. Recorré el método <b>línea por línea</b>, despacio.</dd>
+      <dt>Preguntá</dt><dd>“¿Quién sabe cuánto daño hace el ataque?” → El arma, no el jugador.</dd>
+      <dt>Respuesta esperada</dt><dd>Tres objetos: el jugador, su arma y el enemigo. Que los señalen en la pantalla.</dd>
+      <dt>Revelá cuando</dt><dd>Contaron los objetos. Es la idea más importante del día: <b>los objetos se piden cosas entre ellos</b>.</dd>
+      <dt>Señalá</dt><dd><code>otro</code> es otro objeto que llega como parámetro. Un objeto puede recibir a otro objeto, igual que un número.</dd>
+      <dt>Error típico</dt><dd>Querer restar la vida directamente: <code>otro.vida = otro.vida - daño</code>. Funciona, pero rompe la encapsulación: para eso existe <code>recibir_daño()</code>.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="6" data-t="Predecí · la partida">
+  <div class="stack">
+    <span class="tag">Predicción · antes de ejecutar</span>
+    <h2>Jugamos una partida</h2>
+    <div class="cols c2u" style="margin-top:4px;align-items:start">
+      <pre class="sm" style="font-size:18px">espada = <span class="cd-fn">Arma</span>(<span class="cd-s">"Espada"</span>, <span class="cd-n">20</span>)
+
+pedro = <span class="cd-fn">Jugador</span>(<span class="cd-s">"Pedro"</span>, <span class="cd-n">100</span>, espada)
+orco  = <span class="cd-fn">Personaje</span>(<span class="cd-s">"Orco"</span>, <span class="cd-n">50</span>)
+
+pedro.<span class="cd-fn">atacar_a</span>(orco)
+<span class="cd-fn">print</span>(orco.vida)
+
+pedro.<span class="cd-fn">atacar_a</span>(orco)
+pedro.<span class="cd-fn">atacar_a</span>(orco)
+<span class="cd-fn">print</span>(orco.<span class="cd-fn">esta_vivo</span>())</pre>
+      <div class="stack" style="gap:14px">
+        <p class="ask sm">¿Qué imprime cada <span class="mono">print</span>?</p>
+        <div class="term rv">30
+<span class="bad">False</span></div>
+        <div class="answer rv">
+          <p class="lbl">Las cuentas</p>
+          <p style="margin-top:6px">50 − 20 = <b>30</b> · después 10 · después −10.<br>Con vida negativa, <span class="mono">esta_vivo()</span> devuelve <b>False</b>. 💀</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El programa completo funcionando. <b>Que predigan los dos valores antes de revelar.</b></dd>
+      <dt>Preguntá</dt><dd>“¿Cuánta vida le queda al orco después del primer ataque? ¿Y sigue vivo al final?”</dd>
+      <dt>Respuesta esperada</dt><dd>30 y False. Que hagan las tres restas en voz alta.</dd>
+      <dt>Revelá cuando</dt><dd>Escribieron sus dos predicciones. Primero la consola, después las cuentas.</dd>
+      <dt>Repregunta</dt><dd>“¿La vida puede quedar negativa? ¿Está bien?” Discusión buenísima: se arregla dentro de <code>recibir_daño()</code>. Es <b>encapsulación</b> de la clase pasada.</dd>
+      <dt>Si tenés compu</dt><dd>Ejecutalo en vivo y cambiá el arma por el hacha de 35. Ver los números cambiar cierra la clase.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="6" data-t="¿Dónde está cada herramienta?">
+  <div class="stack">
+    <h2>Las cuatro herramientas, en un solo programa</h2>
+    <div class="cols c2" style="margin-top:14px;gap:14px 26px">
+      <div class="qcard"><b>🧬 Herencia</b><span class="mono">class Jugador(Personaje)</span> — el jugador <b>es un</b> personaje.</div>
+      <div class="qcard"><b>🧬 super()</b><span class="mono">super().__init__(nombre, vida)</span> — el padre hace su parte.</div>
+      <div class="qcard"><b>📦 return</b><span class="mono">esta_vivo()</span> y <span class="mono">atacar()</span> — devuelven un valor que el programa usa.</div>
+      <div class="qcard"><b>🎁 Composición</b><span class="mono">self.arma = arma</span> — el jugador <b>tiene un</b> arma.</div>
+    </div>
+    <p class="quote rv" style="text-align:center;margin-top:22px;font-size:30px">Ninguna es difícil sola.<br>Juntas, ya podés modelar <span class="hl">casi cualquier cosa</span>.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El mapa final. Volvé a mostrar el código de las láminas anteriores si hace falta señalar.</dd>
+      <dt>Preguntá</dt><dd>Antes de leer las tarjetas: “señalen en el código dónde está cada una de las cuatro cosas de hoy”.</dd>
+      <dt>Respuesta esperada</dt><dd>Las cuatro líneas exactas. Si las encuentran solos, la clase está lograda.</dd>
+      <dt>Revelá cuando</dt><dd>Ya las ubicaron. La frase final es el cierre del bloque.</dd>
+      <dt>Tip</dt><dd>Lámina para sacarle foto.</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 7 · DESAFÍO FINAL Y CIERRE ══════════ -->
+
+<section class="slide act" data-b="7" data-t="Gran desafío · ampliamos el juego">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Gran desafío final · en parejas</span>
+    <div class="row" style="align-items:center;gap:16px"><span class="emoji">👾</span><h2>Falta el <span class="hl">Enemigo</span></h2></div>
+    <p class="lead" style="margin-top:8px">El orco de recién no ataca: solo recibe golpes. Queremos que se defienda.</p>
+    <div class="cols c2" style="margin-top:14px;gap:26px;align-items:start">
+      <div class="card"><p class="lbl">La consigna</p><p style="font-size:21px;margin-top:8px;color:var(--ink)">Escribí la clase <span class="mono">Enemigo</span>. Tiene que poder <b>atacar igual que el jugador</b>, pero con un <span class="mono">Hechizo</span> en vez de un arma… y además tener una <span class="mono">dificultad</span>.</p></div>
+      <div class="stack gap-s rv">
+        <div class="qcard"><b>Se puede usar</b>Todo lo de hoy. Nada más.</div>
+        <div class="qcard"><b>Primero</b>Dibujarlo. El código recién después.</div>
+        <div class="qcard"><b>Ojo</b>No escribas de nuevo <span class="mono">nombre</span> ni <span class="mono">vida</span>.</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El desafío que resuelven <b>ellos</b>, después de haber construido el sistema juntos. Es la evaluación real de la clase.</dd>
+      <dt>Preguntá</dt><dd>Antes de largarlos: “¿de quién va a heredar Enemigo? ¿Y qué va a <b>tener</b>?”</dd>
+      <dt>Respuesta esperada</dt><dd>Hereda de <code>Personaje</code>; <b>tiene</b> un <code>Hechizo</code>.</dd>
+      <dt>Revelá cuando</dt><dd>Las tres tarjetas, apenas leída la consigna. Después dales 8–10 minutos reales.</dd>
+      <dt>Mientras trabajan</dt><dd>Pasá por los bancos con una sola pregunta: “¿esto es <b>es un</b> o <b>tiene un</b>?”</dd>
+      <dt>Actividad sugerida</dt><dd>En parejas y en papel. Que dibujen antes de escribir: el que arranca tipeando se traba.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="7" data-t="Las 7 preguntas del diseño">
+  <div class="stack">
+    <h2>Las preguntas que hay que hacerse <span class="hl">siempre</span></h2>
+    <div class="cols c2" style="margin-top:14px;gap:12px 26px">
+      <div class="qcard"><b>1</b>¿Qué objetos hay acá?</div>
+      <div class="qcard"><b>2</b>¿Qué debería tener la clase de arriba?</div>
+      <div class="qcard"><b>3</b>¿Qué agrega cada hijo?</div>
+      <div class="qcard"><b>4</b>¿Dónde usamos <span class="mono">super()</span>?</div>
+      <div class="qcard"><b>5</b>¿Qué objeto <b>tiene</b> a otro objeto adentro?</div>
+      <div class="qcard"><b>6</b>¿Qué método debería <b>devolver</b> un valor?</div>
+      <div class="qcard" style="grid-column:1/-1"><b>7</b>¿Dónde estoy usando <b>herencia</b> y dónde <b>composición</b>?</div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La herramienta que se llevan. Dejala fija mientras resuelven el desafío.</dd>
+      <dt>Decí</dt><dd>“Cópienlas. Sirven para este desafío, para la tarea y para cualquier programa que hagan el resto del año.”</dd>
+      <dt>Revelá cuando</dt><dd>No hay reveal: es una lámina de consulta.</dd>
+      <dt>Uso</dt><dd>Cuando una pareja se trabe, no les des la respuesta: preguntales cuál de las siete están saltando.</dd>
+      <dt>Tip</dt><dd>Lámina para sacarle foto.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="7" data-t="Desafío · una solución posible">
+  <div class="stack">
+    <span class="tag">Recién ahora, la solución</span>
+    <div class="cols c2u" style="align-items:start;margin-top:2px">
+      <pre class="sm" style="font-size:15px;line-height:1.5"><span class="cd-k">class</span> <span class="cd-fn">Hechizo</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, daño):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.daño = daño
+
+    <span class="cd-k">def</span> <span class="cd-fn">atacar</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.daño
+
+<span class="cd-k">class</span> <span class="cd-fn">Enemigo</span>(<span class="cd-fn">Personaje</span>):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida, hechizo, dificultad):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>(nombre, vida)
+        <span class="cd-k">self</span>.hechizo = hechizo
+        <span class="cd-k">self</span>.dificultad = dificultad
+
+    <span class="cd-k">def</span> <span class="cd-fn">atacar_a</span>(<span class="cd-k">self</span>, otro):
+        daño = <span class="cd-k">self</span>.hechizo.<span class="cd-fn">atacar</span>()
+        otro.<span class="cd-fn">recibir_daño</span>(daño)
+        <span class="cd-k">return</span> daño</pre>
+      <div class="stack" style="gap:12px">
+        <div class="card acc"><p style="font-size:20px;color:var(--ink)">🧬 Hereda <span class="mono">nombre</span> y <span class="mono">vida</span>.<br>🧬 <span class="mono">super()</span> para no repetirlos.<br>🎁 <b>Tiene</b> un hechizo adentro.<br>📦 <span class="mono">atacar()</span> devuelve el daño.</p></div>
+        <p class="ask sm rv" style="font-size:23px">Última pregunta difícil:<br>¿no convendría mover el arma a <span class="mono">Personaje</span>?</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd><b>No la muestres</b> hasta que la mayoría haya escrito algo. Comparar contra la propia versión es lo que enseña.</dd>
+      <dt>Preguntá</dt><dd>“¿En qué se parece esto a la clase <code>Jugador</code>? ¿Y en qué se diferencia?”</dd>
+      <dt>Respuesta esperada</dt><dd>Es casi igual: cambia el nombre del atributo y agrega <code>dificultad</code>.</dd>
+      <dt>La pregunta difícil</dt><dd>Si <b>todos</b> los personajes atacan con algo, ese algo podría vivir en <code>Personaje</code> y ahorrarnos el método repetido. <b>No hay una única respuesta correcta</b>: lo valioso es que discutan el criterio.</dd>
+      <dt>Revelá cuando</dt><dd>Pasaron los 10 minutos. La pregunta difícil, al final y solo si el grupo está enganchado.</dd>
+      <dt>Si vas corto</dt><dd>Mostrá solo la clase <code>Enemigo</code> y dejá <code>Hechizo</code> para que la escriban en casa.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="7" data-t="Las cuatro ideas del día">
+  <div class="stack">
+    <h2>Lo que hay que llevarse de hoy</h2>
+    <div class="cols c2" style="margin-top:16px;gap:16px 26px">
+      <div class="card acc" style="text-align:center"><p class="huge" style="font-size:26px">ES UN</p><p class="dn" style="font-size:22px;color:var(--ink-3)">↓</p><p class="huge" style="font-size:26px;color:var(--accent)">🧬 HERENCIA</p></div>
+      <div class="card acc" style="text-align:center"><p class="huge" style="font-size:26px">TIENE UN</p><p class="dn" style="font-size:22px;color:var(--ink-3)">↓</p><p class="huge" style="font-size:26px;color:var(--accent)">🎁 COMPOSICIÓN</p></div>
+      <div class="card acc rv" style="text-align:center"><p class="huge" style="font-size:24px">HACE ALGO Y ME LO MUESTRA</p><p class="dn" style="font-size:22px;color:var(--ink-3)">↓</p><p class="huge mono" style="font-size:26px;color:var(--accent)">print()</p></div>
+      <div class="card acc rv" style="text-align:center"><p class="huge" style="font-size:24px">HACE ALGO Y ME ENTREGA EL RESULTADO</p><p class="dn" style="font-size:22px;color:var(--ink-3)">↓</p><p class="huge mono" style="font-size:26px;color:var(--accent)">return</p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El resumen de toda la clase en cuatro pares. Revelá los dos de abajo después de repasar los de arriba.</dd>
+      <dt>Preguntá</dt><dd>Tapá la mitad derecha y que completen ellos: “ES UN es…”, “TIENE UN es…”.</dd>
+      <dt>Respuesta esperada</dt><dd>Herencia · composición · print · return.</dd>
+      <dt>Revelá cuando</dt><dd>Completaron los dos primeros de memoria.</dd>
+      <dt>Si algo falla</dt><dd>Si todavía confunden herencia con composición, volvé a la lámina del jugador y el arma. Es la comparación que lo destraba.</dd>
+      <dt>Tip</dt><dd>Lámina para sacarle foto.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="7" data-opt="1" data-t="Los errores que vas a cometer">
+  <div class="stack">
+    <h2>Tres errores que <span class="hl">van a cometer</span> (y está bien)</h2>
+    <div class="stack gap-s" style="margin-top:12px">
+      <div class="card acc row" style="align-items:center;gap:20px"><span class="emoji sm">🧬</span><div><p class="huge" style="font-size:22px">Olvidarse el <span class="mono">super()</span></p><p style="font-size:20px;margin-top:2px">Síntoma: <span class="mono">AttributeError: has no attribute…</span> El padre nunca hizo su parte.</p></div></div>
+      <div class="card acc row" style="align-items:center;gap:20px"><span class="emoji sm">📦</span><div><p class="huge" style="font-size:22px">Usar <span class="mono">print</span> donde iba <span class="mono">return</span></p><p style="font-size:20px;margin-top:2px">Síntoma: aparece un <span class="mono">None</span> donde esperabas un número.</p></div></div>
+      <div class="card acc row" style="align-items:center;gap:20px"><span class="emoji sm">🎁</span><div><p class="huge" style="font-size:22px">Heredar cuando había que componer</p><p style="font-size:20px;margin-top:2px">Síntoma: la frase “es un” suena rara. <span class="strike">un jugador es un arma</span></p></div></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Los tres errores con su síntoma. Sirve como guía de diagnóstico para la tarea.</dd>
+      <dt>Decí</dt><dd>“Los tres los vamos a ver esta semana. No son fracasos: son las tres puertas de entrada a entender bien el tema.”</dd>
+      <dt>Preguntá</dt><dd>“Si les aparece <code>None</code>, ¿qué es lo primero que miran?” → Si falta un <code>return</code>.</dd>
+      <dt>Revelá cuando</dt><dd>No hay reveal. Es una lámina de referencia; que la copien.</dd>
+      <dt>◇ Si vas corto</dt><dd>Se puede saltear: los tres errores ya aparecieron durante la clase. Mencioná los síntomas de palabra antes de dar la tarea.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="7" data-t="Tarea · 1 · ES UN / TIENE UN">
+  <div class="stack" style="gap:18px">
+    <span class="tag">Tarea · Parte 1 de 3</span>
+    <h2>Mirá alrededor y clasificá 👀</h2>
+    <p class="lead">Encontrá <b>3 relaciones ES UN</b> y <b>3 relaciones TIENE UN</b> en cosas de tu vida real.</p>
+    <div class="cols c2" style="align-items:start">
+      <div class="card acc">
+        <p class="lbl">Ejemplos para arrancar</p>
+        <p style="font-size:21px;margin-top:10px;color:var(--ink)">🧬 Un colectivo <b>es un</b> vehículo.<br>🎁 Un colectivo <b>tiene un</b> motor.</p>
+      </div>
+      <div class="card">
+        <p class="lbl">La prueba</p>
+        <p style="font-size:21px;margin-top:10px">Leelo en voz alta con las dos frases. Si una suena rara, esa no es.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La parte más fácil de la tarea. Todos la pueden hacer.</dd>
+      <dt>Decí</dt><dd>“No hace falta escribir código para esta parte. Solo mirar y escribir seis frases.”</dd>
+      <dt>Aclará</dt><dd>Que no repitan los ejemplos de la clase: perro/animal y jugador/arma ya están usados.</dd>
+      <dt>Revisión</dt><dd>La próxima clase, arrancá pidiendo tres de estas frases al azar. Es el mejor calentamiento posible.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="7" data-t="Tarea · 2 · Diseñá la cafetería">
+  <div class="stack" style="gap:18px">
+    <span class="tag">Tarea · Parte 2 de 3</span>
+    <h2>☕ Volvé a la cafetería del principio</h2>
+    <p class="lead">Diseñala <b>sin escribir código</b>, usando las 7 preguntas.</p>
+    <div class="cols c2" style="align-items:start">
+      <div class="card acc">
+        <p class="lbl">Tiene que aparecer</p>
+        <p style="font-size:21px;margin-top:10px;color:var(--ink)">🧬 Una <b>herencia</b> (algo que ES UN algo)<br>🎁 Una <b>composición</b> (algo que TIENE UN algo)<br>📦 Un método que <b>devuelva</b> un valor</p>
+      </div>
+      <div class="card">
+        <p class="lbl">Entregá</p>
+        <p style="font-size:21px;margin-top:10px">Un <b>dibujo</b> con las cajas y las flechas, como los de hoy. Nada de Python todavía.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La parte de diseño. Es la que más enseña y la que más se saltean: insistí en que <b>no</b> escriban código.</dd>
+      <dt>Pistas si preguntan</dt><dd>Herencia: <code>Persona → Mozo / Cliente</code>. Composición: <code>Pedido</code> tiene un <code>Café</code>. Método con return: <code>total()</code> del pedido.</dd>
+      <dt>Aclará</dt><dd>“No hay una única respuesta correcta. Se corrige el <b>razonamiento</b>, no el dibujo.”</dd>
+      <dt>Duración</dt><dd>~20 minutos en casa.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="7" data-t="Tarea · 3 · Un poco de código">
+  <div class="stack" style="gap:16px">
+    <span class="tag">Tarea · Parte 3 de 3</span>
+    <h2>💻 Y ahora sí, a la compu</h2>
+    <div class="cols c2u" style="align-items:start">
+      <div class="stack gap-s">
+        <div class="card"><p style="font-size:21px;color:var(--ink)">1 · <span class="mono">Persona</span> con <span class="mono">nombre</span> y <span class="mono">edad</span>.</p></div>
+        <div class="card"><p style="font-size:21px;color:var(--ink)">2 · <span class="mono">Estudiante</span> hereda de <span class="mono">Persona</span> y agrega <span class="mono">curso</span>, usando <span class="mono">super()</span>.</p></div>
+        <div class="card"><p style="font-size:21px;color:var(--ink)">3 · Una clase <span class="mono">Mochila</span> con un método que <b>devuelva</b> el peso total.</p></div>
+        <div class="card acc"><p style="font-size:21px;color:var(--ink)">4 · Que el <span class="mono">Estudiante</span> <b>tenga</b> una <span class="mono">Mochila</span>.</p></div>
+      </div>
+      <div class="stack" style="gap:12px">
+        <div class="answer">
+          <p class="lbl">Para probar que anda</p>
+          <pre class="sm" style="font-size:16px;margin-top:8px;background:transparent;border:0;padding:0">mochila = <span class="cd-fn">Mochila</span>(<span class="cd-n">3</span>)
+ana = <span class="cd-fn">Estudiante</span>(<span class="cd-s">"Ana"</span>, <span class="cd-n">16</span>, <span class="cd-s">"5°B"</span>, mochila)
+
+<span class="cd-fn">print</span>(ana.nombre)
+<span class="cd-fn">print</span>(ana.mochila.<span class="cd-fn">peso_total</span>())</pre>
+        </div>
+        <p class="lbl" style="color:var(--accent)">★ Bonus · que el enemigo devuelva el golpe</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Cuatro pasos chicos y un test para saber si funciona. El punto 4 es el que ejercita composición.</dd>
+      <dt>Decí</dt><dd>“Si el punto 4 les sale, entendieron la clase entera.”</dd>
+      <dt>Ayuda</dt><dd>Recordales el orden: primero se crea la mochila, después el estudiante <b>con</b> la mochila.</dd>
+      <dt>Error típico</dt><dd>Que <code>peso_total()</code> haga <code>print</code>. Entonces la última línea imprime <code>None</code>: es el aviso perfecto.</dd>
+      <dt>Bonus</dt><dd>Que <code>Enemigo</code> ataque de vuelta y hagan un intercambio de golpes en un <code>while</code> con <code>esta_vivo()</code>. Para quienes van rápido.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="7" data-t="Reflexión final">
+  <div class="stack mid-all">
+    <p class="statement" style="text-align:center;max-width:28ch;font-size:52px">No aprendimos comandos nuevos porque sí.</p>
+    <p class="quote rv" style="text-align:center;max-width:32ch;margin-top:24px;font-size:38px;color:var(--accent)">Aprendimos herramientas para <b>representar mejor nuestras ideas</b>.</p>
+    <p class="lead rv" style="text-align:center;margin-top:24px;max-width:44ch">La clase pasada aprendimos a ver objetos.<br>Hoy aprendimos a <b>conectarlos</b>.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El cierre conceptual. Bajá la voz y dejá silencio antes de cada reveal.</dd>
+      <dt>Decí</dt><dd>“<code>super()</code>, <code>return</code>, composición: ninguna de las tres se inventó para complicarles la vida. Las tres existen porque alguien tenía una idea y le faltaba cómo escribirla.”</dd>
+      <dt>Revelá cuando</dt><dd>Después del silencio. Sin apuro: quedan 40 segundos de clase.</dd>
+      <dt>Ojo</dt><dd>No agregues contenido acá. Si te quedó algo sin dar, va la próxima.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="7" data-t="La pregunta que nos llevamos">
+  <div class="stack mid-all">
+    <p class="lbl">Y para terminar</p>
+    <p class="ask" style="max-width:30ch;text-align:left;font-size:40px;margin-top:10px">Si mañana te doy un problema nuevo… ¿qué es lo <b>primero</b> que deberías preguntarte?</p>
+    <p class="huge rv" style="text-align:center;margin-top:30px;font-size:56px;color:var(--accent)">“¿Qué objetos hay acá?”</p>
+    <p class="lbl rv" style="margin-top:26px">Nos vemos la próxima 👋</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La última lámina. La pregunta sola, sin la respuesta.</dd>
+      <dt>Preguntá</dt><dd>Tal cual está escrita. Y esperá: que la contesten <b>ellos</b>, en voz alta y todos juntos.</dd>
+      <dt>Respuesta esperada</dt><dd>“¿Qué objetos hay acá?” Es la misma pregunta con la que cerramos la clase 1.</dd>
+      <dt>Revelá cuando</dt><dd>Ya la dijeron. Si nadie la dice, dejá el silencio unos segundos más: vale la pena esperar.</dd>
+      <dt>Idea clave</dt><dd>Cambiaron las herramientas, no la pregunta. Esa continuidad es todo el sentido de las dos clases.</dd>
+      <dt>Próxima clase</dt><dd>Adelantales: listas de objetos (un inventario con muchas armas, un juego con muchos enemigos) y recorrerlas con <code>for</code>.</dd>
+    </dl>
+  </aside>
+</section>
+
+  </div>
+</div>
+
+<div class="bar">
+  <span class="blockname mono" id="barBlock">Bloque 1</span>
+  <div class="seg" id="seg"></div>
+  <span class="clock" id="clock">00:00</span>
+  <button id="btnNotes" aria-pressed="false" title="Notas del profesor (N)">Notas · N</button>
+  <button id="btnOv" title="Índice de diapositivas (O)">Índice · O</button>
+  <button id="btnLock" aria-pressed="false" title="Bloquear el avance por clic — para señalar con el mouse sin pasar de lámina (L)">👆</button>
+  <button id="btnFs" title="Pantalla completa (F)">⛶</button>
+  <span class="hint">← → avanzar · <span class="kbd">N</span> notas · <span class="kbd">O</span> índice · <span class="kbd">L</span> bloquear clic</span>
+  <span class="count" id="count">1 / 56</span>
+</div>
+
+<div class="notes-drawer" id="drawer" aria-live="polite">
+  <div class="nd-head"><b id="ndTitle">Notas del profesor</b><span id="ndPos"></span></div>
+  <div id="ndBody"></div>
+</div>
+
+<div class="overview" id="overview">
+  <div class="ov-head"><h2>Recorrido de la clase</h2><span class="hint mono">Clic para saltar · Esc para cerrar</span><span class="ov-legend">◇ = opcional, se puede saltear si vas corto</span></div>
+  <div class="ov-grid" id="ovGrid"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var stage = document.getElementById('stage');
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var BLOCKS = [
+    {n:'Recuperamos lo aprendido',   v:'var(--blue)'},
+    {n:'super()',                    v:'var(--flame)'},
+    {n:'Herencia en varios niveles', v:'var(--teal)'},
+    {n:'print() vs return',          v:'var(--violet)'},
+    {n:'Objetos dentro de objetos',  v:'var(--rose)'},
+    {n:'Lo juntamos todo',           v:'var(--blue)'},
+    {n:'Desafío final y cierre',     v:'var(--good)'}
+  ];
+  var i = 0, step = 0, total = slides.length;
+
+  /* ---------- persisted state ---------- */
+  function save(k,v){ try{ localStorage.setItem('poo2:'+k, v); }catch(e){} }
+  function load(k){ try{ return localStorage.getItem('poo2:'+k); }catch(e){ return null; } }
+
+  /* ---------- fit stage ---------- */
+  var vp = document.querySelector('.viewport');
+  function fit(){
+    var r = vp.getBoundingClientRect();
+    var s = Math.min(r.width / 1280, r.height / 720) * 0.965;
+    stage.style.transform = 'scale(' + Math.max(s, 0.1) + ')';
+  }
+  addEventListener('resize', fit);
+  vp.addEventListener('transitionend', fit);
+
+  /* ---------- progress segments ---------- */
+  var counts = BLOCKS.map(function(){ return 0; });
+  slides.forEach(function(s){ counts[+s.dataset.b - 1]++; });
+  var seg = document.getElementById('seg');
+  counts.forEach(function(c, k){
+    var b = document.createElement('div');
+    b.className = 'b';
+    b.style.setProperty('--w', c);
+    b.style.setProperty('--c', BLOCKS[k].v);
+    b.title = 'Bloque ' + (k+1) + ' · ' + BLOCKS[k].n;
+    b.innerHTML = '<i></i>';
+    b.addEventListener('click', function(){
+      for (var j = 0; j < slides.length; j++){ if (+slides[j].dataset.b === k+1){ go(j); break; } }
+    });
+    seg.appendChild(b);
+  });
+  var segBars = Array.prototype.slice.call(seg.children);
+
+  /* ---------- overview ---------- */
+  var ovGrid = document.getElementById('ovGrid'), lastB = 0;
+  slides.forEach(function(s, k){
+    var b = +s.dataset.b;
+    if (b !== lastB){
+      var h = document.createElement('div');
+      h.className = 'ov-b';
+      h.style.setProperty('--c', BLOCKS[b-1].v);
+      h.textContent = 'Bloque ' + b + ' · ' + BLOCKS[b-1].n;
+      ovGrid.appendChild(h);
+      lastB = b;
+    }
+    var it = document.createElement('button');
+    it.className = 'ov-i';
+    it.style.setProperty('--c', BLOCKS[b-1].v);
+    it.innerHTML = '<span>' + String(k+1).padStart(2,'0') +
+      (s.dataset.opt ? ' <span class="oflag">◇ opcional</span>' : '') + '</span><b></b>';
+    it.querySelector('b').textContent = s.dataset.t;
+    if (s.dataset.opt) it.classList.add('opt');
+    it.addEventListener('click', function(){ go(k); toggleOv(false); });
+    ovGrid.appendChild(it);
+  });
+  var ovItems = Array.prototype.slice.call(ovGrid.querySelectorAll('.ov-i'));
+  var overview = document.getElementById('overview');
+  function toggleOv(on){
+    var want = (on === undefined) ? !overview.classList.contains('on') : on;
+    overview.classList.toggle('on', want);
+    if (want){ ovItems.forEach(function(el,k){ el.classList.toggle('cur', k === i); });
+      if (ovItems[i]) ovItems[i].scrollIntoView({block:'center', behavior:'auto'}); }
+  }
+
+  /* ---------- notes ---------- */
+  var drawer = document.getElementById('drawer');
+  function renderNotes(){
+    var src = slides[i].querySelector('aside.notes');
+    document.getElementById('ndTitle').textContent = slides[i].dataset.t;
+    document.getElementById('ndPos').textContent = 'Bloque ' + slides[i].dataset.b + ' · ' + (i+1) + ' de ' + total;
+    document.getElementById('ndBody').innerHTML = src ? src.innerHTML : '<p class="dim">Sin notas.</p>';
+    drawer.style.setProperty('--accent-n', BLOCKS[+slides[i].dataset.b - 1].v);
+  }
+  function toggleNotes(on){
+    var want = (on === undefined) ? !document.body.classList.contains('notes-open') : on;
+    document.body.classList.toggle('notes-open', want);
+    document.getElementById('btnNotes').setAttribute('aria-pressed', want ? 'true' : 'false');
+    save('notes', want ? '1' : '0');
+    fit();
+  }
+
+  /* ---------- clock ---------- */
+  var t0 = null, clock = document.getElementById('clock');
+  setInterval(function(){
+    if (t0 === null) return;
+    var s = Math.floor((Date.now() - t0) / 1000);
+    clock.textContent = String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+  }, 1000);
+  clock.title = 'Tiempo de clase · clic para reiniciar';
+  clock.style.cursor = 'pointer';
+  clock.addEventListener('click', function(){ t0 = Date.now(); clock.textContent = '00:00'; });
+
+  /* ---------- render ---------- */
+  function revealsOf(k){ return slides[k].querySelectorAll('.rv'); }
+
+  function render(){
+    slides.forEach(function(s, k){ s.classList.toggle('active', k === i); });
+    var rv = revealsOf(i);
+    for (var k = 0; k < rv.length; k++) rv[k].classList.toggle('on', k < step);
+
+    var b = +slides[i].dataset.b;
+    document.getElementById('ebNum').textContent = String(i+1).padStart(2,'0');
+    document.getElementById('ebName').textContent = BLOCKS[b-1].n;
+    document.getElementById('plBlock').textContent = 'Bloque ' + b;
+    document.getElementById('plNum').textContent = i+1;
+    document.getElementById('plTot').textContent = total;
+    document.getElementById('barBlock').textContent = 'Bloque ' + b + ' · ' + BLOCKS[b-1].n;
+    document.getElementById('count').textContent = (i+1) + ' / ' + total;
+    document.getElementById('ebOpt').hidden = slides[i].dataset.opt !== '1';
+    stage.style.setProperty('--accent', BLOCKS[b-1].v);
+
+    for (var q = 0; q < BLOCKS.length; q++){
+      var done = 0;
+      for (var j = 0; j < slides.length; j++){
+        if (+slides[j].dataset.b === q+1 && j <= i) done++;
+      }
+      segBars[q].firstChild.style.setProperty('--p', Math.min(done / counts[q], 1));
+    }
+    renderNotes();
+    if (overview.classList.contains('on')) ovItems.forEach(function(el,k){ el.classList.toggle('cur', k === i); });
+  }
+
+  function go(n){ i = Math.max(0, Math.min(total-1, n)); step = 0; render(); }
+
+  function next(){
+    if (t0 === null) t0 = Date.now();
+    if (step < revealsOf(i).length){ step++; render(); return; }
+    if (i < total - 1) go(i + 1);
+  }
+  function prev(){
+    if (step > 0){ step--; render(); return; }
+    if (i > 0){ i--; step = revealsOf(i).length; render(); }
+  }
+
+  /* ---------- input ---------- */
+  addEventListener('keydown', function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if (k === 'ArrowRight' || k === ' ' || k === 'PageDown' || k === 'Enter'){ e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'PageUp' || k === 'Backspace'){ e.preventDefault(); prev(); }
+    else if (k === 'ArrowDown'){ e.preventDefault(); go(i+1); }
+    else if (k === 'ArrowUp'){ e.preventDefault(); go(i-1); }
+    else if (k === 'Home'){ e.preventDefault(); go(0); }
+    else if (k === 'End'){ e.preventDefault(); go(total-1); }
+    else if (k === 'n' || k === 'N'){ toggleNotes(); }
+    else if (k === 'o' || k === 'O'){ toggleOv(); }
+    else if (k === 'f' || k === 'F'){ fs(); }
+    else if (k === 'l' || k === 'L'){ setLock(clickNav); }
+    else if (k === 'Escape'){ if (overview.classList.contains('on')) toggleOv(false); else toggleNotes(false); }
+  });
+
+  var clickNav = load('clicknav') !== '0';
+  var refocusAt = 0, swipeAt = 0;
+  addEventListener('focus', function(){ refocusAt = Date.now(); });
+  function setLock(locked){
+    clickNav = !locked;
+    save('clicknav', clickNav ? '1' : '0');
+    var b = document.getElementById('btnLock');
+    b.setAttribute('aria-pressed', locked ? 'true' : 'false');
+    b.textContent = locked ? '🔒' : '👆';
+    b.title = locked
+      ? 'El clic NO avanza: podés señalar con el mouse. Usá ← → (L para desbloquear)'
+      : 'Bloquear el avance por clic — para señalar con el mouse sin pasar de lámina (L)';
+  }
+  vp.addEventListener('click', function(e){
+    if (!clickNav) return;                          // bloqueo manual
+    if (Date.now() - refocusAt < 700) return;       // clic que solo devolvió el foco a la ventana
+    if (Date.now() - swipeAt < 500) return;         // clic sintético después de un swipe
+    if (e.target.closest('a, button')) return;
+    var r = vp.getBoundingClientRect();
+    if (e.clientX - r.left < r.width * 0.22) prev(); else next();
+  });
+
+  var tx = 0, ty = 0;
+  addEventListener('touchstart', function(e){ tx = e.changedTouches[0].clientX; ty = e.changedTouches[0].clientY; }, {passive:true});
+  addEventListener('touchend', function(e){
+    var dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)){ swipeAt = Date.now(); dx < 0 ? next() : prev(); }
+  }, {passive:true});
+
+  function fs(){
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+  }
+  document.getElementById('btnNotes').addEventListener('click', function(){ toggleNotes(); });
+  document.getElementById('btnOv').addEventListener('click', function(){ toggleOv(); });
+  document.getElementById('btnFs').addEventListener('click', fs);
+  document.getElementById('btnLock').addEventListener('click', function(){ setLock(clickNav); });
+  overview.addEventListener('click', function(e){ if (e.target === overview) toggleOv(false); });
+
+  /* ---------- boot ---------- */
+  if (load('notes') === '1') toggleNotes(true);
+  setLock(!clickNav);
+  render();
+  fit();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+})();
+</script>

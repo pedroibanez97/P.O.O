@@ -1,13 +1,19 @@
-# Programación Orientada a Objetos — Clase 1
+# Programación Orientada a Objetos
 
-Presentación interactiva para la primera clase de POO, pensada para estudiantes
-que hasta ahora solo trabajaron con Python.
+Presentaciones interactivas de POO, pensadas para estudiantes que hasta ahora
+solo trabajaron con Python.
 
-## 🔗 Abrir la presentación
+## 🔗 Abrir las presentaciones
 
 **https://pedroibanez97.github.io/P.O.O/**
 
-Se abre en cualquier navegador, en compu o en celular. No hay que instalar nada.
+Ese link es la página de inicio con todas las clases. Se abre en cualquier
+navegador, en compu o en celular. No hay que instalar nada.
+
+| Clase | Tema | Link directo |
+|-------|------|--------------|
+| 1 | Pensar en objetos | https://pedroibanez97.github.io/P.O.O/clase-1.html |
+| 2 | Relacionar objetos | https://pedroibanez97.github.io/P.O.O/clase-2.html |
 
 ---
 
@@ -25,7 +31,7 @@ después avanzá para ver si coincidías.
 | `O` | Ver el índice completo y saltar a una parte |
 | `F` | Pantalla completa |
 
-La **tarea** está en las últimas diapositivas del recorrido.
+La **tarea** está en las últimas diapositivas de cada clase.
 
 ---
 
@@ -47,7 +53,9 @@ El reloj de la barra inferior arranca solo en el primer avance; se reinicia con 
 Las diapositivas marcadas con **◇ opcional** se pueden saltear si vas corto de tiempo,
 sin perder el hilo. Cada una explica en sus notas qué hacer en su lugar.
 
-### Recorrido
+### Clase 1 · Pensar en objetos
+
+De los datos y las funciones sueltos a los objetos. 52 diapositivas.
 
 | Bloque | Contenido |
 |--------|-----------|
@@ -60,9 +68,37 @@ sin perder el hilo. Cada una explica en sus notas qué hacer en su lugar.
 
 Duración estimada: 70–95 minutos de exposición, más el tiempo de las actividades.
 
+### Clase 2 · Relacionar objetos
+
+Continuación directa de la clase 1: ya sabemos pensar en objetos, ahora los
+hacemos trabajar juntos. 56 diapositivas.
+
+| Bloque | Contenido |
+|--------|-----------|
+| 1 | Recuperamos lo aprendido — qué objetos hay acá, quiz relámpago |
+| 2 | `super()` — el problema de repetir código y cómo el hijo agrega lo suyo |
+| 3 | Herencia en varios niveles — lo heredado se transmite hacia abajo |
+| 4 | `print()` vs `return` — mostrar no es lo mismo que entregar |
+| 5 | Objetos dentro de objetos — ES UN (herencia) vs TIENE UN (composición) |
+| 6 | Lo juntamos todo — Personaje → Jugador que tiene un Arma, paso a paso |
+| 7 | Desafío final, resumen, tarea y cierre |
+
+Duración estimada: 75–100 minutos de exposición, más el tiempo de las actividades.
+
 ---
 
 ## Uso sin internet
 
-Descargá `index.html` y abrilo con doble clic. Funciona igual; lo único que cambia
-es la tipografía, que se carga desde internet.
+Descargá el `.html` de la clase y abrilo con doble clic. Funciona igual; lo único
+que cambia es la tipografía, que se carga desde internet.
+
+## Archivos
+
+| Archivo | Qué es |
+|---------|--------|
+| `index.html` | Página de inicio con el listado de clases |
+| `clase-1.html` | Presentación de la clase 1 |
+| `clase-2.html` | Presentación de la clase 2 |
+
+Cada presentación es un único archivo HTML, sin dependencias más allá de las
+tipografías de Google Fonts.

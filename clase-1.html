@@ -1,0 +1,2140 @@
+<title>Pensar en Objetos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --paper:#e7eaef; --sheet:#fbfcfd; --sheet-2:#f1f4f8;
+  --ink:#111a26; --ink-2:#546275; --ink-3:#626f80;
+  --line:#ccd4e0; --line-soft:#e2e8f0;
+  --grid:rgba(21,72,200,.055);
+  --blue:#1548c8; --flame:#bf400e; --teal:#0a7566; --violet:#5d34c9; --rose:#bd1f62;
+  --good:#0f7d55; --warn:#b26a00;
+  --chip:rgba(21,72,200,.08);
+  --shadow:0 1px 2px rgba(17,26,38,.06), 0 18px 50px -22px rgba(17,26,38,.35);
+  --bar:56px;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Instrument Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --cd-k:#8b2bb9; --cd-s:#b0450f; --cd-n:#1548c8; --cd-c:#7b8794; --cd-fn:#0a6a86;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#080d14; --sheet:#111924; --sheet-2:#18212e;
+    --ink:#e9eef6; --ink-2:#9aa9bd; --ink-3:#6f7f94;
+    --line:#2a3543; --line-soft:#1f2937;
+    --grid:rgba(140,180,255,.055);
+    --blue:#7ba4ff; --flame:#ff8a5c; --teal:#3fcfb5; --violet:#b49bff; --rose:#ff7aae;
+    --good:#4fd08a; --warn:#e8b552;
+    --chip:rgba(123,164,255,.12);
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 24px 60px -24px rgba(0,0,0,.8);
+    --cd-k:#d99bf0; --cd-s:#ffab7d; --cd-n:#8fb4ff; --cd-c:#6f7f94; --cd-fn:#67d6e8;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#080d14; --sheet:#111924; --sheet-2:#18212e;
+  --ink:#e9eef6; --ink-2:#9aa9bd; --ink-3:#6f7f94;
+  --line:#2a3543; --line-soft:#1f2937;
+  --grid:rgba(140,180,255,.055);
+  --blue:#7ba4ff; --flame:#ff8a5c; --teal:#3fcfb5; --violet:#b49bff; --rose:#ff7aae;
+  --good:#4fd08a; --warn:#e8b552;
+  --chip:rgba(123,164,255,.12);
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 24px 60px -24px rgba(0,0,0,.8);
+  --cd-k:#d99bf0; --cd-s:#ffab7d; --cd-n:#8fb4ff; --cd-c:#6f7f94; --cd-fn:#67d6e8;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);overflow:hidden}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:4px}
+
+/* ============ STAGE ============ */
+.viewport{position:fixed;inset:0 0 var(--bar) 0;display:grid;place-items:center;overflow:hidden;
+  transition:bottom .28s cubic-bezier(.2,.7,.3,1)}
+body.notes-open .viewport{bottom:calc(var(--bar) + 38vh)}
+.stage{position:relative;width:1280px;height:720px;flex:none;transform-origin:center center;
+  background:var(--sheet);box-shadow:var(--shadow);border:1px solid var(--line);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:40px 40px}
+.stage::after{content:"";position:absolute;inset:14px;border:1px solid var(--line-soft);pointer-events:none}
+
+/* chrome inside the sheet */
+.eyebrow{position:absolute;top:34px;left:44px;z-index:3;display:flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)}
+.eyebrow b{color:var(--accent,var(--blue));font-weight:700}
+.plate{position:absolute;right:14px;bottom:14px;z-index:3;display:flex;align-items:stretch;
+  border-left:1px solid var(--line-soft);border-top:1px solid var(--line-soft);background:var(--sheet)}
+.plate div{padding:9px 16px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--ink-3);
+  text-transform:uppercase;display:flex;align-items:center}
+.plate div+div{border-left:1px solid var(--line-soft)}
+.plate .pnum{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+
+/* ============ SLIDES ============ */
+.slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;
+  padding:80px 84px 92px;gap:26px}
+.slide.active{display:flex;animation:in .34s cubic-bezier(.2,.7,.3,1) both}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.slide[data-b="1"]{--accent:var(--blue)}
+.slide[data-b="2"]{--accent:var(--flame)}
+.slide[data-b="3"]{--accent:var(--teal)}
+.slide[data-b="4"]{--accent:var(--violet)}
+.slide[data-b="5"]{--accent:var(--rose)}
+.slide[data-b="6"]{--accent:var(--blue)}
+.slide.mid{justify-content:center}
+.slide.top{justify-content:flex-start;padding-top:96px}
+
+h1,h2,h3{margin:0;font-family:var(--display);text-wrap:balance;letter-spacing:-.025em;line-height:1.02}
+h1{font-size:88px;font-weight:800}
+h2{font-size:50px;font-weight:700}
+h3{font-size:30px;font-weight:600;letter-spacing:-.015em}
+p{margin:0}
+.lead{font-size:26px;line-height:1.45;color:var(--ink-2);max-width:56ch}
+.huge{font-family:var(--display);font-weight:800;font-size:72px;line-height:1.04;letter-spacing:-.03em}
+.tag{display:inline-flex;align-items:center;gap:9px;align-self:flex-start;padding:7px 15px;border-radius:999px;
+  background:var(--chip);color:var(--accent);font-family:var(--mono);font-size:13px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase}
+.hl{color:var(--accent)}
+.u{background:linear-gradient(transparent 62%,var(--chip) 62%);padding:0 .12em}
+
+/* question */
+.ask{display:flex;gap:16px;align-items:flex-start;font-size:34px;line-height:1.25;font-weight:600;
+  font-family:var(--display);letter-spacing:-.015em;max-width:26ch}
+.ask::before{content:"?";flex:none;width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--sheet);
+  font-family:var(--display);font-weight:800;font-size:27px;display:grid;place-items:center;margin-top:2px}
+.ask.sm{font-size:27px}
+.ask.sm::before{width:36px;height:36px;font-size:22px}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(8px);transition:opacity .3s ease,transform .3s cubic-bezier(.2,.7,.3,1)}
+.rv.on{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .rv{transition:opacity .01s}.slide.active{animation:none}
+  *{scroll-behavior:auto!important}
+}
+
+/* layout helpers */
+.cols{display:grid;gap:34px;align-items:start}
+.c2{grid-template-columns:1fr 1fr}
+.c2u{grid-template-columns:1.05fr .95fr}
+.c3{grid-template-columns:repeat(3,1fr)}
+.c4{grid-template-columns:repeat(4,1fr)}
+.row{display:flex;gap:18px;flex-wrap:wrap}
+.stack{display:flex;flex-direction:column;gap:18px}
+.gap-s{gap:12px}
+.center{align-items:center;text-align:center}
+.mid-all{justify-content:center;align-items:center;text-align:center}
+
+/* cards */
+.card{background:var(--sheet-2);border:1px solid var(--line-soft);border-radius:14px;padding:22px 24px}
+.card.acc{border-color:color-mix(in srgb,var(--accent) 38%,transparent);
+  background:color-mix(in srgb,var(--accent) 6%,var(--sheet-2))}
+.card h3{margin-bottom:8px}
+.card p{font-size:20px;line-height:1.4;color:var(--ink-2)}
+.lbl{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+
+/* pill list (attributes / methods) */
+.pills{display:flex;flex-wrap:wrap;gap:10px}
+.pill{font-family:var(--mono);font-size:20px;padding:9px 16px;border-radius:10px;
+  background:var(--sheet-2);border:1px solid var(--line-soft)}
+.pill.a{color:var(--flame);border-color:color-mix(in srgb,var(--flame) 34%,transparent);
+  background:color-mix(in srgb,var(--flame) 7%,var(--sheet-2))}
+.pill.m{color:var(--teal);border-color:color-mix(in srgb,var(--teal) 34%,transparent);
+  background:color-mix(in srgb,var(--teal) 7%,var(--sheet-2))}
+.pill.big{font-size:24px;padding:12px 20px}
+
+/* UML-ish class box */
+.uml{border:2px solid var(--ink);border-radius:12px;overflow:hidden;background:var(--sheet);min-width:210px}
+.uml-h{background:var(--ink);color:var(--sheet);font-family:var(--display);font-weight:700;font-size:24px;
+  padding:10px 18px;text-align:center;letter-spacing:.01em}
+.uml ul{margin:0;padding:12px 18px;list-style:none;display:flex;flex-direction:column;gap:5px;
+  font-family:var(--mono);font-size:17px;color:var(--ink-2)}
+.uml ul+ul{border-top:1px solid var(--line)}
+.uml ul.at li{color:var(--flame)}
+.uml ul.me li{color:var(--teal)}
+.uml.ghost{border-style:dashed;opacity:.85}
+
+/* code */
+pre{margin:0;background:var(--sheet-2);border:1px solid var(--line-soft);border-radius:14px;
+  padding:24px 26px;overflow-x:auto;font-family:var(--mono);font-size:22px;line-height:1.6;color:var(--ink)}
+pre.sm{font-size:19px;padding:18px 20px}
+pre.lg{font-size:25px}
+.cd-k{color:var(--cd-k);font-weight:700}
+.cd-s{color:var(--cd-s)}
+.cd-n{color:var(--cd-n)}
+.cd-c{color:var(--cd-c);font-style:italic}
+.cd-fn{color:var(--cd-fn);font-weight:700}
+.cd-hl{background:color-mix(in srgb,var(--accent) 14%,transparent);border-radius:4px;padding:1px 4px;margin:0 -4px}
+
+/* diagram connectors */
+.link{display:block;width:100%;height:56px;color:var(--ink-3)}
+.link path{stroke:currentColor;stroke-width:2;fill:none;vector-effect:non-scaling-stroke}
+.link.dash path{stroke-dasharray:6 6}
+.arrow-d{display:grid;place-items:center;font-size:34px;color:var(--accent);line-height:1}
+
+/* big statement */
+.statement{font-family:var(--display);font-weight:800;font-size:62px;line-height:1.06;letter-spacing:-.03em;
+  text-wrap:balance;max-width:20ch}
+.quote{font-family:var(--display);font-weight:600;font-size:44px;line-height:1.15;letter-spacing:-.02em}
+
+/* activity banner */
+.actbar{position:absolute;left:0;top:0;bottom:0;width:8px;background:var(--accent)}
+
+/* answer box */
+.answer{border:2px dashed color-mix(in srgb,var(--accent) 55%,transparent);border-radius:14px;padding:18px 22px;
+  background:color-mix(in srgb,var(--accent) 6%,transparent)}
+.answer .lbl{color:var(--accent)}
+.answer p{font-size:23px;line-height:1.4;margin-top:6px}
+
+/* misc */
+.emoji{font-size:64px;line-height:1}
+.emoji.sm{font-size:40px}
+.num{font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:.1em;color:var(--accent)}
+.mono{font-family:var(--mono)}
+.dim{color:var(--ink-2)}
+.strike{text-decoration:line-through;text-decoration-thickness:2px;color:var(--ink-3)}
+.kbd{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-bottom-width:2px;
+  border-radius:5px;padding:2px 6px;background:var(--sheet-2);color:var(--ink-2)}
+
+.slide > aside.notes{display:none}
+
+/* marca de lámina opcional */
+.optchip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;
+  border:1px dashed var(--ink-3);color:var(--ink-3);font-family:var(--mono);font-size:11px;
+  letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.optchip[hidden]{display:none!important}
+.ov-i.opt{border-style:dashed}
+.ov-i .oflag{color:var(--ink-3);font-weight:700}
+.ov-legend{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.1em}
+
+/* ============ BOTTOM BAR ============ */
+.bar{position:fixed;left:0;right:0;bottom:0;height:var(--bar);z-index:20;display:flex;align-items:center;
+  gap:16px;padding:0 16px;background:var(--sheet);border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.bar .seg{display:flex;gap:3px;flex:1;align-items:center}
+.seg .b{flex:var(--w,1);height:6px;border-radius:3px;background:var(--line-soft);overflow:hidden;position:relative;
+  cursor:pointer}
+.seg .b i{position:absolute;inset:0;transform-origin:left;transform:scaleX(var(--p,0));
+  background:var(--c);transition:transform .25s ease}
+.bar button{font:inherit;font-family:var(--mono);background:transparent;border:1px solid var(--line);color:var(--ink-2);
+  border-radius:7px;padding:5px 10px;cursor:pointer;letter-spacing:.04em}
+.bar button:hover{border-color:var(--blue);color:var(--blue)}
+.bar button[aria-pressed="true"]{background:var(--chip);border-color:var(--blue);color:var(--blue)}
+.count{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:700;min-width:62px;text-align:right}
+.clock{font-variant-numeric:tabular-nums;letter-spacing:.06em}
+.hint{color:var(--ink-3)}
+@media (max-width:820px){.hint,.blockname{display:none}}
+
+/* ============ NOTES DRAWER ============ */
+.notes-drawer{position:fixed;left:0;right:0;bottom:var(--bar);height:38vh;z-index:19;background:var(--sheet-2);
+  border-top:2px solid var(--accent-n,var(--blue));transform:translateY(101%);
+  transition:transform .28s cubic-bezier(.2,.7,.3,1);overflow:auto;padding:20px 26px 26px}
+body.notes-open .notes-drawer{transform:none}
+.nd-head{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;position:sticky;top:-20px;
+  background:var(--sheet-2);padding:4px 0 10px}
+.nd-head b{font-family:var(--display);font-size:19px}
+.nd-head span{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.notes{display:grid;grid-template-columns:150px 1fr;gap:10px 22px;max-width:1100px;align-items:baseline}
+.notes dt{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-n,var(--blue));
+  font-weight:700;padding-top:3px}
+.notes dd{margin:0;font-size:16px;line-height:1.5;color:var(--ink)}
+.notes dd em{color:var(--ink-2);font-style:normal}
+.notes dd code{font-family:var(--mono);font-size:14px;background:var(--sheet);border:1px solid var(--line-soft);
+  border-radius:4px;padding:1px 5px}
+
+/* ============ OVERVIEW ============ */
+.overview{position:fixed;inset:0;z-index:30;background:color-mix(in srgb,var(--paper) 94%,transparent);
+  backdrop-filter:blur(8px);overflow:auto;padding:28px 32px 90px;display:none}
+.overview.on{display:block}
+.ov-head{display:flex;align-items:baseline;gap:16px;margin-bottom:22px}
+.ov-head h2{font-size:30px}
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.ov-b{grid-column:1/-1;font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--c);font-weight:700;margin-top:14px;display:flex;align-items:center;gap:12px}
+.ov-b::after{content:"";flex:1;height:1px;background:var(--line)}
+.ov-i{text-align:left;background:var(--sheet);border:1px solid var(--line-soft);border-left:4px solid var(--c);
+  border-radius:10px;padding:12px 14px;cursor:pointer;font:inherit;color:var(--ink);display:flex;flex-direction:column;gap:6px}
+.ov-i:hover{border-color:var(--c);transform:translateY(-2px)}
+.ov-i b{font-family:var(--display);font-size:16px;font-weight:600;line-height:1.2}
+.ov-i span{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.1em}
+.ov-i.cur{background:color-mix(in srgb,var(--c) 10%,var(--sheet));border-color:var(--c)}
+</style>
+
+<div class="viewport">
+  <div class="stage" id="stage">
+    <div class="eyebrow"><b id="ebNum">01</b><span id="ebName">Cambiamos la forma de pensar</span><span class="optchip" id="ebOpt" hidden>◇ opcional</span></div>
+    <div class="plate"><div id="plBlock">BLOQUE 1</div><div class="pnum"><span id="plNum">1</span>&nbsp;/&nbsp;<span id="plTot">52</span></div></div>
+
+<!-- ══════════ BLOQUE 1 · CAMBIAMOS LA FORMA DE PENSAR ══════════ -->
+
+<section class="slide" data-b="1" data-t="Portada">
+  <div class="stack" style="gap:22px">
+    <span class="tag">Clase 1 · Programación</span>
+    <h1>Programación<br>Orientada a <span class="hl">Objetos</span></h1>
+    <p class="lead">Hoy no vamos a aprender comandos nuevos.<br>Vamos a aprender <b>otra forma de pensar</b> nuestros programas.</p>
+    <div class="row rv" style="margin-top:14px">
+      <span class="pill">🧠 pensar</span><span class="pill">✏️ dibujar</span><span class="pill">💬 explicar</span><span class="pill">💻 programar</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Portada. Nada de teoría todavía.</dd>
+      <dt>Preguntá</dt><dd>“¿Alguien escuchó alguna vez la sigla POO? ¿Qué se imaginan que significa ‘objeto’ acá?”</dd>
+      <dt>Respuesta esperada</dt><dd>Casi nadie sabe, o dicen “cosas”. <em>Perfecto: no hace falta que sepan.</em></dd>
+      <dt>Revelá cuando</dt><dd>Después de escuchar 2 o 3 ideas, mostrá los 4 pasos y decí: “Ese es el orden de hoy. El código viene último.”</dd>
+      <dt>Duración</dt><dd>~2 min.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="1" data-t="¿Cómo programamos hasta ahora?">
+  <div class="stack">
+    <span class="tag">Lo que ya saben</span>
+    <h2>Hasta hoy, programábamos así</h2>
+    <div class="cols c2u" style="margin-top:6px">
+      <pre class="lg"><span class="cd-n">nombre</span> = <span class="cd-s">"Pedro"</span>
+<span class="cd-n">edad</span> = <span class="cd-n">28</span>
+<span class="cd-n">altura</span> = <span class="cd-n">1.75</span></pre>
+      <div class="stack">
+        <p class="ask">¿Qué estamos haciendo acá?</p>
+        <div class="answer rv">
+          <p class="lbl">Son</p>
+          <p><b>DATOS.</b> Información guardada en variables. Nada más y nada menos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Tres variables de Python que ya conocen de memoria.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué estamos haciendo acá? Díganmelo en una palabra.”</dd>
+      <dt>Respuesta esperada</dt><dd>“Guardar cosas”, “variables”, “datos”. <em>Cualquiera de las tres sirve.</em></dd>
+      <dt>Revelá cuando</dt><dd>Alguien diga “datos” o “información”. Escribí la palabra DATOS en el pizarrón.</dd>
+      <dt>Ojo</dt><dd>No corrijas el vocabulario todavía. Queremos que hablen.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="1" data-t="Y también funciones">
+  <div class="stack">
+    <span class="tag">Lo que ya saben</span>
+    <h2>Y también hacíamos esto</h2>
+    <div class="cols c2u" style="margin-top:6px">
+      <pre class="lg"><span class="cd-k">def</span> <span class="cd-fn">saludar</span>(nombre):
+    <span class="cd-fn">print</span>(<span class="cd-s">"Hola"</span>, nombre)</pre>
+      <div class="stack">
+        <p class="ask">¿Y esto qué es?</p>
+        <div class="answer rv">
+          <p class="lbl">Son</p>
+          <p><b>FUNCIONES.</b> Acciones. Cosas que el programa puede hacer.</p>
+        </div>
+      </div>
+    </div>
+    <p class="lead rv" style="margin-top:8px">Entonces, hasta hoy, todo nuestro programa era esto:
+      <b class="hl">datos por un lado</b> y <b class="hl">funciones por el otro</b>.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Una función simple, sin trucos.</dd>
+      <dt>Preguntá</dt><dd>“¿Y esto qué es? ¿Para qué la usábamos?”</dd>
+      <dt>Respuesta esperada</dt><dd>“Una función”, “sirve para no repetir código”, “hace algo”.</dd>
+      <dt>Revelá cuando</dt><dd>Aparezca la palabra función. Después revelá la última línea: quedan las dos palabras clave en juego.</dd>
+      <dt>Idea clave</dt><dd>Dejá las dos palabras escritas en el pizarrón: <b>DATOS</b> · <b>FUNCIONES</b>. Las vamos a juntar en 2 minutos.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="1" data-t="El problema">
+  <div class="stack">
+    <span class="tag">El problema</span>
+    <h2>Ahora imaginemos un juego de carreras</h2>
+    <div class="cols c2u">
+      <pre class="sm"><span class="cd-c"># auto 1</span>
+marca_1 = <span class="cd-s">"Toyota"</span>
+color_1 = <span class="cd-s">"blanco"</span>
+velocidad_1 = <span class="cd-n">0</span>
+
+<span class="cd-c"># auto 2</span>
+marca_2 = <span class="cd-s">"Fiat"</span>
+color_2 = <span class="cd-s">"rojo"</span>
+velocidad_2 = <span class="cd-n">0</span>
+
+<span class="cd-c"># ... y así 20 autos más</span></pre>
+      <div class="stack">
+        <p class="ask">¿Qué problema le ven a esto?</p>
+        <div class="stack gap-s rv">
+          <div class="card acc"><p>😵 Un desastre de variables sueltas.</p></div>
+          <div class="card acc"><p>🤔 ¿De <b>quién</b> es cada dato?</p></div>
+          <div class="card acc"><p>😱 ¿Y si mañana quiero 100 autos?</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El mismo dato repetido con numeritos. Deliberadamente feo.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué problema le ven a esto? ¿Lo escribirían así?”</dd>
+      <dt>Respuesta esperada</dt><dd>“Es un quilombo”, “se repite”, “te confundís”. <em>Dejalos quejarse: la incomodidad es la clase.</em></dd>
+      <dt>Revelá cuando</dt><dd>Ya salieron dos o tres quejas. Las tarjetas confirman lo que ellos dijeron.</dd>
+      <dt>Remate</dt><dd>“El problema no es que sea largo. El problema es que los datos <b>perdieron a su dueño</b>.”</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="1" data-t="¿Y si pudiéramos juntarlos?">
+  <div class="stack mid-all" style="align-items:center;text-align:center">
+    <p class="ask" style="max-width:32ch;text-align:left">¿Y si pudiéramos guardar juntos los datos y las funciones que pertenecen a la <span class="hl">misma cosa</span>?</p>
+    <div class="row rv" style="align-items:center;justify-content:center;gap:26px;margin-top:24px">
+      <div class="card" style="min-width:190px"><p class="lbl">Datos</p><p style="font-size:22px;margin-top:6px">marca, color,<br>velocidad</p></div>
+      <div class="huge" style="font-size:52px;color:var(--accent)">+</div>
+      <div class="card" style="min-width:190px"><p class="lbl">Funciones</p><p style="font-size:22px;margin-top:6px">encender(),<br>frenar()</p></div>
+      <div class="huge" style="font-size:52px;color:var(--accent)">=</div>
+      <div class="card acc" style="min-width:190px"><p class="lbl">Una sola cosa</p><p class="huge" style="font-size:36px;margin-top:6px;color:var(--accent)">UN AUTO</p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La pregunta bisagra de toda la clase. Dejala sola unos segundos.</dd>
+      <dt>Preguntá</dt><dd>“Si tuvieran que guardar todo lo del auto 1 en un solo lugar… ¿cómo lo harían?”</dd>
+      <dt>Respuesta esperada</dt><dd>Algunos dirán “una lista”, “un diccionario”. <em>Muy bien encaminados: están a un paso.</em></dd>
+      <dt>Revelá cuando</dt><dd>Ya intentaron una idea propia. Entonces mostrá la suma.</dd>
+      <dt>Idea clave</dt><dd>“Datos + funciones que van juntos = <b>un objeto</b>.” Esta frase se repite toda la clase.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="1" data-opt="1" data-t="Eso es POO">
+  <div class="stack mid-all">
+    <span class="tag">La respuesta</span>
+    <p class="statement" style="max-width:24ch;text-align:center">Eso es <span class="hl">Programación Orientada a Objetos</span>.</p>
+    <p class="lead rv" style="text-align:center;max-width:44ch;font-size:28px">Una forma de organizar el programa <b>pensando en objetos</b>, como los del mundo real.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El nombre recién aparece <b>después</b> de que entendieron el problema. Ese es el punto.</dd>
+      <dt>Decí</dt><dd>“No inventamos POO para complicarnos. La inventamos porque los programas se volvieron gigantes y había que ordenarlos.”</dd>
+      <dt>Revelá cuando</dt><dd>Enseguida. Esta diapositiva es un cartel, no una actividad.</dd>
+      <dt>Duración</dt><dd>~30 segundos.</dd>
+      <dt>◇ Si vas corto</dt><dd>Es un cartel de 30 segundos y la lámina siguiente dice lo mismo con más fuerza. Nombrá “POO” de palabra y pasá directo.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="1" data-t="La idea de toda la clase">
+  <div class="stack mid-all" style="gap:30px">
+    <p class="lbl">Si te olvidás de todo lo demás, acordate de esto</p>
+    <p class="statement" style="text-align:center;max-width:22ch">Los objetos <span class="hl">tienen información</span> y <span class="hl">pueden hacer cosas</span>.</p>
+    <div class="row rv" style="justify-content:center;gap:22px;margin-top:8px">
+      <div class="card acc" style="min-width:280px;text-align:center"><p class="huge" style="font-size:32px">¿Qué TIENE?</p></div>
+      <div class="card acc" style="min-width:280px;text-align:center"><p class="huge" style="font-size:32px">¿Qué PUEDE HACER?</p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La frase madre de la clase.</dd>
+      <dt>Decí</dt><dd>“Cada vez que veamos algo nuevo hoy, le vamos a hacer estas dos preguntas. Siempre las mismas dos.”</dd>
+      <dt>Revelá cuando</dt><dd>Después de leer la frase en voz alta. Hacé que la repitan una vez.</dd>
+      <dt>Idea clave</dt><dd>Escribí las dos preguntas en una esquina del pizarrón y dejalas ahí <b>toda la clase</b>.</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 2 · PENSAR EN OBJETOS ══════════ -->
+
+<section class="slide" data-b="2" data-t="¿Qué es un objeto?">
+  <div class="stack">
+    <span class="tag">Bloque 2 · Pensar en objetos</span>
+    <h2>¿Qué es un objeto?</h2>
+    <div class="cols c3" style="align-items:center;margin-top:10px">
+      <div class="stack gap-s" style="text-align:right;align-items:flex-end">
+        <p class="lbl">Datos</p>
+        <p style="font-size:21px;line-height:1.35;color:var(--ink-2);max-width:22ch">Información que <b>describe</b> al objeto.</p>
+        <div class="pills" style="justify-content:flex-end"><span class="pill a">color</span><span class="pill a">capacidad</span></div>
+      </div>
+      <div style="display:grid;place-items:center">
+        <svg viewBox="0 0 220 190" width="230" style="color:var(--accent)">
+          <path d="M30 60 L110 20 L190 60 L190 145 L110 185 L30 145 Z" fill="color-mix(in srgb,currentColor 8%,transparent)" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M30 60 L110 100 L190 60 M110 100 L110 185" fill="none" stroke="currentColor" stroke-width="2" opacity=".55"/>
+          <text x="110" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="19" font-weight="700" fill="currentColor">OBJETO</text>
+        </svg>
+      </div>
+      <div class="stack gap-s">
+        <p class="lbl">Comportamientos</p>
+        <p style="font-size:21px;line-height:1.35;color:var(--ink-2);max-width:22ch">Acciones que el objeto <b>puede realizar</b>.</p>
+        <div class="pills"><span class="pill m">llenar()</span><span class="pill m">vaciar()</span></div>
+      </div>
+    </div>
+    <p class="lead rv" style="text-align:center;max-width:100%;margin-top:4px">Una taza, un auto, un perro, un jugador. <b>Todo lo que tiene datos y hace cosas puede ser un objeto.</b></p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La caja: datos a la izquierda, comportamientos a la derecha.</dd>
+      <dt>Preguntá</dt><dd>“Miren alrededor del aula. Díganme tres objetos y qué datos tendría cada uno.”</dd>
+      <dt>Respuesta esperada</dt><dd>Mochila (color, peso), celular (marca, batería), silla (material, altura).</dd>
+      <dt>Revelá cuando</dt><dd>Después de 3 ejemplos de ellos. La línea de abajo cierra la idea.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="El auto: ¿qué sabemos?">
+  <div class="stack">
+    <div class="row" style="align-items:center;gap:18px"><span class="emoji">🚗</span><h2>Tenemos un auto.</h2></div>
+    <p class="ask" style="margin-top:6px">¿Qué cosas <span class="hl">sabemos</span> de este auto?</p>
+    <div class="pills rv" style="margin-top:14px">
+      <span class="pill a big">marca</span><span class="pill a big">modelo</span><span class="pill a big">color</span>
+      <span class="pill a big">velocidad</span><span class="pill a big">patente</span><span class="pill a big">cantidad de puertas</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Solo el auto y la pregunta. <b>No pases de diapositiva.</b></dd>
+      <dt>Preguntá</dt><dd>“¿Qué cosas sabemos de este auto? Tírenme todas las que se les ocurran.”</dd>
+      <dt>Respuesta esperada</dt><dd>Color, marca, modelo, año, si es automático, cuánta nafta tiene…</dd>
+      <dt>Revelá cuando</dt><dd>Junten <b>al menos 5</b> respuestas de ellos. Anotalas en el pizarrón antes de revelar.</dd>
+      <dt>Momento clave</dt><dd>Si dicen “puede acelerar”, frenalos con cariño: “eso lo <em>hace</em>, no lo <em>tiene</em>. Guardalo para la próxima.”</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="Atributos">
+  <div class="stack mid-all">
+    <p class="lbl">Todo eso que dijeron tiene un nombre</p>
+    <p class="huge" style="color:var(--accent);font-size:96px">ATRIBUTOS</p>
+    <p class="statement" style="font-size:38px;text-align:center;max-width:30ch;margin-top:6px">Son las <span class="u">características</span> que describen al objeto.</p>
+    <p class="lead rv" style="text-align:center;margin-top:10px">Los atributos <b>pueden cambiar</b>: el auto puede pasar de blanco a negro, o de 0 a 120 km/h.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La palabra técnica llega recién ahora, después de que ellos ya la construyeron.</dd>
+      <dt>Decí</dt><dd>“Todo lo que anotamos en el pizarrón son atributos. Ustedes ya sabían qué eran, solo les faltaba el nombre.”</dd>
+      <dt>Preguntá</dt><dd>“¿Un atributo puede cambiar con el tiempo?”</dd>
+      <dt>Respuesta esperada</dt><dd>Sí: la velocidad cambia todo el tiempo, el color solo si lo pintás.</dd>
+      <dt>Revelá cuando</dt><dd>Después de esa respuesta.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="El auto: ¿qué puede hacer?">
+  <div class="stack">
+    <div class="row" style="align-items:center;gap:18px"><span class="emoji">🚗</span><h2>El mismo auto.</h2></div>
+    <p class="ask" style="margin-top:6px">Ahora: ¿qué <span class="hl">puede hacer</span> este auto?</p>
+    <div class="pills rv" style="margin-top:14px">
+      <span class="pill m big">encender()</span><span class="pill m big">acelerar()</span><span class="pill m big">frenar()</span>
+      <span class="pill m big">doblar()</span><span class="pill m big">tocar_bocina()</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Mismo auto, pregunta distinta. El contraste es lo que enseña.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué <b>hace</b> un auto? Verbos, quiero verbos.”</dd>
+      <dt>Respuesta esperada</dt><dd>Arranca, acelera, frena, dobla, toca bocina, consume nafta.</dd>
+      <dt>Revelá cuando</dt><dd>Tengas 4 o 5 verbos. Fijate que aparecen con paréntesis: preguntales por qué.</dd>
+      <dt>Detalle</dt><dd>Los <code>()</code> son la pista de que “esto se ejecuta”. Ya los conocen de <code>print()</code>.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="Métodos">
+  <div class="stack mid-all">
+    <p class="lbl">Y eso también tiene nombre</p>
+    <p class="huge" style="color:var(--accent);font-size:96px">MÉTODOS</p>
+    <p class="statement" style="font-size:38px;text-align:center;max-width:30ch;margin-top:6px">Son las <span class="u">acciones</span> que el objeto puede realizar.</p>
+    <p class="lead rv" style="text-align:center;margin-top:10px">Un método es una función… <b>pero que vive adentro del objeto</b> y le pertenece.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Segunda palabra técnica de la clase.</dd>
+      <dt>Preguntá</dt><dd>“¿Se parece a algo que ya conocen?”</dd>
+      <dt>Respuesta esperada</dt><dd>“A una función.” <em>Exacto.</em></dd>
+      <dt>Revelá cuando</dt><dd>Alguien diga “función”. Ahí revelás: es una función <b>que le pertenece al objeto</b>.</dd>
+      <dt>Ojo</dt><dd>No profundices más. Con “función que vive adentro del objeto” alcanza para hoy.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="Las dos preguntas">
+  <div class="stack">
+    <span class="tag">La herramienta que vamos a usar todo el año</span>
+    <div class="cols c2" style="align-items:stretch;margin-top:6px">
+      <div class="card acc stack" style="gap:14px">
+        <p class="huge" style="font-size:40px">¿Qué TIENE?</p>
+        <div class="arrow-d" style="justify-items:start;font-size:28px">↓</div>
+        <p class="huge" style="font-size:44px;color:var(--flame)">ATRIBUTOS</p>
+        <p class="dim" style="font-size:20px">Sustantivos. <span class="mono">marca, color, vida</span></p>
+      </div>
+      <div class="card acc stack" style="gap:14px">
+        <p class="huge" style="font-size:40px">¿Qué PUEDE HACER?</p>
+        <div class="arrow-d" style="justify-items:start;font-size:28px">↓</div>
+        <p class="huge" style="font-size:44px;color:var(--teal)">MÉTODOS</p>
+        <p class="dim" style="font-size:20px">Verbos. <span class="mono">frenar(), atacar()</span></p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El truco práctico: sustantivo = atributo, verbo = método.</dd>
+      <dt>Decí</dt><dd>“Cuando no sepan si algo es atributo o método, preguntensé: ¿es una <b>cosa</b> o es una <b>acción</b>?”</dd>
+      <dt>Revelá cuando</dt><dd>No hay reveal. Es la diapositiva de referencia: dejala unos segundos.</dd>
+      <dt>Tip</dt><dd>Volvé a esta diapositiva (tecla <code>O</code>) cada vez que se traben más adelante.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="2" data-t="ACTIVIDAD 1 · Perro">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Actividad 1 · Todos juntos</span>
+    <h2>Miren este perro 🐶</h2>
+    <div class="cols c2u" style="margin-top:6px">
+      <div class="uml" style="max-width:300px">
+        <div class="uml-h">PERRO</div>
+        <ul><li>nombre</li><li>edad</li><li>color</li><li>ladrar()</li><li>comer()</li><li>dormir()</li></ul>
+      </div>
+      <div class="stack">
+        <p class="ask sm">¿Cuáles son <b>datos</b>?</p>
+        <p class="ask sm">¿Cuáles son <b>acciones</b>?</p>
+        <div class="answer rv" style="margin-top:6px">
+          <p class="lbl">Respuesta</p>
+          <div class="pills" style="margin-top:8px">
+            <span class="pill a">nombre</span><span class="pill a">edad</span><span class="pill a">color</span>
+          </div>
+          <div class="pills" style="margin-top:8px">
+            <span class="pill m">ladrar()</span><span class="pill m">comer()</span><span class="pill m">dormir()</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Todo mezclado a propósito, sin separar.</dd>
+      <dt>Preguntá</dt><dd>“Levanten la mano: ¿cuáles son datos? ¿Y cuáles acciones? ¿Cómo se dieron cuenta?”</dd>
+      <dt>Respuesta esperada</dt><dd>Datos: nombre, edad, color. Acciones: las que tienen <code>()</code> y son verbos.</dd>
+      <dt>Revelá cuando</dt><dd>Después de que lo resuelvan ellos. Si aciertan rápido, pediles <b>un atributo y un método más</b> que no estén en la lista.</dd>
+      <dt>Duración</dt><dd>~3 min.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="Clase = molde">
+  <div class="stack">
+    <span class="tag">El concepto más importante de hoy</span>
+    <h2>Pero… ¿de dónde salen los objetos?</h2>
+    <div class="cols c2" style="align-items:center;margin-top:8px">
+      <div class="stack" style="align-items:center;gap:10px">
+        <p class="lbl">Clase</p>
+        <div class="uml ghost" style="width:260px">
+          <div class="uml-h">Auto</div>
+          <ul class="at"><li>marca</li><li>color</li><li>modelo</li></ul>
+          <ul class="me"><li>encender()</li><li>frenar()</li></ul>
+        </div>
+        <p style="font-size:21px;color:var(--ink-2);text-align:center;max-width:26ch">Es el <b>molde</b>. Dice qué van a tener y qué van a poder hacer los autos.</p>
+      </div>
+      <div class="stack rv" style="align-items:center;gap:10px">
+        <p class="lbl">Objeto</p>
+        <div class="uml" style="width:260px;border-color:var(--accent)">
+          <div class="uml-h" style="background:var(--accent)">mi_auto</div>
+          <ul class="at"><li>marca = <span class="mono">"Toyota"</span></li><li>color = <span class="mono">"blanco"</span></li><li>modelo = <span class="mono">2021</span></li></ul>
+          <ul class="me"><li>encender()</li><li>frenar()</li></ul>
+        </div>
+        <p style="font-size:21px;color:var(--ink-2);text-align:center;max-width:26ch">Es un auto <b>de verdad</b>, con valores concretos.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El molde (línea punteada) y el objeto real (línea llena, color).</dd>
+      <dt>Preguntá</dt><dd>“¿Alguien vio alguna vez un molde de galletitas? ¿El molde se come?”</dd>
+      <dt>Respuesta esperada</dt><dd>“No, se comen las galletitas.” <em>Ese es exactamente el punto.</em></dd>
+      <dt>Revelá cuando</dt><dd>Después de la analogía del molde. Otras que funcionan: el plano de una casa, la ficha de un personaje en un juego.</dd>
+      <dt>Idea clave</dt><dd>La clase <b>no es un auto</b>: es la descripción de cómo se fabrica un auto. Con la clase sola no podés manejar a ningún lado.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="La clase describe, el objeto existe">
+  <div class="stack mid-all">
+    <p class="quote" style="text-align:center;font-size:72px;max-width:18ch">“La clase <span class="hl">describe</span>.<br>El objeto <span class="hl">existe</span>.”</p>
+    <div class="row rv" style="gap:34px;margin-top:26px;justify-content:center">
+      <p class="dim" style="font-size:22px">📄 el plano ≠ 🏠 la casa</p>
+      <p class="dim" style="font-size:22px">🍪 el molde ≠ 🥠 la galletita</p>
+      <p class="dim" style="font-size:22px">📝 la receta ≠ 🍕 la pizza</p>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La frase para copiar en la carpeta.</dd>
+      <dt>Preguntá</dt><dd>“Denme ustedes otro par: algo que describe y algo que existe.”</dd>
+      <dt>Respuesta esperada</dt><dd>Partitura/canción, mapa/ciudad, ficha/personaje.</dd>
+      <dt>Revelá cuando</dt><dd>Ya dijeron uno propio. Los tres ejemplos confirman.</dd>
+      <dt>Pedí</dt><dd>Que la escriban. Es la frase que más les va a servir.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="Una clase, muchos objetos">
+  <div class="stack">
+    <h2>Una sola clase, muchos objetos</h2>
+    <div style="display:grid;place-items:center;margin-top:4px">
+      <div class="uml" style="width:230px">
+        <div class="uml-h">Auto</div>
+        <ul class="at"><li>marca</li><li>color</li></ul>
+        <ul class="me"><li>encender()</li></ul>
+      </div>
+    </div>
+    <svg class="link" viewBox="0 0 900 60" preserveAspectRatio="none" style="height:48px"><path d="M450 0 V22 M150 22 H750 M150 22 V60 M450 22 V60 M750 22 V60"/></svg>
+    <div class="row rv" style="justify-content:center;gap:36px">
+      <div class="card acc" style="text-align:center;min-width:200px"><p style="font-size:34px">🚗</p><p class="huge" style="font-size:22px;margin-top:4px">Toyota blanco</p></div>
+      <div class="card acc" style="text-align:center;min-width:200px"><p style="font-size:34px">🚙</p><p class="huge" style="font-size:22px;margin-top:4px">Ford negro</p></div>
+      <div class="card acc" style="text-align:center;min-width:200px"><p style="font-size:34px">🚕</p><p class="huge" style="font-size:22px;margin-top:4px">Fiat rojo</p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Una clase arriba, tres objetos abajo.</dd>
+      <dt>Preguntá</dt><dd>“¿Podemos crear muchos autos con la misma clase? ¿Pueden tener distinto color? ¿Distinto modelo?”</dd>
+      <dt>Respuesta esperada</dt><dd>Sí, sí y sí. Mismo molde, distintos valores.</dd>
+      <dt>Revelá cuando</dt><dd>Contesten las tres. Revelá los tres autos de una.</dd>
+      <dt>Repregunta</dt><dd>“Si cambio el color del Toyota, ¿se pone blanco el Fiat?” → <b>No.</b> Son objetos independientes.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="2" data-t="ACTIVIDAD 2 · ¿Clase u objeto?">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Actividad 2 · Levantá la mano</span>
+    <h2>¿Clase u objeto?</h2>
+    <div class="cols c2" style="margin-top:4px">
+      <div class="stack gap-s">
+        <div class="card"><p style="font-size:23px;color:var(--ink)"><b>1.</b> El concepto general de “celular”</p></div>
+        <div class="card"><p style="font-size:23px;color:var(--ink)"><b>2.</b> El celular que tenés en el bolsillo</p></div>
+        <div class="card"><p style="font-size:23px;color:var(--ink)"><b>3.</b> La ficha vacía de un personaje</p></div>
+        <div class="card"><p style="font-size:23px;color:var(--ink)"><b>4.</b> Tu personaje, nivel 7, llamado Zeta</p></div>
+      </div>
+      <div class="answer rv">
+        <p class="lbl">Respuesta</p>
+        <p style="margin-top:10px"><b>1.</b> Clase 📄 &nbsp;·&nbsp; <b>2.</b> Objeto ✅</p>
+        <p style="margin-top:8px"><b>3.</b> Clase 📄 &nbsp;·&nbsp; <b>4.</b> Objeto ✅</p>
+        <p style="margin-top:14px;font-size:20px;color:var(--ink-2)">Truco: si le podés poner <b>valores concretos</b>, es un objeto.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Cuatro casos. Que voten con la mano: clase = mano arriba, objeto = mano abajo.</dd>
+      <dt>Preguntá</dt><dd>“¿Por qué el 2 es un objeto y el 1 no?”</dd>
+      <dt>Respuesta esperada</dt><dd>Porque el 2 es uno específico, con marca, color y batería concretos.</dd>
+      <dt>Revelá cuando</dt><dd>Voten los cuatro. Revelá y remarcá el truco de los valores concretos.</dd>
+      <dt>Duración</dt><dd>~3 min.</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 3 · AHORA SÍ, PYTHON ══════════ -->
+
+<section class="slide" data-b="3" data-t="Ahora sí, al código">
+  <div class="stack mid-all">
+    <span class="tag">Bloque 3 · Python</span>
+    <p class="statement" style="text-align:center;max-width:24ch">Ya lo pensamos.<br>Ya lo dibujamos.<br><span class="hl">Ahora lo escribimos.</span></p>
+    <p class="lead rv" style="text-align:center;margin-top:14px">Ojo: la sintaxis es lo <b>menos</b> importante de hoy. Si algo no se entiende del todo, no pasa nada.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Transición. Bajá la presión antes de mostrar código.</dd>
+      <dt>Decí</dt><dd>“Lo que viene es solo la forma de escribir en Python lo que ya entendimos. Si les marea la sintaxis, quédense con el dibujo.”</dd>
+      <dt>Revelá cuando</dt><dd>Enseguida. Es importante que escuchen esta advertencia.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="Nuestra primera clase">
+  <div class="stack">
+    <h2>Nuestra primera clase</h2>
+    <div class="cols c2u" style="margin-top:4px">
+      <pre><span class="cd-k">class</span> <span class="cd-fn">Auto</span>:
+
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, marca, color):
+        <span class="cd-k">self</span>.marca = marca
+        <span class="cd-k">self</span>.color = color
+
+    <span class="cd-k">def</span> <span class="cd-fn">encender</span>(<span class="cd-k">self</span>):
+        <span class="cd-fn">print</span>(<span class="cd-s">"El auto está encendido"</span>)</pre>
+      <div class="stack gap-s">
+        <div class="card"><p class="lbl">Línea 1</p><p>Acá arranca <b>el molde</b>. Se llama <span class="mono">Auto</span>, con mayúscula.</p></div>
+        <div class="card"><p class="lbl">El bloque del medio</p><p>Los <b class="hl">atributos</b>: qué va a tener cada auto.</p></div>
+        <div class="card"><p class="lbl">El bloque de abajo</p><p>Un <b class="hl">método</b>: qué va a poder hacer.</p></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La clase completa, con el mapa a la derecha.</dd>
+      <dt>Preguntá</dt><dd>“Antes de que explique nada: ¿dónde están los atributos y dónde el método?”</dd>
+      <dt>Respuesta esperada</dt><dd>Deberían señalarlos solos. Ya tienen el modelo mental.</dd>
+      <dt>Revelá cuando</dt><dd>No hay reveal: las tres tarjetas están desde el inicio para que las usen como guía.</dd>
+      <dt>Ojo</dt><dd>Si alguien pregunta por <code>__init__</code> o <code>self</code>, decí “esa es justo la que viene”. Acá no te adelantes: primero que vean la <b>estructura</b> (molde / atributos / método), que es lo que importa.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="Las dos palabras raras">
+  <div class="stack" style="gap:18px">
+    <span class="tag">Antes de seguir, saquémonos esto de encima</span>
+    <h2>¿Y esas dos palabras raras?</h2>
+    <pre style="font-size:24px"><span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, marca, color):</pre>
+    <div class="cols c2" style="align-items:stretch">
+      <div class="card acc">
+        <p class="lbl">__init__ · viene de “iniciar”</p>
+        <p class="huge" style="font-size:25px;margin-top:8px">El momento en que <span class="hl">nace</span> el objeto</p>
+        <p style="margin-top:8px">Se ejecuta sola, <b>una sola vez</b>: cuando escribís <span class="mono">Auto("Toyota", "blanco")</span>. Ahí el auto recibe sus datos.</p>
+      </div>
+      <div class="card acc">
+        <p class="lbl">self · quiere decir “yo”</p>
+        <p class="huge" style="font-size:25px;margin-top:8px">El objeto hablando de <span class="hl">sí mismo</span></p>
+        <p style="margin-top:8px"><span class="mono">self.marca</span> es <b>“mi marca”</b>. Es el auto refiriéndose a sus propios datos.</p>
+      </div>
+    </div>
+    <p class="lead rv" style="text-align:center;max-width:100%;font-size:22px">Y no, no hace falta que entiendan <b>por qué</b> lleva guiones bajos. Python es así: se escribe y se sigue. ✌️</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Las dos palabras que acaban de ver en la lámina anterior, nombradas de una vez. Sacarles el misterio de encima es más importante que explicarlas a fondo.</dd>
+      <dt>Preguntá</dt><dd>“¿Quién vio estas dos palabras recién y pensó ‘qué es esto’?” Que levanten la mano. <em>Van a levantar casi todos.</em></dd>
+      <dt>Analogía que funciona</dt><dd><code>__init__</code> es como la ficha que completás cuando creás un personaje en un juego: elegís nombre y aspecto <b>una sola vez</b>, al principio. Después jugás.</dd>
+      <dt>Respuesta esperada</dt><dd>Con que puedan decir “<code>__init__</code> es cuando se crea” y “<code>self</code> es el objeto mismo”, ya está. Nada más.</dd>
+      <dt>Revelá cuando</dt><dd>Terminaste las dos tarjetas. La última línea es la más importante de la lámina: les da permiso para no entenderlo del todo hoy.</dd>
+      <dt>Ojo</dt><dd>No expliques <b>por qué</b> Python usa guiones bajos, ni por qué <code>self</code> se escribe pero no se pasa. Si insisten: “es una regla de Python, la vemos más adelante”. Y seguí.</dd>
+      <dt>Duración</dt><dd>~1 min. Si te lleva más de dos, te fuiste de tema.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="Crear un objeto">
+  <div class="stack">
+    <h2>Crear un objeto</h2>
+    <pre class="lg" style="margin-top:6px">mi_auto = <span class="cd-fn">Auto</span>(<span class="cd-s">"Toyota"</span>, <span class="cd-s">"blanco"</span>)</pre>
+    <p class="ask" style="margin-top:14px">¿Qué acabamos de hacer?</p>
+    <div class="answer rv">
+      <p class="lbl">Respuesta</p>
+      <p>Usamos el molde y <b>fabricamos un auto de verdad</b>. Ahora <span class="mono">mi_auto</span> existe, con marca Toyota y color blanco.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Una sola línea. Que la lean en voz alta.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué acabamos de hacer? ¿Dónde fueron a parar el ‘Toyota’ y el ‘blanco’?”</dd>
+      <dt>Respuesta esperada</dt><dd>“Creamos un auto.” Los valores fueron a los atributos <code>marca</code> y <code>color</code>.</dd>
+      <dt>Revelá cuando</dt><dd>Digan “creamos” o “fabricamos”. La palabra técnica es <b>instanciar</b>, pero hoy alcanza con “fabricar”.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="Dos objetos">
+  <div class="stack">
+    <h2>Dos objetos del mismo molde</h2>
+    <pre class="lg" style="margin-top:6px">auto_1 = <span class="cd-fn">Auto</span>(<span class="cd-s">"Toyota"</span>, <span class="cd-s">"blanco"</span>)
+auto_2 = <span class="cd-fn">Auto</span>(<span class="cd-s">"Fiat"</span>, <span class="cd-s">"rojo"</span>)</pre>
+    <p class="ask" style="margin-top:14px">¿Son el mismo auto?</p>
+    <div class="answer rv">
+      <p class="lbl">Respuesta</p>
+      <p><b>No.</b> Salieron del mismo molde, pero son dos autos <b>distintos e independientes</b>. Una clase, infinitos objetos.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Dos líneas casi iguales.</dd>
+      <dt>Preguntá</dt><dd>“¿Son el mismo auto? ¿Cuántas veces escribí <code>class Auto</code>?”</dd>
+      <dt>Respuesta esperada</dt><dd>No son el mismo; la clase se escribe <b>una sola vez</b>.</dd>
+      <dt>Revelá cuando</dt><dd>Después de la segunda pregunta. Ahí cae la ficha de por qué POO ahorra trabajo.</dd>
+      <dt>Seguí</dt><dd>La lámina que viene pone el quilombo del Bloque 1 al lado de esto. No la adelantes: dejá que la comparación los sorprenda.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="Antes y después">
+  <div class="stack">
+    <span class="tag">El problema del principio, resuelto</span>
+    <h2>¿Se acuerdan de esto?</h2>
+    <div class="cols c2" style="margin-top:2px;align-items:start">
+      <div class="stack" style="gap:10px">
+        <p class="lbl" style="color:var(--flame)">✗ Antes · 3 autos</p>
+        <pre class="sm" style="font-size:16px">marca_1 = <span class="cd-s">"Toyota"</span>
+color_1 = <span class="cd-s">"blanco"</span>
+velocidad_1 = <span class="cd-n">0</span>
+marca_2 = <span class="cd-s">"Fiat"</span>
+color_2 = <span class="cd-s">"rojo"</span>
+velocidad_2 = <span class="cd-n">0</span>
+marca_3 = <span class="cd-s">"Ford"</span>
+color_3 = <span class="cd-s">"negro"</span>
+velocidad_3 = <span class="cd-n">0</span></pre>
+        <p class="dim" style="font-size:19px">9 variables sueltas. Con 20 autos: <b>60 variables</b>.</p>
+      </div>
+      <div class="stack rv" style="gap:10px">
+        <p class="lbl" style="color:var(--good)">✓ Ahora · los mismos 3 autos</p>
+        <pre class="sm" style="font-size:20px">auto_1 = <span class="cd-fn">Auto</span>(<span class="cd-s">"Toyota"</span>, <span class="cd-s">"blanco"</span>)
+auto_2 = <span class="cd-fn">Auto</span>(<span class="cd-s">"Fiat"</span>, <span class="cd-s">"rojo"</span>)
+auto_3 = <span class="cd-fn">Auto</span>(<span class="cd-s">"Ford"</span>, <span class="cd-s">"negro"</span>)</pre>
+        <p class="dim" style="font-size:19px">3 líneas. Con 20 autos: <b>20 líneas</b>.<br>El molde se escribe <b>una sola vez</b>.</p>
+      </div>
+    </div>
+    <p class="quote rv" style="text-align:center;margin-top:8px;font-size:32px">Cada dato volvió a tener <span class="hl">dueño</span>.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La misma lámina fea del Bloque 1, ahora al lado de la solución. Es el momento en que la clase cierra el círculo.</dd>
+      <dt>Preguntá</dt><dd>“¿Cuántas variables tenía la de la izquierda? ¿Y si fueran 20 autos?” Después: “¿Y la de la derecha?”</dd>
+      <dt>Respuesta esperada</dt><dd>9 contra 3. Con 20 autos: 60 contra 20 <b>+ el molde, que se escribe una sola vez</b>.</dd>
+      <dt>Revelá cuando</dt><dd>Hayan contado las variables de la izquierda en voz alta. El contraste solo funciona si primero sufren la izquierda.</dd>
+      <dt>Remate</dt><dd>Revelá la frase final y dejala: “no ganamos menos líneas, ganamos <b>orden</b>. Cada dato sabe de quién es.”</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="Leer y cambiar datos">
+  <div class="stack">
+    <h2>Leer y cambiar sus datos</h2>
+    <pre style="margin-top:4px"><span class="cd-fn">print</span>(auto_1.marca)   <span class="cd-c"># Toyota</span>
+<span class="cd-fn">print</span>(auto_2.marca)   <span class="cd-c"># Fiat</span>
+
+auto_1.color = <span class="cd-s">"negro"</span>   <span class="cd-c"># lo pintamos</span>
+
+<span class="cd-fn">print</span>(auto_1.color)   <span class="cd-c"># negro</span>
+<span class="cd-fn">print</span>(auto_2.color)   <span class="cd-c"># rojo  ← no se tocó</span></pre>
+    <p class="lead rv">El <span class="mono">.</span> significa “de”: <span class="mono">auto_1.color</span> es <b>el color de auto_1</b>.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El punto como posesivo. Es la idea de esta diapositiva.</dd>
+      <dt>Preguntá</dt><dd>“Si pinto el auto_1 de negro, ¿qué le pasa al auto_2?”</dd>
+      <dt>Respuesta esperada</dt><dd>Nada. Son independientes.</dd>
+      <dt>Revelá cuando</dt><dd>Respondan. Después leé el punto como “de”: “el color <b>de</b> auto uno”.</dd>
+      <dt>Guardá esto</dt><dd>Que <code>auto_1.color = "negro"</code> funcione sin control alguno vuelve en Encapsulación. Marcalo.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="Llamar a sus métodos">
+  <div class="stack">
+    <h2>Y hacerle hacer cosas</h2>
+    <pre class="lg" style="margin-top:6px">auto_1.<span class="cd-fn">encender</span>()
+
+<span class="cd-c"># El auto está encendido</span></pre>
+    <div class="cols c2 rv" style="margin-top:16px">
+      <div class="card acc"><p class="lbl">Sin paréntesis</p><p class="mono" style="font-size:22px;color:var(--flame);margin-top:6px">auto_1.color</p><p style="margin-top:4px">es un <b>dato</b></p></div>
+      <div class="card acc"><p class="lbl">Con paréntesis</p><p class="mono" style="font-size:22px;color:var(--teal);margin-top:6px">auto_1.encender()</p><p style="margin-top:4px">es una <b>acción</b></p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La regla visual de los paréntesis.</dd>
+      <dt>Preguntá</dt><dd>“¿Cuál es la única diferencia entre las dos líneas de abajo?”</dd>
+      <dt>Respuesta esperada</dt><dd>Los paréntesis.</dd>
+      <dt>Revelá cuando</dt><dd>Lo noten. Es una regla que les va a servir para leer <b>cualquier</b> código orientado a objetos.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="Un método que cambia al objeto">
+  <div class="stack">
+    <span class="tag">Acá está la gracia de todo esto</span>
+    <h2>Un método que <span class="hl">cambia</span> al objeto</h2>
+    <div class="cols c2" style="margin-top:2px;align-items:start">
+      <pre class="sm" style="font-size:18px"><span class="cd-k">class</span> <span class="cd-fn">Auto</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, marca):
+        <span class="cd-k">self</span>.marca = marca
+        <span class="cd-k">self</span>.velocidad = <span class="cd-n">0</span>
+
+    <span class="cd-k">def</span> <span class="cd-fn">acelerar</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">self</span>.velocidad = <span class="cd-k">self</span>.velocidad + <span class="cd-n">20</span></pre>
+      <div class="stack" style="gap:14px">
+        <pre class="sm" style="font-size:18px"><span class="cd-fn">print</span>(auto_1.velocidad)  <span class="cd-c"># 0</span>
+
+auto_1.<span class="cd-fn">acelerar</span>()
+auto_1.<span class="cd-fn">acelerar</span>()
+
+<span class="cd-fn">print</span>(auto_1.velocidad)  <span class="cd-c"># 40</span></pre>
+        <div class="answer rv">
+          <p class="lbl">¿Quién cambió la velocidad?</p>
+          <p style="margin-top:6px">El auto <b>se cambió a sí mismo</b>. Nadie tocó el dato desde afuera.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Por primera vez un método <b>modifica</b> un atributo. Es la lámina que justifica todo el paradigma.</dd>
+      <dt>Preguntá</dt><dd>“¿Cuánto va a imprimir el segundo <code>print</code>? Piénsenlo antes de que lo revele.”</dd>
+      <dt>Respuesta esperada</dt><dd>40. Dos <code>acelerar()</code> de 20 cada uno. Que lo cuenten en voz alta.</dd>
+      <dt>Revelá cuando</dt><dd>Arriesgaron un número. Después preguntá lo importante: <b>“¿quién cambió la velocidad?”</b></dd>
+      <dt>Idea clave</dt><dd>Acá se cobra la promesa del principio: los datos y las funciones están juntos <b>porque las funciones trabajan sobre esos datos</b>. Si <code>acelerar()</code> viviera afuera, habría que pasarle el auto.</dd>
+      <dt>Prepara</dt><dd>Esta lámina es la base de Encapsulación. Cuando lleguen ahí, volvé a mencionarla.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="self, en acción">
+  <div class="stack">
+    <span class="tag">Volvemos sobre self, ahora con dos autos</span>
+    <h2>¿Quién es <span class="mono hl">self</span> cada vez?</h2>
+    <div class="cols c2u" style="margin-top:6px">
+      <pre class="sm"><span class="cd-k">def</span> <span class="cd-fn">encender</span>(<span class="cd-k">self</span>):
+    <span class="cd-fn">print</span>(<span class="cd-s">"Encendido"</span>, <span class="cd-k">self</span>.marca)
+
+
+auto_1.<span class="cd-fn">encender</span>()  <span class="cd-c"># self = auto_1</span>
+auto_2.<span class="cd-fn">encender</span>()  <span class="cd-c"># self = auto_2</span></pre>
+      <div class="stack">
+        <div class="card acc"><p style="font-size:24px;color:var(--ink)"><span class="mono">self</span> quiere decir <b>“este objeto”</b>: el que está usando el método justo ahora.</p></div>
+        <p class="dim" style="font-size:20px">Es cómo el auto se refiere a sí mismo. Nada más que eso.</p>
+        <p class="lbl rv" style="color:var(--accent)">✋ Con esto alcanza por hoy. Seguimos.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Lo mismo que ya dijiste, pero ahora <b>se ve</b>: el mismo método, dos objetos distintos, dos resultados distintos.</dd>
+      <dt>Preguntá</dt><dd>“En la segunda línea, ¿quién es <code>self</code>? ¿Y en la tercera?” Que lo contesten ellos: ya se lo explicaste antes.</dd>
+      <dt>Revelá cuando</dt><dd>Terminaste la frase. El cartel de ✋ es para vos: <b>no te extiendas</b>.</dd>
+      <dt>Trampa clásica</dt><dd>Si alguien pregunta “¿por qué se pone y después no se pasa?”, respondé: “Python lo pone solo. Lo vemos la próxima clase.” Y seguí.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="3" data-t="Mini desafío · La clase Perro">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Mini desafío · 5 minutos</span>
+    <h2>Escribí la clase <span class="mono">Perro</span></h2>
+    <div class="cols c2u" style="margin-top:4px">
+      <div class="stack gap-s">
+        <div class="card"><p style="font-size:22px;color:var(--ink)">✅ Dos atributos: <span class="mono">nombre</span> y <span class="mono">edad</span></p></div>
+        <div class="card"><p style="font-size:22px;color:var(--ink)">✅ Un método: <span class="mono">ladrar()</span></p></div>
+        <div class="card"><p style="font-size:22px;color:var(--ink)">✅ Creá <b>dos perros</b> distintos</p></div>
+      </div>
+      <pre class="sm rv" style="font-size:18px"><span class="cd-k">class</span> <span class="cd-fn">Perro</span>:
+
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, edad):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.edad = edad
+
+    <span class="cd-k">def</span> <span class="cd-fn">ladrar</span>(<span class="cd-k">self</span>):
+        <span class="cd-fn">print</span>(<span class="cd-s">"¡Guau!"</span>)
+
+
+firulais = <span class="cd-fn">Perro</span>(<span class="cd-s">"Firulais"</span>, <span class="cd-n">3</span>)
+laika = <span class="cd-fn">Perro</span>(<span class="cd-s">"Laika"</span>, <span class="cd-n">7</span>)</pre>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La consigna sola. <b>No reveles el código hasta que lo intenten.</b></dd>
+      <dt>Preguntá</dt><dd>Mientras trabajan: “¿Cuál es el molde y cuál el objeto en lo que estás escribiendo?”</dd>
+      <dt>Error típico</dt><dd>Olvidarse el <code>self.</code> al guardar el atributo. Es esperable, no lo penalices.</dd>
+      <dt>Revelá cuando</dt><dd>Pasaron 4-5 minutos o alguien lo resolvió. Que lo dicte el que terminó, no vos.</dd>
+      <dt>⚠ Va a pasar</dt><dd>Alguien va a escribir <code>print(firulais)</code> y le va a salir <code>&lt;__main__.Perro object at 0x7f3a...&gt;</code>. <b>No es un error.</b> Decí: “Python te está diciendo ‘acá hay un objeto Perro’. Para ver el nombre pedile el dato: <code>print(firulais.nombre)</code>.” Lo de imprimirlo lindo se resuelve más adelante.</dd>
+      <dt>Duración</dt><dd>~6 min con la puesta en común.</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 4 · LOS 4 PILARES ══════════ -->
+
+<section class="slide" data-b="4" data-t="¿Por qué existen los pilares?">
+  <div class="stack">
+    <span class="tag">Bloque 4 · Los 4 pilares</span>
+    <h2>Cuatro preguntas, no cuatro palabras</h2>
+    <p class="lead">Nadie inventó los pilares para tomar examen. Salieron de cuatro problemas reales.</p>
+    <div class="cols c4 rv" style="margin-top:10px">
+      <div class="card acc"><p class="emoji sm">🔐</p><p style="font-size:20px;margin-top:8px;color:var(--ink)">¿Cómo <b>protejo</b> lo importante?</p></div>
+      <div class="card acc"><p class="emoji sm">🧬</p><p style="font-size:20px;margin-top:8px;color:var(--ink)">¿Cómo <b>no repito</b> lo mismo mil veces?</p></div>
+      <div class="card acc"><p class="emoji sm">🎭</p><p style="font-size:20px;margin-top:8px;color:var(--ink)">¿Cómo doy <b>una orden</b> a cosas distintas?</p></div>
+      <div class="card acc"><p class="emoji sm">🎨</p><p style="font-size:20px;margin-top:8px;color:var(--ink)">¿Cómo <b>escondo</b> lo complicado?</p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Los pilares presentados como problemas, no como definiciones.</dd>
+      <dt>Decí</dt><dd>“No les voy a pedir que memoricen cuatro palabras. Les voy a mostrar cuatro problemas y cómo se resuelven.”</dd>
+      <dt>Revelá cuando</dt><dd>Después de esa frase.</dd>
+      <dt>Aviso honesto</dt><dd>Decíles: “Hoy los vamos a <b>conocer</b>. Entenderlos bien lleva varias clases. Está todo bien.”</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="🔐 Encapsulación · la pregunta">
+  <div class="stack mid-all">
+    <p class="emoji">🔐</p>
+    <p class="ask" style="font-size:40px;max-width:24ch;margin-top:10px">¿Le darías las llaves del motor de tu auto a <span class="hl">cualquier persona</span>?</p>
+    <div class="answer rv" style="margin-top:20px;max-width:52ch">
+      <p class="lbl">Y en el programa, lo mismo</p>
+      <p style="font-size:24px">Hay información que <b>no queremos que cualquiera modifique</b> directamente.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Solo la pregunta cotidiana. Todavía no digas la palabra “encapsulación”.</dd>
+      <dt>Preguntá</dt><dd>“¿Le prestarías el auto a cualquiera? ¿Y le darías tu contraseña de Instagram al de al lado?”</dd>
+      <dt>Respuesta esperada</dt><dd>Risas y un “no” rotundo. Perfecto.</dd>
+      <dt>Revelá cuando</dt><dd>Ya se rieron. Ahí conectás con el programa.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="🔐 Encapsulación · la idea">
+  <div class="stack">
+    <span class="tag">🔐 Pilar 1 · Encapsulación</span>
+    <h2>Proteger lo importante</h2>
+    <div class="cols c2" style="margin-top:6px">
+      <div class="card" style="border-color:color-mix(in srgb,var(--flame) 40%,transparent)">
+        <p class="lbl" style="color:var(--flame)">✗ Todo abierto</p>
+        <pre class="sm" style="margin-top:10px;background:var(--sheet)">auto.velocidad = <span class="cd-n">500</span></pre>
+        <p style="margin-top:12px">El auto está apagado y ya va a 500. El dato <b>miente</b>.</p>
+      </div>
+      <div class="card" style="border-color:color-mix(in srgb,var(--good) 40%,transparent)">
+        <p class="lbl" style="color:var(--good)">✓ Con control</p>
+        <pre class="sm" style="margin-top:10px;background:var(--sheet)">auto.<span class="cd-fn">acelerar</span>()</pre>
+        <p style="margin-top:12px">El auto se fija si está encendido y sube de a poco, hasta su máximo.</p>
+      </div>
+    </div>
+    <p class="quote rv" style="text-align:center;margin-top:14px;font-size:38px">🔐 “No todo se toca directamente.”</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El mismo objetivo, dos caminos: uno peligroso y uno controlado.</dd>
+      <dt>Preguntá</dt><dd>“Si el auto está apagado y yo escribo <code>velocidad = 500</code>, ¿el auto se mueve?”</dd>
+      <dt>Respuesta esperada</dt><dd>No: el número cambió, el auto no. Es un dato imposible. <em>Ahí se entiende para qué sirve controlar el acceso.</em></dd>
+      <dt>Revelá cuando</dt><dd>Dieron la razón. La frase de abajo es la que se llevan.</dd>
+      <dt>Ojo</dt><dd><b>No</b> expliques getters y setters hoy. Si preguntan: “esos métodos de control tienen nombre, los vemos más adelante”.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="4" data-t="ACTIVIDAD 3 · Encapsulación">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Actividad 3</span>
+    <h2>¿Dejarías que esto pase?</h2>
+    <pre class="lg" style="margin-top:4px">jugador.vida = <span class="cd-n">-999999</span></pre>
+    <p class="ask" style="margin-top:14px">¿Debería <b>cualquier parte</b> del juego poder hacer esto?</p>
+    <div class="answer rv">
+      <p class="lbl">Lo que queremos</p>
+      <p>Que la vida se cambie <b>solo</b> a través de <span class="mono">jugador.recibir_daño(20)</span>, que se fija que nunca baje de 0.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El clásico chiste del hackeo. Usalo: se acuerdan de lo que da risa.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué pasaría en el juego si esto se pudiera hacer desde cualquier lado?”</dd>
+      <dt>Respuesta esperada</dt><dd>“Se rompe”, “hacés trampa”, “el personaje queda con vida negativa”.</dd>
+      <dt>Revelá cuando</dt><dd>Salga la palabra “trampa” o “bug”. Entonces mostrás la alternativa controlada.</dd>
+      <dt>Remate</dt><dd>“Encapsular no es esconder por esconder. Es que <b>solo el objeto</b> decida cómo cambian sus propios datos.”</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="🔐 Encapsulación en Python">
+  <div class="stack">
+    <span class="tag">🔐 Encapsulación · así se ve en código</span>
+    <div class="cols c2u" style="margin-top:2px;align-items:start">
+      <pre class="sm" style="font-size:17px"><span class="cd-k">class</span> <span class="cd-fn">Jugador</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.vida = <span class="cd-n">100</span>
+
+    <span class="cd-k">def</span> <span class="cd-fn">recibir_daño</span>(<span class="cd-k">self</span>, cantidad):
+        <span class="cd-k">self</span>.vida = <span class="cd-k">self</span>.vida - cantidad
+        <span class="cd-k">if</span> <span class="cd-k">self</span>.vida &lt; <span class="cd-n">0</span>:
+            <span class="cd-k">self</span>.vida = <span class="cd-n">0</span>   <span class="cd-c"># nunca menos de 0</span></pre>
+      <div class="stack" style="gap:14px">
+        <pre class="sm" style="font-size:17px">jugador.<span class="cd-fn">recibir_daño</span>(<span class="cd-n">30</span>)
+<span class="cd-fn">print</span>(jugador.vida)   <span class="cd-c"># 70</span>
+
+jugador.<span class="cd-fn">recibir_daño</span>(<span class="cd-n">500</span>)
+<span class="cd-fn">print</span>(jugador.vida)   <span class="cd-c"># 0, no -430</span></pre>
+        <div class="answer rv">
+          <p class="lbl">Ahí está el candado</p>
+          <p style="margin-top:6px">El <span class="mono">if</span> es la <b>única</b> razón por la que la vida no queda en negativo. Ese control vive <b>adentro</b> del objeto.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El método controlado que reemplaza a <code>jugador.vida = -999999</code> de la actividad anterior.</dd>
+      <dt>Preguntá</dt><dd>“Le pego 500 de daño a alguien con 100 de vida. ¿Cuánta vida le queda?”</dd>
+      <dt>Respuesta esperada</dt><dd>Van a decir −400. Dejalos. Después mostrales que da <b>0</b>, por el <code>if</code>.</dd>
+      <dt>Revelá cuando</dt><dd>Dijeron el número negativo. El contraste es lo que enseña.</dd>
+      <dt>Idea clave</dt><dd>Encapsular <b>no</b> es esconder: es que el dato solo se pueda cambiar pasando por un control. Sacá el <code>if</code> y el pilar desaparece.</dd>
+      <dt>Conectá</dt><dd>Volvé a la lámina del <code>acelerar()</code>: es el mismo mecanismo, ahora con una regla adentro.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="🧬 Herencia · la pregunta">
+  <div class="stack">
+    <span class="tag">🧬 Pilar 2 · Herencia</span>
+    <div class="cols c2u" style="align-items:center">
+      <div class="stack">
+        <p class="ask">¿Un perro <b>es un</b> animal?</p>
+        <p class="ask">¿Un gato <b>es un</b> animal?</p>
+        <p class="lead rv" style="margin-top:10px">Entonces… ¿por qué escribiríamos <span class="mono">nombre</span>, <span class="mono">edad</span>, <span class="mono">comer()</span> y <span class="mono">dormir()</span> <b>dos veces</b>?</p>
+      </div>
+      <div class="stack" style="align-items:center">
+        <div class="uml" style="width:220px">
+          <div class="uml-h">Animal</div>
+          <ul class="at"><li>nombre</li><li>edad</li></ul>
+          <ul class="me"><li>comer()</li><li>dormir()</li></ul>
+        </div>
+        <svg class="link" viewBox="0 0 400 50" preserveAspectRatio="none" style="height:40px"><path d="M200 0 V20 M70 20 H330 M70 20 V50 M330 20 V50"/></svg>
+        <div class="row rv" style="gap:20px;justify-content:center">
+          <div class="uml" style="width:170px;border-color:var(--accent)">
+            <div class="uml-h" style="background:var(--accent);font-size:20px">Perro 🐶</div>
+            <ul class="me"><li>ladrar()</li></ul>
+          </div>
+          <div class="uml" style="width:170px;border-color:var(--accent)">
+            <div class="uml-h" style="background:var(--accent);font-size:20px">Gato 🐱</div>
+            <ul class="me"><li>maullar()</li></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Las dos preguntas obvias primero. El árbol se completa después.</dd>
+      <dt>Preguntá</dt><dd>“¿Un perro es un animal? ¿Y un animal es un perro?”</dd>
+      <dt>Respuesta esperada</dt><dd>Sí / No. <em>Esa asimetría es toda la herencia: va en una sola dirección.</em></dd>
+      <dt>Revelá cuando</dt><dd>Contesten las dos. Aparecen Perro y Gato con <b>solo lo suyo</b>: el resto lo heredaron.</dd>
+      <dt>Señalá</dt><dd>Que Perro y Gato <b>igual tienen</b> nombre, edad, comer() y dormir(), aunque no estén escritos. Eso es heredar.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-opt="1" data-t="🧬 La regla ES UN">
+  <div class="stack mid-all">
+    <p class="lbl">La regla mental para saber si conviene heredar</p>
+    <p class="huge" style="color:var(--accent);font-size:100px;margin:8px 0">“ES UN”</p>
+    <div class="row rv" style="gap:16px;justify-content:center;margin-top:10px">
+      <span class="pill big">🐶 un perro <b>es un</b> animal</span>
+      <span class="pill big">🚗 un auto <b>es un</b> vehículo</span>
+      <span class="pill big">🧙 un mago <b>es un</b> personaje</span>
+    </div>
+    <p class="lead rv" style="text-align:center;margin-top:18px">Si no podés decir “es un”, probablemente <b>no</b> sea herencia.<br><span class="strike">un motor es un auto</span> → el motor <b>está en</b> el auto, es distinto.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El test de una frase.</dd>
+      <dt>Preguntá</dt><dd>“Díganme uno que funcione… y uno que <b>no</b>.”</dd>
+      <dt>Respuesta esperada</dt><dd>Funciona: pizza es una comida. No funciona: rueda es un auto.</dd>
+      <dt>Revelá cuando</dt><dd>Primero los tres ejemplos; después el contraejemplo del motor.</dd>
+      <dt>Idea clave</dt><dd>Heredar sirve para <b>no repetir</b>. Si estás copiando y pegando una clase, ahí hay una herencia esperando.</dd>
+      <dt>◇ Si vas corto</dt><dd>El árbol de la lámina anterior ya transmite la idea. Si vas corto, decí la regla “es un” de palabra y seguí.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="4" data-t="ACTIVIDAD 4 · Herencia">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Actividad 4</span>
+    <h2>Armemos el árbol</h2>
+    <div class="cols c2u" style="margin-top:4px">
+      <div class="stack gap-s">
+        <p class="ask sm">¿Cuál va arriba: <span class="mono">Instrumento</span> o <span class="mono">Guitarra</span>?</p>
+        <p class="ask sm">¿Qué pondrías en la clase de arriba?</p>
+        <p class="ask sm">¿Y qué <b>no</b> pondrías ahí?</p>
+      </div>
+      <div class="answer rv">
+        <p class="lbl">Una respuesta posible</p>
+        <p style="margin-top:8px"><b>Arriba:</b> <span class="mono">Instrumento</span> → nombre, material, <span class="mono">afinar()</span>, <span class="mono">sonar()</span></p>
+        <p style="margin-top:8px"><b>Abajo:</b> <span class="mono">Guitarra</span> → cuerdas, <span class="mono">rasguear()</span> · <span class="mono">Piano</span> → teclas</p>
+        <p style="margin-top:10px;font-size:20px;color:var(--ink-2)">En la de arriba va <b>solo lo que comparten todos</b>. <span class="mono">cuerdas</span> no va: el piano no tiene.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Tres preguntas encadenadas. La tercera es la difícil y la más valiosa.</dd>
+      <dt>Preguntá</dt><dd>Probá la tercera fuerte: “¿pondrías <code>cuerdas</code> en Instrumento? ¿Por qué no?”</dd>
+      <dt>Respuesta esperada</dt><dd>Porque no todos los instrumentos tienen cuerdas.</dd>
+      <dt>Revelá cuando</dt><dd>Alguien llegue a ese razonamiento solo. Es el momento pedagógico de la actividad.</dd>
+      <dt>Variante</dt><dd>Si tenés tiempo: hacelo con Vehículo, o con Personaje si son gamers.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="🧬 Herencia en Python">
+  <div class="stack">
+    <span class="tag">🧬 Herencia · así se ve en código</span>
+    <div class="cols c2u" style="margin-top:2px;align-items:start">
+      <pre class="sm" style="font-size:17px"><span class="cd-k">class</span> <span class="cd-fn">Animal</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre):
+        <span class="cd-k">self</span>.nombre = nombre
+
+    <span class="cd-k">def</span> <span class="cd-fn">comer</span>(<span class="cd-k">self</span>):
+        <span class="cd-fn">print</span>(<span class="cd-k">self</span>.nombre, <span class="cd-s">"está comiendo"</span>)
+
+
+<span class="cd-k">class</span> <span class="cd-fn">Perro</span>(<span class="cd-fn">Animal</span>):   <span class="cd-c"># Perro ES UN Animal</span>
+    <span class="cd-k">def</span> <span class="cd-fn">ladrar</span>(<span class="cd-k">self</span>):
+        <span class="cd-fn">print</span>(<span class="cd-s">"¡Guau!"</span>)</pre>
+      <div class="stack" style="gap:14px">
+        <pre class="sm" style="font-size:17px">firulais = <span class="cd-fn">Perro</span>(<span class="cd-s">"Firulais"</span>)
+
+firulais.<span class="cd-fn">ladrar</span>()
+<span class="cd-c"># ¡Guau!</span>
+
+firulais.<span class="cd-fn">comer</span>()
+<span class="cd-c"># Firulais está comiendo</span></pre>
+        <div class="answer rv">
+          <p class="lbl">La pregunta del millón</p>
+          <p style="margin-top:6px">¿Dónde está escrito <span class="mono">comer()</span> adentro de <span class="mono">Perro</span>?<br><b>En ningún lado. Lo heredó.</b></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Una sola cosa nueva en toda la sintaxis: el <code>(Animal)</code> entre paréntesis. Señalalo con el dedo.</dd>
+      <dt>Preguntá</dt><dd>“Miren <code>class Perro</code>. ¿Ven ahí adentro algún <code>comer()</code>?” Silencio. “Entonces, ¿por qué funciona la última línea?”</dd>
+      <dt>Respuesta esperada</dt><dd>“Porque lo sacó de Animal.” Esa es la palabra: lo <b>heredó</b>.</dd>
+      <dt>Revelá cuando</dt><dd>Alguien diga que viene de Animal. No antes: el silencio previo es el que hace que se entienda.</dd>
+      <dt>Idea clave</dt><dd>Escribimos <code>comer()</code> <b>una sola vez</b> y lo usan todos los animales. Agregar <code>class Gato(Animal)</code> son 3 líneas.</dd>
+      <dt>Ojo</dt><dd>Si preguntan por <code>super()</code> o por el <code>__init__</code> del hijo: “se puede, lo vemos la próxima”. No abras esa puerta hoy.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="🎭 Polimorfismo · misma orden">
+  <div class="stack">
+    <span class="tag">🎭 Pilar 3 · Polimorfismo</span>
+    <div style="display:grid;place-items:center;margin-top:2px">
+      <div class="pill m big" style="font-size:28px">hacer_sonido()</div>
+    </div>
+    <svg class="link" viewBox="0 0 900 60" preserveAspectRatio="none" style="height:46px"><path d="M450 0 V22 M150 22 H750 M150 22 V60 M450 22 V60 M750 22 V60"/></svg>
+    <div class="cols c3" style="text-align:center;gap:24px">
+      <div class="stack" style="align-items:center;gap:8px"><span class="emoji">🐶</span><span class="lbl">Perro</span><p class="huge rv" style="font-size:38px;color:var(--accent)">¡Guau!</p></div>
+      <div class="stack" style="align-items:center;gap:8px"><span class="emoji">🐱</span><span class="lbl">Gato</span><p class="huge rv" style="font-size:38px;color:var(--accent)">¡Miau!</p></div>
+      <div class="stack" style="align-items:center;gap:8px"><span class="emoji">🦆</span><span class="lbl">Pato</span><p class="huge rv" style="font-size:38px;color:var(--accent)">¡Cuac!</p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Una orden arriba, tres animales abajo, sin respuesta.</dd>
+      <dt>Preguntá</dt><dd>“Le doy la misma orden a los tres: <code>hacer_sonido()</code>. ¿Qué contesta cada uno?”</dd>
+      <dt>Respuesta esperada</dt><dd>Te lo van a gritar. Dejalos.</dd>
+      <dt>Revelá cuando</dt><dd>Uno por uno, mientras los gritan. Tres reveals seguidos.</dd>
+      <dt>Repreguntá</dt><dd>“¿Todos recibieron la misma orden?” Sí. “¿Todos respondieron igual?” No. <b>Ahí está el pilar.</b></dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="🎭 Mismo mensaje, distinta respuesta">
+  <div class="stack mid-all">
+    <p class="statement" style="text-align:center;max-width:22ch">Mismo mensaje.<br><span class="hl">Distinto comportamiento.</span></p>
+    <pre class="sm rv" style="margin-top:22px;text-align:left"><span class="cd-k">for</span> animal <span class="cd-k">in</span> [perro, gato, pato]:
+    animal.<span class="cd-fn">hacer_sonido</span>()   <span class="cd-c"># cada uno sabe qué hacer</span></pre>
+    <p class="lead rv" style="text-align:center;margin-top:16px">Yo no necesito saber cuál es cuál. <b>Cada objeto sabe cómo responder.</b></p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La frase, y después el código que la demuestra.</dd>
+      <dt>Preguntá</dt><dd>“En ese <code>for</code>, ¿yo escribí algún <code>if</code> para saber si es perro o gato?”</dd>
+      <dt>Respuesta esperada</dt><dd>No. Y eso es lo lindo: el código no cambia si mañana agrego una vaca.</dd>
+      <dt>Revelá cuando</dt><dd>Se hayan quedado con la frase unos segundos.</dd>
+      <dt>Dato</dt><dd>“Polimorfismo” significa literalmente <b>muchas formas</b>. Decilo al pasar, no lo hagas el centro.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="4" data-opt="1" data-t="ACTIVIDAD 5 · Polimorfismo">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Actividad 5</span>
+    <h2>¿Dónde ven “muchas formas”?</h2>
+    <div class="cols c3" style="margin-top:6px">
+      <div class="card"><p class="lbl">Caso A</p><p style="font-size:21px;margin-top:8px;color:var(--ink)">El botón <b>“abrir”</b> en un mail, en una foto y en un juego.</p></div>
+      <div class="card"><p class="lbl">Caso B</p><p style="font-size:21px;margin-top:8px;color:var(--ink)">La tecla <b>espacio</b> en YouTube, en un shooter y en un formulario.</p></div>
+      <div class="card"><p class="lbl">Caso C</p><p style="font-size:21px;margin-top:8px;color:var(--ink)">El método <span class="mono">imprimir()</span> en una factura, una foto y un ticket.</p></div>
+    </div>
+    <div class="answer rv" style="margin-top:12px">
+      <p class="lbl">Lo que tienen en común</p>
+      <p>En los tres: <b>una sola orden</b>, y cada cosa la interpreta a su manera. Eso es polimorfismo.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Tres ejemplos que ya viven en el celular de ellos.</dd>
+      <dt>Preguntá</dt><dd>“¿Cuál de los tres es polimorfismo?” <em>(Trampa: los tres.)</em></dd>
+      <dt>Respuesta esperada</dt><dd>Van a dudar. Que justifiquen cada uno antes de revelar.</dd>
+      <dt>Revelá cuando</dt><dd>Discutieron al menos dos casos.</dd>
+      <dt>Bonus</dt><dd>Pediles un cuarto ejemplo de su vida diaria. Los mejores salen de ellos.</dd>
+      <dt>◇ Si vas corto</dt><dd>Ya hicieron el perro/gato/pato. Si el tiempo aprieta, esta actividad se puede dejar como tarea.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="🎭 Polimorfismo en Python">
+  <div class="stack">
+    <span class="tag">🎭 Polimorfismo · así se ve en código</span>
+    <div class="cols c2u" style="margin-top:2px;align-items:start">
+      <pre class="sm" style="font-size:17px"><span class="cd-k">class</span> <span class="cd-fn">Perro</span>(<span class="cd-fn">Animal</span>):
+    <span class="cd-k">def</span> <span class="cd-fn">hacer_sonido</span>(<span class="cd-k">self</span>):
+        <span class="cd-fn">print</span>(<span class="cd-s">"¡Guau!"</span>)
+
+<span class="cd-k">class</span> <span class="cd-fn">Gato</span>(<span class="cd-fn">Animal</span>):
+    <span class="cd-k">def</span> <span class="cd-fn">hacer_sonido</span>(<span class="cd-k">self</span>):
+        <span class="cd-fn">print</span>(<span class="cd-s">"¡Miau!"</span>)
+
+<span class="cd-k">class</span> <span class="cd-fn">Pato</span>(<span class="cd-fn">Animal</span>):
+    <span class="cd-k">def</span> <span class="cd-fn">hacer_sonido</span>(<span class="cd-k">self</span>):
+        <span class="cd-fn">print</span>(<span class="cd-s">"¡Cuac!"</span>)</pre>
+      <div class="stack" style="gap:14px">
+        <pre class="sm" style="font-size:17px"><span class="cd-k">for</span> a <span class="cd-k">in</span> [perro, gato, pato]:
+    a.<span class="cd-fn">hacer_sonido</span>()
+
+<span class="cd-c"># ¡Guau!</span>
+<span class="cd-c"># ¡Miau!</span>
+<span class="cd-c"># ¡Cuac!</span></pre>
+        <div class="answer rv">
+          <p class="lbl">Contá los <span class="mono">if</span></p>
+          <p style="margin-top:6px"><b>Cero.</b> El <span class="mono">for</span> no sabe ni le importa quién es cada uno. Cada objeto sabe responder.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El mismo nombre de método, escrito tres veces de tres maneras. Es literalmente “muchas formas”.</dd>
+      <dt>Preguntá</dt><dd>“¿Cuántos <code>if</code> tuve que escribir para que cada uno haga su sonido?”</dd>
+      <dt>Respuesta esperada</dt><dd>Van a buscarlos. No hay ninguno. <em>Ese descubrimiento es el pilar.</em></dd>
+      <dt>Revelá cuando</dt><dd>Se den cuenta de que no hay <code>if</code>. Si no lo ven, preguntá: “¿y si mañana agrego una Vaca? ¿qué toco de este <code>for</code>?” → Nada.</dd>
+      <dt>Idea clave</dt><dd>Sin polimorfismo, ese <code>for</code> sería una cadena de <code>if tipo == "perro" … elif tipo == "gato"…</code> que crece con cada animal nuevo.</dd>
+      <dt>Conectá</dt><dd>Las tres clases heredan de Animal: sin herencia, no habría polimorfismo. Los pilares se usan juntos.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="🎨 Abstracción · la pregunta">
+  <div class="stack mid-all">
+    <p class="emoji">🎨</p>
+    <p class="ask" style="font-size:38px;max-width:26ch;margin-top:8px">Cuando apretás el freno, ¿sabés exactamente qué pasa adentro del auto?</p>
+    <div class="row rv" style="gap:14px;margin-top:20px;justify-content:center">
+      <span class="pill">pastillas de freno</span><span class="pill">líquido hidráulico</span><span class="pill">pistón</span><span class="pill">disco</span><span class="pill">ABS</span>
+    </div>
+    <p class="lead rv" style="text-align:center;margin-top:18px;font-size:30px">Y sin embargo, <b>frenás igual</b>. 🦶</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Solo la pregunta. Que se den cuenta de que no saben, y de que no importa.</dd>
+      <dt>Preguntá</dt><dd>“¿Alguien sabe cómo funciona un freno por dentro? ¿Y eso les impide frenar?”</dd>
+      <dt>Respuesta esperada</dt><dd>No / No. Risas.</dd>
+      <dt>Revelá cuando</dt><dd>Primero las palabras técnicas (que no entiendan es <b>el punto</b>), después el remate.</dd>
+      <dt>Otro ejemplo</dt><dd>Mandar un mensaje por WhatsApp: apretás enviar y no sabés nada de lo que pasa en el medio.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="🎨 Abstracción · la idea">
+  <div class="stack">
+    <span class="tag">🎨 Pilar 4 · Abstracción</span>
+    <h2>Me quedo con lo importante</h2>
+    <div class="cols c2" style="align-items:center;margin-top:8px">
+      <div class="stack" style="align-items:center;gap:12px">
+        <p class="lbl">Lo que vos escribís</p>
+        <pre class="lg" style="width:100%;text-align:center">auto.<span class="cd-fn">frenar</span>()</pre>
+      </div>
+      <div class="stack" style="align-items:center;gap:12px">
+        <p class="lbl">Lo que pasa adentro</p>
+        <pre class="sm" style="width:100%;font-size:15px"><span class="cd-k">def</span> <span class="cd-fn">frenar</span>(<span class="cd-k">self</span>):
+    <span class="cd-k">self</span>.<span class="cd-fn">calcular_presion</span>()
+    <span class="cd-k">self</span>.<span class="cd-fn">activar_pistones</span>()
+    <span class="cd-k">if</span> <span class="cd-k">self</span>.derrapando:
+        <span class="cd-k">self</span>.<span class="cd-fn">activar_abs</span>()
+    <span class="cd-k">self</span>.<span class="cd-fn">encender_luces</span>()
+    <span class="cd-k">self</span>.velocidad = <span class="cd-n">0</span></pre>
+      </div>
+    </div>
+    <p class="quote rv" style="text-align:center;margin-top:16px;font-size:36px">🎨 “Me quedo con lo importante y escondo lo complicado.”</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Una línea simple contra cinco líneas feas. La comparación se explica sola.</dd>
+      <dt>Preguntá</dt><dd>“¿Cuál de los dos lados querés escribir vos cada vez que el auto tiene que frenar?”</dd>
+      <dt>Respuesta esperada</dt><dd>El de la izquierda, obvio.</dd>
+      <dt>Revelá cuando</dt><dd>Lo digan. La frase de abajo cierra el pilar.</dd>
+      <dt>Diferencia con encapsulación</dt><dd>Si preguntan: encapsular es <b>proteger</b>; abstraer es <b>simplificar</b>. Van de la mano pero no son lo mismo.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="4" data-opt="1" data-t="ACTIVIDAD 6 · Abstracción">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Actividad 6</span>
+    <h2>Diseñá el control remoto</h2>
+    <p class="lead">Tenés que hacer la clase <span class="mono">Televisor</span>. Por dentro es un monstruo: señal, pixeles, sonido, wifi…</p>
+    <p class="ask" style="margin-top:10px">¿Qué métodos le ofrecerías a quien la usa?</p>
+    <div class="answer rv">
+      <p class="lbl">Lo que casi siempre alcanza</p>
+      <div class="pills" style="margin-top:10px">
+        <span class="pill m">encender()</span><span class="pill m">apagar()</span><span class="pill m">subir_volumen()</span><span class="pill m">cambiar_canal()</span>
+      </div>
+      <p style="margin-top:12px;font-size:20px;color:var(--ink-2)">Cuatro botones para algo que por dentro tiene miles de piezas. <b>Eso es abstraer.</b></p>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Los pone del lado del que <b>diseña</b>, no del que usa.</dd>
+      <dt>Preguntá</dt><dd>“¿Pondrían un botón <code>ajustar_frecuencia_de_pixel()</code>? ¿Por qué no?”</dd>
+      <dt>Respuesta esperada</dt><dd>Porque nadie lo usaría y complica el control remoto.</dd>
+      <dt>Revelá cuando</dt><dd>Propusieron sus propios métodos. Compará su lista con la de la pantalla.</dd>
+      <dt>Duración</dt><dd>~3 min.</dd>
+      <dt>◇ Si vas corto</dt><dd>La abstracción se retoma en el videojuego (Bloque 5). Si vas corto, saltala: no perdés el hilo.</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 5 · DISEÑEMOS UN VIDEOJUEGO ══════════ -->
+
+<section class="slide" data-b="5" data-t="Diseñemos un videojuego">
+  <div class="stack mid-all">
+    <span class="tag">Bloque 5 · Gran actividad</span>
+    <p class="emoji" style="font-size:80px">🎮</p>
+    <p class="statement" style="text-align:center;max-width:20ch;margin-top:8px">Diseñemos un <span class="hl">videojuego</span>.</p>
+    <p class="lead rv" style="text-align:center;margin-top:12px">Sin escribir una línea de código. Solo pensando como programadores.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Cambio de energía. Esta es la parte que más participación genera.</dd>
+      <dt>Decí</dt><dd>“Vamos a diseñar un juego entre todos. Yo solo escribo lo que ustedes digan.”</dd>
+      <dt>Revelá cuando</dt><dd>Enseguida. Aclarar que <b>no hay que programar</b> baja mucho la ansiedad.</dd>
+      <dt>Preparate</dt><dd>Tené el pizarrón libre: vas a anotar todo lo que digan.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="¿Qué objetos existen?">
+  <div class="stack">
+    <h2>Primero: ¿qué <span class="hl">objetos</span> existen en el juego?</h2>
+    <p class="lead">Ustedes dicen, yo anoto.</p>
+    <div class="pills rv" style="margin-top:18px">
+      <span class="pill big">🧍 Jugador</span><span class="pill big">👾 Enemigo</span><span class="pill big">⚔️ Arma</span>
+      <span class="pill big">🪙 Moneda</span><span class="pill big">🧪 Poción</span><span class="pill big">🗺️ Nivel</span>
+      <span class="pill big">🚪 Puerta</span><span class="pill big">🎒 Inventario</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El título y nada más. <b>No reveles la lista todavía.</b></dd>
+      <dt>Preguntá</dt><dd>“Pensemos un juego cualquiera. ¿Qué cosas hay adentro? Tírenme diez.”</dd>
+      <dt>Respuesta esperada</dt><dd>Jugador, enemigo, arma, moneda, jefe, mapa, vida, tienda…</dd>
+      <dt>Revelá cuando</dt><dd>Ya juntaste 6 o más de ellos. Revelá y celebrá las coincidencias.</dd>
+      <dt>Ojo</dt><dd>Si alguien dice “puntaje” o “vida”, preguntá: “¿eso es un objeto o es un <b>dato</b> del jugador?” Buenísima discusión.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="Elegimos: JUGADOR">
+  <div class="stack">
+    <div class="row" style="align-items:center;gap:16px"><span class="emoji">🧍</span><h2>Elegimos el <span class="hl">Jugador</span></h2></div>
+    <div class="cols c2" style="margin-top:10px">
+      <div class="stack">
+        <p class="ask sm">¿Qué información tiene?</p>
+        <div class="pills rv" style="margin-top:6px">
+          <span class="pill a">nombre</span><span class="pill a">vida</span><span class="pill a">nivel</span>
+          <span class="pill a">velocidad</span><span class="pill a">monedas</span><span class="pill a">posicion</span>
+        </div>
+      </div>
+      <div class="stack">
+        <p class="ask sm">¿Qué puede hacer?</p>
+        <div class="pills rv" style="margin-top:6px">
+          <span class="pill m">caminar()</span><span class="pill m">saltar()</span><span class="pill m">atacar()</span>
+          <span class="pill m">curarse()</span><span class="pill m">morir()</span>
+        </div>
+      </div>
+    </div>
+    <p class="lead rv" style="text-align:center;margin-top:16px">Datos → <b style="color:var(--flame)">atributos</b> &nbsp;·&nbsp; Acciones → <b style="color:var(--teal)">métodos</b>. <b>Las mismas dos preguntas de siempre.</b></p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Las dos columnas vacías. Se llenan con lo que ellos digan.</dd>
+      <dt>Preguntá</dt><dd>Primero: “¿qué <b>tiene</b> un jugador?”. Recién después: “¿qué <b>hace</b>?”. Nunca las dos juntas.</dd>
+      <dt>Respuesta esperada</dt><dd>Vida, nombre, nivel, monedas / correr, saltar, atacar, morir.</dd>
+      <dt>Revelá cuando</dt><dd>Una columna por vez, después de cada ronda de respuestas.</dd>
+      <dt>Momento clave</dt><dd>Que noten que hicieron <b>exactamente lo mismo</b> que con el auto. Ahí se consolida el modelo mental.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="🧬 ¿Dónde aparece la herencia?">
+  <div class="stack">
+    <span class="tag">🧬 Herencia en nuestro juego</span>
+    <p class="ask">El Jugador y el Enemigo… ¿qué tienen en común?</p>
+    <div class="stack rv" style="align-items:center;margin-top:6px">
+      <div class="uml" style="width:250px">
+        <div class="uml-h">Personaje</div>
+        <ul class="at"><li>nombre</li><li>vida</li><li>posicion</li></ul>
+        <ul class="me"><li>moverse()</li><li>recibir_daño()</li><li>morir()</li></ul>
+      </div>
+      <svg class="link" viewBox="0 0 500 46" preserveAspectRatio="none" style="height:38px"><path d="M250 0 V18 M110 18 H390 M110 18 V46 M390 18 V46"/></svg>
+      <div class="row" style="gap:26px;justify-content:center">
+        <div class="uml" style="width:210px;border-color:var(--accent)">
+          <div class="uml-h" style="background:var(--accent);font-size:21px">Jugador 🧍</div>
+          <ul class="at"><li>monedas</li></ul><ul class="me"><li>saltar()</li></ul>
+        </div>
+        <div class="uml" style="width:210px;border-color:var(--accent)">
+          <div class="uml-h" style="background:var(--accent);font-size:21px">Enemigo 👾</div>
+          <ul class="at"><li>dificultad</li></ul><ul class="me"><li>perseguir()</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La pregunta sola. El árbol lo armás <b>después</b> de que ellos encuentren lo común.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué comparten un jugador y un enemigo? ¿Los dos tienen vida? ¿Los dos se mueven?”</dd>
+      <dt>Respuesta esperada</dt><dd>Vida, posición, moverse, morir.</dd>
+      <dt>Revelá cuando</dt><dd>Listaron 3 cosas en común. Ahí decís: “todo eso lo escribimos <b>una sola vez</b>, en Personaje”.</dd>
+      <dt>Repregunta</dt><dd>“¿Y si mañana agrego un Jefe Final? ¿Cuánto tengo que escribir?” → Casi nada. Ese es el premio.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="🎭 ¿Dónde el polimorfismo?">
+  <div class="stack">
+    <span class="tag">🎭 Polimorfismo en nuestro juego</span>
+    <div style="display:grid;place-items:center;margin-top:6px">
+      <div class="pill m big" style="font-size:30px">atacar()</div>
+    </div>
+    <svg class="link" viewBox="0 0 800 56" preserveAspectRatio="none" style="height:46px"><path d="M400 0 V22 M140 22 H660 M140 22 V56 M400 22 V56 M660 22 V56"/></svg>
+    <div class="cols c3" style="text-align:center;gap:22px">
+      <div class="stack" style="align-items:center;gap:6px"><span class="emoji">🧍</span><span class="lbl">Jugador</span><p class="huge rv" style="font-size:26px;color:var(--accent)">⚔️ espadazo</p></div>
+      <div class="stack" style="align-items:center;gap:6px"><span class="emoji">🐉</span><span class="lbl">Dragón</span><p class="huge rv" style="font-size:26px;color:var(--accent)">🔥 bola de fuego</p></div>
+      <div class="stack" style="align-items:center;gap:6px"><span class="emoji">🏹</span><span class="lbl">Arquero</span><p class="huge rv" style="font-size:26px;color:var(--accent)">🎯 flecha</p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Un método, tres personajes, sin respuestas.</dd>
+      <dt>Preguntá</dt><dd>“Todos saben <code>atacar()</code>. ¿Atacan igual?”</dd>
+      <dt>Respuesta esperada</dt><dd>No: espada, fuego, flechas. Que inventen ellos los ataques.</dd>
+      <dt>Revelá cuando</dt><dd>Uno por uno, después de cada propuesta.</dd>
+      <dt>Cerrá</dt><dd>“El juego solo grita <code>atacar()</code>. Cada personaje sabe qué significa eso <b>para él</b>.”</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="🔐 ¿Qué protegeríamos?">
+  <div class="stack">
+    <span class="tag">🔐 Encapsulación en nuestro juego</span>
+    <p class="ask">De todo lo que tiene el Jugador, ¿qué hay que <b>proteger</b>?</p>
+    <div class="cols c2 rv" style="margin-top:14px">
+      <div class="card" style="border-color:color-mix(in srgb,var(--flame) 40%,transparent)">
+        <p class="lbl" style="color:var(--flame)">🔒 Proteger</p>
+        <div class="pills" style="margin-top:10px"><span class="pill">vida</span><span class="pill">monedas</span><span class="pill">nivel</span></div>
+        <p style="margin-top:12px;font-size:19px">Solo se cambian con métodos: <span class="mono">recibir_daño()</span>, <span class="mono">cobrar()</span>, <span class="mono">subir_nivel()</span>.</p>
+      </div>
+      <div class="card">
+        <p class="lbl">🔓 Se pueden tocar</p>
+        <div class="pills" style="margin-top:10px"><span class="pill">nombre</span><span class="pill">color_de_ropa</span></div>
+        <p style="margin-top:12px;font-size:19px">Si te cambiás el nombre, no se rompe nada.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La decisión de diseño: qué se protege y qué no.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué pasaría si cualquiera pudiera hacer <code>jugador.monedas = 999999</code>?”</dd>
+      <dt>Respuesta esperada</dt><dd>“Sería hacer trampa.” Exacto: por eso se protege.</dd>
+      <dt>Revelá cuando</dt><dd>Hayan separado al menos dos de cada lado ellos mismos.</dd>
+      <dt>Idea clave</dt><dd>No se protege <b>todo</b>. Se protege lo que, si se rompe, arruina el juego.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="🎨 ¿Qué podemos abstraer?">
+  <div class="stack">
+    <span class="tag">🎨 Abstracción en nuestro juego</span>
+    <pre class="lg" style="margin-top:4px">jugador.<span class="cd-fn">atacar</span>()</pre>
+    <p class="ask" style="margin-top:12px">¿Necesitás saber todo lo que pasa adentro para usarlo?</p>
+    <div class="answer rv">
+      <p class="lbl">Lo que pasa realmente</p>
+      <p class="mono" style="font-size:16px;line-height:1.7;color:var(--ink-2);margin-top:8px">buscar_enemigo_cercano() → calcular_daño(arma, nivel) → reproducir_animacion() → reproducir_sonido() → aplicar_daño() → actualizar_pantalla()</p>
+      <p style="margin-top:14px"><b>Seis pasos, una sola línea.</b> El que usa el objeto solo necesita <span class="mono">atacar()</span>.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Cierra el círculo: el mismo ejemplo del freno, ahora en el juego.</dd>
+      <dt>Preguntá</dt><dd>“¿Cuántas cosas creen que pasan cuando aprietan el botón de ataque en un juego?”</dd>
+      <dt>Respuesta esperada</dt><dd>Van a subestimarlo. Por eso el reveal impacta.</dd>
+      <dt>Revelá cuando</dt><dd>Tiraron un par de números. Después mostrá la cadena completa.</dd>
+      <dt>Remate</dt><dd>“Ustedes ya usan abstracción todos los días. Ahora saben cómo se llama.”</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 6 · CIERRE ══════════ -->
+
+<section class="slide" data-b="6" data-t="¿Qué aprendimos?">
+  <div class="stack">
+    <span class="tag">Bloque 6 · Cierre</span>
+    <h2>¿Qué aprendimos hoy?</h2>
+    <div class="cols c4" style="margin-top:12px">
+      <div class="card acc"><p class="lbl">1</p><p class="huge" style="font-size:26px;margin-top:6px">Objeto</p><p style="margin-top:6px;font-size:19px">Tiene datos y hace cosas.</p></div>
+      <div class="card acc"><p class="lbl">2</p><p class="huge" style="font-size:26px;margin-top:6px">Clase</p><p style="margin-top:6px;font-size:19px">El molde que los fabrica.</p></div>
+      <div class="card acc"><p class="lbl">3</p><p class="huge" style="font-size:26px;margin-top:6px;color:var(--flame)">Atributos</p><p style="margin-top:6px;font-size:19px">Lo que el objeto <b>tiene</b>.</p></div>
+      <div class="card acc"><p class="lbl">4</p><p class="huge" style="font-size:26px;margin-top:6px;color:var(--teal)">Métodos</p><p style="margin-top:6px;font-size:19px">Lo que el objeto <b>hace</b>.</p></div>
+    </div>
+    <p class="quote rv" style="text-align:center;margin-top:20px;font-size:34px">“La clase describe. El objeto existe.”</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Los cuatro conceptos que <b>sí</b> tienen que llevarse.</dd>
+      <dt>Preguntá</dt><dd>Señalá cada tarjeta y que la expliquen ellos, sin leerla.</dd>
+      <dt>Revelá cuando</dt><dd>Recorrieron las cuatro. La frase final la dicen ellos, no vos.</dd>
+      <dt>Si algo falla</dt><dd>Si dudan entre clase y objeto, volvé a la analogía del molde antes de cerrar la clase.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="6" data-t="Los 4 pilares en 4 frases">
+  <div class="stack">
+    <h2>Los 4 pilares, en una frase cada uno</h2>
+    <div class="stack gap-s" style="margin-top:12px">
+      <div class="card acc row" style="align-items:center;gap:20px"><span class="emoji sm">🔐</span><div><p class="huge" style="font-size:24px">Encapsulación</p><p style="font-size:21px;margin-top:2px">No todo se toca directamente.</p></div></div>
+      <div class="card acc row" style="align-items:center;gap:20px"><span class="emoji sm">🧬</span><div><p class="huge" style="font-size:24px">Herencia</p><p style="font-size:21px;margin-top:2px">Si <b>es un</b>, lo hereda y no lo repetimos.</p></div></div>
+      <div class="card acc row" style="align-items:center;gap:20px"><span class="emoji sm">🎭</span><div><p class="huge" style="font-size:24px">Polimorfismo</p><p style="font-size:21px;margin-top:2px">Misma orden, distinta respuesta.</p></div></div>
+      <div class="card acc row" style="align-items:center;gap:20px"><span class="emoji sm">🎨</span><div><p class="huge" style="font-size:24px">Abstracción</p><p style="font-size:21px;margin-top:2px">Me quedo con lo importante, escondo lo complicado.</p></div></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La única “lista de definiciones” de toda la clase, y llega recién al final.</dd>
+      <dt>Preguntá</dt><dd>“Sin mirar: ¿cuál era el del perro, el gato y el pato?”</dd>
+      <dt>Respuesta esperada</dt><dd>Polimorfismo. Las frases funcionan como gancho de memoria.</dd>
+      <dt>Aclará</dt><dd>“No hace falta que se los sepan de memoria hoy. Los vamos a usar todo el año.”</dd>
+      <dt>Tip</dt><dd>Esta es la diapositiva para sacarle foto. Decíselo.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="6" data-t="Desafío final · La biblioteca">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Desafío final · Entre todos</span>
+    <h2>📚 Tenemos que programar una biblioteca</h2>
+    <p class="ask" style="margin-top:6px">¿Qué objetos existirían?</p>
+    <div class="row rv" style="gap:18px;margin-top:12px">
+      <div class="uml" style="width:210px"><div class="uml-h">Libro</div><ul class="at"><li>titulo</li><li>autor</li><li>prestado</li></ul><ul class="me"><li>prestar()</li><li>devolver()</li></ul></div>
+      <div class="uml" style="width:210px"><div class="uml-h">Usuario</div><ul class="at"><li>nombre</li><li>socio_nro</li></ul><ul class="me"><li>pedir_libro()</li><li>devolver_libro()</li></ul></div>
+      <div class="uml" style="width:210px"><div class="uml-h">Bibliotecario</div><ul class="at"><li>nombre</li><li>turno</li></ul><ul class="me"><li>registrar()</li><li>buscar()</li></ul></div>
+    </div>
+    <p class="ask sm rv" style="margin-top:14px">Y ahora la difícil: ¿qué dato de <span class="mono">Libro</span> <b>protegerías</b>?</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El mismo razonamiento de la clase, aplicado a un dominio nuevo. Es la evaluación real de si entendieron.</dd>
+      <dt>Preguntá</dt><dd>Por partes: (1) ¿qué objetos hay? (2) ¿qué tiene un Libro? (3) ¿qué hace un Usuario?</dd>
+      <dt>Respuesta esperada</dt><dd>Libro, Usuario, Bibliotecario, Préstamo, Estantería. Todas válidas.</dd>
+      <dt>Revelá cuando</dt><dd>Propusieron sus objetos. Aclarales que <b>no hay una única respuesta correcta</b>.</dd>
+      <dt>La difícil</dt><dd><code>prestado</code>: no puede cambiarse a mano, tiene que pasar por <code>prestar()</code>. Si llegan solos a eso, la clase fue un éxito.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="6" data-t="Las preguntas que nos llevamos">
+  <div class="stack">
+    <h2>Frente a cualquier problema, preguntate:</h2>
+    <div class="cols c2" style="margin-top:14px;gap:14px 40px">
+      <p style="font-size:24px">🧠 &nbsp;¿Qué <b>objetos</b> existen?</p>
+      <p style="font-size:24px">🔐 &nbsp;¿Qué necesitamos <b>proteger</b>?</p>
+      <p style="font-size:24px">📦 &nbsp;¿Qué <b>información</b> tienen?</p>
+      <p style="font-size:24px">🧬 &nbsp;¿Qué podemos <b>reutilizar</b>?</p>
+      <p style="font-size:24px">⚙️ &nbsp;¿Qué <b>pueden hacer</b>?</p>
+      <p style="font-size:24px">🎭 &nbsp;¿Qué se comporta de <b>distintas maneras</b>?</p>
+      <p style="font-size:24px;grid-column:1/-1">🎨 &nbsp;¿Qué <b>complejidad</b> podemos esconder?</p>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Las siete preguntas. Es la herramienta que se llevan, no una lista de contenidos.</dd>
+      <dt>Decí</dt><dd>“Cópienlas. Cuando les den un problema nuevo, empiecen por acá y no por el teclado.”</dd>
+      <dt>Revelá cuando</dt><dd>No hay reveal: dejala en pantalla mientras copian.</dd>
+      <dt>Cierre de clase</dt><dd>Pediles que elijan <b>una</b> pregunta y digan por qué les parece la más importante.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="6" data-t="Tarea · 1 · Mirá a tu alrededor">
+  <div class="stack" style="gap:18px">
+    <span class="tag">Tarea · Parte 1 de 3</span>
+    <h2>Mirá a tu alrededor 👀</h2>
+    <p class="lead">Elegí <b>3 objetos</b>: uno de tu casa, uno de la escuela y uno de un juego que juegues.</p>
+    <div class="cols c2" style="align-items:start">
+      <div class="card acc">
+        <p class="lbl">Para cada uno, escribí</p>
+        <p style="font-size:22px;margin-top:10px;color:var(--ink)">¿Qué <b>TIENE</b>? → 3 atributos<br>¿Qué <b>PUEDE HACER</b>? → 3 métodos</p>
+        <p style="margin-top:12px;font-size:19px">Truco: los atributos son <b>sustantivos</b>, los métodos son <b>verbos</b> con <span class="mono">()</span>.</p>
+      </div>
+      <div class="card rv">
+        <p class="lbl" style="color:var(--good)">Ejemplo resuelto</p>
+        <p class="huge" style="font-size:22px;margin-top:8px">MOCHILA 🎒</p>
+        <div class="pills" style="margin-top:10px"><span class="pill a">color</span><span class="pill a">capacidad</span><span class="pill a">marca</span></div>
+        <div class="pills" style="margin-top:8px"><span class="pill m">abrir()</span><span class="pill m">guardar()</span><span class="pill m">pesar()</span></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La primera parte de la tarea. Es la más fácil a propósito: que arranquen con una victoria.</dd>
+      <dt>Decí</dt><dd>“Sáquenle una foto a estas tres láminas. No hay que entregar nada escrito en la compu: con la carpeta alcanza.”</dd>
+      <dt>Revelá cuando</dt><dd>Terminaste de leer la consigna. El ejemplo de la mochila es para que nadie arranque en blanco.</dd>
+      <dt>Qué esperás</dt><dd>Que ningún método quede sin <code>()</code> y que ningún atributo sea un verbo. Ese es todo el criterio de corrección de esta parte.</dd>
+      <dt>Duración</dt><dd>~10 min en casa.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="6" data-t="Tarea · 2 · Pensá antes de escribir">
+  <div class="stack" style="gap:16px">
+    <span class="tag">Tarea · Parte 2 de 3</span>
+    <h2>Tres preguntas para pensar</h2>
+    <div class="cols c3" style="align-items:stretch">
+      <div class="card">
+        <p class="num">EJERCICIO 1</p>
+        <p style="font-size:20px;margin-top:8px;color:var(--ink)">En cada par, ¿cuál es la <b>clase</b> y cuál el <b>objeto</b>?</p>
+        <p style="margin-top:10px;font-size:19px">a. receta de pizza / la pizza de anoche<br>b. perro / tu perro<br>c. ficha de personaje / Kratos nivel 40</p>
+      </div>
+      <div class="card">
+        <p class="num">EJERCICIO 2</p>
+        <p style="font-size:20px;margin-top:8px;color:var(--ink)">Armá el árbol con: <b>Vehículo, Bicicleta, Auto, Camión</b>.</p>
+        <p style="margin-top:10px;font-size:19px">¿Quién va arriba? ¿Qué atributos y métodos pondrías en la de arriba, para no repetirlos?</p>
+      </div>
+      <div class="card">
+        <p class="num">EJERCICIO 3 · la difícil</p>
+        <p style="font-size:20px;margin-top:8px;color:var(--ink)">¿Cuál de estas <b>NO</b> es herencia?</p>
+        <p style="margin-top:10px;font-size:19px">🐱 un gato es un animal<br>🛞 una rueda es un auto<br>🧑‍🏫 un profesor es una persona</p>
+        <p class="dim" style="margin-top:10px;font-size:18px">Explicá por qué.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Tres ejercicios de razonamiento puro. Ni una línea de código.</dd>
+      <dt>Respuestas</dt><dd><b>1.</b> Siempre la clase es la primera. <b>2.</b> Vehículo arriba (marca, color, velocidad, arrancar(), frenar()); las otras tres abajo. <b>3.</b> La rueda: <b>está en</b> el auto, no <b>es un</b> auto.</dd>
+      <dt>La clave</dt><dd>El ejercicio 3 es el que separa a quien entendió. Si mañana solo podés corregir uno, corregí ese.</dd>
+      <dt>Revelá cuando</dt><dd>No hay reveal: las respuestas están acá en tus notas, no en pantalla. Que las piensen ellos.</dd>
+      <dt>Duración</dt><dd>~15 min en casa.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="6" data-t="Tarea · 3 · Los pilares en tu celular">
+  <div class="stack" style="gap:16px">
+    <span class="tag">Tarea · Parte 3 de 3</span>
+    <h2>Buscá los 4 pilares en tu celular 📱</h2>
+    <div class="cols c2" style="gap:14px 28px">
+      <div class="card acc"><p class="lbl">🔐 Encapsulación</p><p style="font-size:20px;margin-top:8px;color:var(--ink)">Nombrá un dato de una app tuya que <b>no podés</b> cambiar a mano. ¿Por qué está bien que sea así?</p></div>
+      <div class="card acc"><p class="lbl">🧬 Herencia</p><p style="font-size:20px;margin-top:8px;color:var(--ink)">Un post, una historia y un reel: ¿qué <b>comparten</b>? ¿Cómo llamarías a la clase padre?</p></div>
+      <div class="card acc"><p class="lbl">🎭 Polimorfismo</p><p style="font-size:20px;margin-top:8px;color:var(--ink)">El botón ▶️ en Spotify, en YouTube y en un juego: misma orden. ¿Misma respuesta?</p></div>
+      <div class="card acc"><p class="lbl">🎨 Abstracción</p><p style="font-size:20px;margin-top:8px;color:var(--ink)">Cuando mandás un audio por WhatsApp, ¿qué cosas <b>no necesitás</b> saber para poder mandarlo?</p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Un pilar por tarjeta, todos en el mundo de ellos. Es la parte que más les va a gustar.</dd>
+      <dt>Respuestas posibles</dt><dd><b>🔐</b> la cantidad de seguidores, el saldo de Mercado Pago, tu nivel en un juego. <b>🧬</b> autor, fecha, likes, comentarios → clase padre: <code>Publicación</code>. <b>🎭</b> misma orden, tres respuestas distintas. <b>🎨</b> compresión, servidores, internet, cifrado: nada de eso hace falta saber.</dd>
+      <dt>Aclarales</dt><dd>No hay una única respuesta correcta. Se corrige <b>la explicación</b>, no el ejemplo elegido.</dd>
+      <dt>Para la clase que viene</dt><dd>Arrancá pidiendo tres respuestas de esta parte. Es el mejor repaso posible y no te lleva más de 5 minutos.</dd>
+      <dt>Duración</dt><dd>~15 min en casa.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="6" data-t="Tarea · Bonus · Un poco de código">
+  <div class="stack" style="gap:16px">
+    <span class="tag">Bonus · solo si te dan ganas</span>
+    <h2>¿Y si lo escribimos?</h2>
+    <div class="cols c2u" style="align-items:start">
+      <pre class="sm" style="font-size:18px"><span class="cd-k">class</span> <span class="cd-fn">Mascota</span>:
+
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.energia = <span class="cd-n">100</span>
+
+    <span class="cd-k">def</span> <span class="cd-fn">jugar</span>(<span class="cd-k">self</span>):
+        <span class="cd-c"># ← completá vos</span></pre>
+      <div class="stack gap-s">
+        <div class="card"><p style="font-size:20px;color:var(--ink)"><b>1.</b> Que <span class="mono">jugar()</span> baje la energía en 20.</p></div>
+        <div class="card"><p style="font-size:20px;color:var(--ink)"><b>2.</b> Que la energía <b>nunca</b> baje de 0.</p></div>
+        <div class="card"><p style="font-size:20px;color:var(--ink)"><b>3.</b> Creá 2 mascotas y hacé que una juegue 6 veces.</p></div>
+        <p class="dim rv" style="font-size:19px">Si lo resolvés, usaste <b>atributos, métodos, self, __init__</b> y <b>encapsulación</b>, todo junto.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Opcional de verdad: decíselo. El que no lo hace no queda atrás.</dd>
+      <dt>Por qué este ejercicio</dt><dd>Junta todo lo de hoy en 10 líneas: <code>__init__</code>, <code>self</code>, un método que <b>modifica</b> un atributo, y el <code>if</code> que impide el valor imposible. Es el <code>recibir_daño()</code> de la clase, con otro disfraz.</dd>
+      <dt>La trampa buena</dt><dd>El punto 3 pide jugar <b>6</b> veces: 6 × 20 = 120, más que la energía inicial. Si no pusieron el <code>if</code>, les va a dar energía negativa. <em>Ahí se dan cuenta solos de para qué servía encapsular.</em></dd>
+      <dt>Revelá cuando</dt><dd>Al final, para que se lleven la sensación de que hoy aprendieron bastante más de lo que creen.</dd>
+      <dt>Duración</dt><dd>~20 min en casa, para quien lo encare.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="6" data-t="Reflexión final">
+  <div class="stack mid-all">
+    <p class="statement" style="text-align:center;max-width:26ch;font-size:56px">POO no se trata de memorizar cuatro palabras.</p>
+    <p class="quote rv" style="text-align:center;max-width:30ch;margin-top:26px;font-size:40px;color:var(--accent)">“Hoy no aprendimos una sintaxis nueva.<br>Aprendimos una <b>forma nueva de pensar</b> nuestros programas.”</p>
+    <p class="lbl rv" style="margin-top:28px">Nos vemos la próxima 👋</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El cierre. Bajá la voz y dejá silencio antes de revelar la frase.</dd>
+      <dt>Decí</dt><dd>“Si dentro de un mes se olvidaron de <code>self</code>, no pasa nada. Si se olvidan de preguntarse ‘¿qué objetos hay acá?’, ahí sí perdimos la clase.”</dd>
+      <dt>Revelá cuando</dt><dd>Después del silencio. Es la última imagen que se llevan.</dd>
+      <dt>Próxima clase</dt><dd>Adelantales lo que sigue: <code>super()</code>, para que la clase hija agregue sus propios atributos sin repetir los del padre; herencia de varios niveles; métodos que <b>devuelven</b> un valor en vez de imprimirlo; y objetos que viven adentro de otros objetos (un <code>Jugador</code> que tiene un <code>Arma</code>).</dd>
+    </dl>
+  </aside>
+</section>
+
+  </div>
+</div>
+
+<div class="bar">
+  <span class="blockname mono" id="barBlock">Bloque 1</span>
+  <div class="seg" id="seg"></div>
+  <span class="clock" id="clock">00:00</span>
+  <button id="btnNotes" aria-pressed="false" title="Notas del profesor (N)">Notas · N</button>
+  <button id="btnOv" title="Índice de diapositivas (O)">Índice · O</button>
+  <button id="btnLock" aria-pressed="false" title="Bloquear el avance por clic — para señalar con el mouse sin pasar de lámina (L)">👆</button>
+  <button id="btnFs" title="Pantalla completa (F)">⛶</button>
+  <span class="hint">← → avanzar · <span class="kbd">N</span> notas · <span class="kbd">O</span> índice · <span class="kbd">L</span> bloquear clic</span>
+  <span class="count" id="count">1 / 52</span>
+</div>
+
+<div class="notes-drawer" id="drawer" aria-live="polite">
+  <div class="nd-head"><b id="ndTitle">Notas del profesor</b><span id="ndPos"></span></div>
+  <div id="ndBody"></div>
+</div>
+
+<div class="overview" id="overview">
+  <div class="ov-head"><h2>Recorrido de la clase</h2><span class="hint mono">Clic para saltar · Esc para cerrar</span><span class="ov-legend">◇ = opcional, se puede saltear si vas corto</span></div>
+  <div class="ov-grid" id="ovGrid"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var stage = document.getElementById('stage');
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var BLOCKS = [
+    {n:'Cambiamos la forma de pensar', v:'var(--blue)'},
+    {n:'Pensar en objetos',            v:'var(--flame)'},
+    {n:'Ahora sí, Python',             v:'var(--teal)'},
+    {n:'Los 4 pilares',                v:'var(--violet)'},
+    {n:'Diseñemos un videojuego',      v:'var(--rose)'},
+    {n:'Cierre',                       v:'var(--blue)'}
+  ];
+  var i = 0, step = 0, total = slides.length;
+
+  /* ---------- persisted state ---------- */
+  function save(k,v){ try{ localStorage.setItem('poo1:'+k, v); }catch(e){} }
+  function load(k){ try{ return localStorage.getItem('poo1:'+k); }catch(e){ return null; } }
+
+  /* ---------- fit stage ---------- */
+  var vp = document.querySelector('.viewport');
+  function fit(){
+    var r = vp.getBoundingClientRect();
+    var s = Math.min(r.width / 1280, r.height / 720) * 0.965;
+    stage.style.transform = 'scale(' + Math.max(s, 0.1) + ')';
+  }
+  addEventListener('resize', fit);
+  vp.addEventListener('transitionend', fit);
+
+  /* ---------- progress segments ---------- */
+  var counts = [0,0,0,0,0,0];
+  slides.forEach(function(s){ counts[+s.dataset.b - 1]++; });
+  var seg = document.getElementById('seg');
+  counts.forEach(function(c, k){
+    var b = document.createElement('div');
+    b.className = 'b';
+    b.style.setProperty('--w', c);
+    b.style.setProperty('--c', BLOCKS[k].v);
+    b.title = 'Bloque ' + (k+1) + ' · ' + BLOCKS[k].n;
+    b.innerHTML = '<i></i>';
+    b.addEventListener('click', function(){
+      for (var j = 0; j < slides.length; j++){ if (+slides[j].dataset.b === k+1){ go(j); break; } }
+    });
+    seg.appendChild(b);
+  });
+  var segBars = Array.prototype.slice.call(seg.children);
+
+  /* ---------- overview ---------- */
+  var ovGrid = document.getElementById('ovGrid'), lastB = 0;
+  slides.forEach(function(s, k){
+    var b = +s.dataset.b;
+    if (b !== lastB){
+      var h = document.createElement('div');
+      h.className = 'ov-b';
+      h.style.setProperty('--c', BLOCKS[b-1].v);
+      h.textContent = 'Bloque ' + b + ' · ' + BLOCKS[b-1].n;
+      ovGrid.appendChild(h);
+      lastB = b;
+    }
+    var it = document.createElement('button');
+    it.className = 'ov-i';
+    it.style.setProperty('--c', BLOCKS[b-1].v);
+    it.innerHTML = '<span>' + String(k+1).padStart(2,'0') +
+      (s.dataset.opt ? ' <span class="oflag">◇ opcional</span>' : '') + '</span><b></b>';
+    it.querySelector('b').textContent = s.dataset.t;
+    if (s.dataset.opt) it.classList.add('opt');
+    it.addEventListener('click', function(){ go(k); toggleOv(false); });
+    ovGrid.appendChild(it);
+  });
+  var ovItems = Array.prototype.slice.call(ovGrid.querySelectorAll('.ov-i'));
+  var overview = document.getElementById('overview');
+  function toggleOv(on){
+    var want = (on === undefined) ? !overview.classList.contains('on') : on;
+    overview.classList.toggle('on', want);
+    if (want){ ovItems.forEach(function(el,k){ el.classList.toggle('cur', k === i); });
+      if (ovItems[i]) ovItems[i].scrollIntoView({block:'center', behavior:'auto'}); }
+  }
+
+  /* ---------- notes ---------- */
+  var drawer = document.getElementById('drawer');
+  function renderNotes(){
+    var src = slides[i].querySelector('aside.notes');
+    document.getElementById('ndTitle').textContent = slides[i].dataset.t;
+    document.getElementById('ndPos').textContent = 'Bloque ' + slides[i].dataset.b + ' · ' + (i+1) + ' de ' + total;
+    document.getElementById('ndBody').innerHTML = src ? src.innerHTML : '<p class="dim">Sin notas.</p>';
+    drawer.style.setProperty('--accent-n', BLOCKS[+slides[i].dataset.b - 1].v);
+  }
+  function toggleNotes(on){
+    var want = (on === undefined) ? !document.body.classList.contains('notes-open') : on;
+    document.body.classList.toggle('notes-open', want);
+    document.getElementById('btnNotes').setAttribute('aria-pressed', want ? 'true' : 'false');
+    save('notes', want ? '1' : '0');
+    fit();
+  }
+
+  /* ---------- clock ---------- */
+  var t0 = null, clock = document.getElementById('clock');
+  setInterval(function(){
+    if (t0 === null) return;
+    var s = Math.floor((Date.now() - t0) / 1000);
+    clock.textContent = String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+  }, 1000);
+  clock.title = 'Tiempo de clase · clic para reiniciar';
+  clock.style.cursor = 'pointer';
+  clock.addEventListener('click', function(){ t0 = Date.now(); clock.textContent = '00:00'; });
+
+  /* ---------- render ---------- */
+  function revealsOf(k){ return slides[k].querySelectorAll('.rv'); }
+
+  function render(){
+    slides.forEach(function(s, k){ s.classList.toggle('active', k === i); });
+    var rv = revealsOf(i);
+    for (var k = 0; k < rv.length; k++) rv[k].classList.toggle('on', k < step);
+
+    var b = +slides[i].dataset.b;
+    document.getElementById('ebNum').textContent = String(i+1).padStart(2,'0');
+    document.getElementById('ebName').textContent = BLOCKS[b-1].n;
+    document.getElementById('plBlock').textContent = 'Bloque ' + b;
+    document.getElementById('plNum').textContent = i+1;
+    document.getElementById('plTot').textContent = total;
+    document.getElementById('barBlock').textContent = 'Bloque ' + b + ' · ' + BLOCKS[b-1].n;
+    document.getElementById('count').textContent = (i+1) + ' / ' + total;
+    document.getElementById('ebOpt').hidden = slides[i].dataset.opt !== '1';
+    stage.style.setProperty('--accent', BLOCKS[b-1].v);
+
+    for (var q = 0; q < 6; q++){
+      var done = 0;
+      for (var j = 0; j < slides.length; j++){
+        if (+slides[j].dataset.b === q+1 && j <= i) done++;
+      }
+      segBars[q].firstChild.style.setProperty('--p', Math.min(done / counts[q], 1));
+    }
+    renderNotes();
+    if (overview.classList.contains('on')) ovItems.forEach(function(el,k){ el.classList.toggle('cur', k === i); });
+  }
+
+  function go(n){ i = Math.max(0, Math.min(total-1, n)); step = 0; render(); }
+
+  function next(){
+    if (t0 === null) t0 = Date.now();
+    if (step < revealsOf(i).length){ step++; render(); return; }
+    if (i < total - 1) go(i + 1);
+  }
+  function prev(){
+    if (step > 0){ step--; render(); return; }
+    if (i > 0){ i--; step = revealsOf(i).length; render(); }
+  }
+
+  /* ---------- input ---------- */
+  addEventListener('keydown', function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if (k === 'ArrowRight' || k === ' ' || k === 'PageDown' || k === 'Enter'){ e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'PageUp' || k === 'Backspace'){ e.preventDefault(); prev(); }
+    else if (k === 'ArrowDown'){ e.preventDefault(); go(i+1); }
+    else if (k === 'ArrowUp'){ e.preventDefault(); go(i-1); }
+    else if (k === 'Home'){ e.preventDefault(); go(0); }
+    else if (k === 'End'){ e.preventDefault(); go(total-1); }
+    else if (k === 'n' || k === 'N'){ toggleNotes(); }
+    else if (k === 'o' || k === 'O'){ toggleOv(); }
+    else if (k === 'f' || k === 'F'){ fs(); }
+    else if (k === 'l' || k === 'L'){ setLock(clickNav); }
+    else if (k === 'Escape'){ if (overview.classList.contains('on')) toggleOv(false); else toggleNotes(false); }
+  });
+
+  var clickNav = load('clicknav') !== '0';
+  var refocusAt = 0, swipeAt = 0;
+  addEventListener('focus', function(){ refocusAt = Date.now(); });
+  function setLock(locked){
+    clickNav = !locked;
+    save('clicknav', clickNav ? '1' : '0');
+    var b = document.getElementById('btnLock');
+    b.setAttribute('aria-pressed', locked ? 'true' : 'false');
+    b.textContent = locked ? '🔒' : '👆';
+    b.title = locked
+      ? 'El clic NO avanza: podés señalar con el mouse. Usá ← → (L para desbloquear)'
+      : 'Bloquear el avance por clic — para señalar con el mouse sin pasar de lámina (L)';
+  }
+  vp.addEventListener('click', function(e){
+    if (!clickNav) return;                          // bloqueo manual
+    if (Date.now() - refocusAt < 700) return;       // clic que solo devolvió el foco a la ventana
+    if (Date.now() - swipeAt < 500) return;         // clic sintético después de un swipe
+    if (e.target.closest('a, button')) return;
+    var r = vp.getBoundingClientRect();
+    if (e.clientX - r.left < r.width * 0.22) prev(); else next();
+  });
+
+  var tx = 0, ty = 0;
+  addEventListener('touchstart', function(e){ tx = e.changedTouches[0].clientX; ty = e.changedTouches[0].clientY; }, {passive:true});
+  addEventListener('touchend', function(e){
+    var dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)){ swipeAt = Date.now(); dx < 0 ? next() : prev(); }
+  }, {passive:true});
+
+  function fs(){
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+  }
+  document.getElementById('btnNotes').addEventListener('click', function(){ toggleNotes(); });
+  document.getElementById('btnOv').addEventListener('click', function(){ toggleOv(); });
+  document.getElementById('btnFs').addEventListener('click', fs);
+  document.getElementById('btnLock').addEventListener('click', function(){ setLock(clickNav); });
+  overview.addEventListener('click', function(e){ if (e.target === overview) toggleOv(false); });
+
+  /* ---------- boot ---------- */
+  if (load('notes') === '1') toggleNotes(true);
+  setLock(!clickNav);
+  render();
+  fit();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+})();
+</script>
