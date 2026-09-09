@@ -14,6 +14,7 @@ navegador, en compu o en celular. No hay que instalar nada.
 |-------|------|--------------|
 | 1 | Pensar en objetos | https://pedroibanez97.github.io/P.O.O/clase-1.html |
 | 2 | Relacionar objetos | https://pedroibanez97.github.io/P.O.O/clase-2.html |
+| TP | Arena de Combate (integrador) | https://pedroibanez97.github.io/P.O.O/tp-arena-de-combate.html |
 
 ---
 
@@ -32,6 +33,9 @@ después avanzá para ver si coincidías.
 | `F` | Pantalla completa |
 
 La **tarea** está en las últimas diapositivas de cada clase.
+
+El **trabajo práctico integrador** (Arena de Combate) es una guía aparte: se avanza con los botones
+de abajo o con `←` `→`, y el progreso se guarda solo en esa computadora.
 
 ---
 
@@ -85,6 +89,35 @@ hacemos trabajar juntos. 56 diapositivas.
 
 Duración estimada: 75–100 minutos de exposición, más el tiempo de las actividades.
 
+### TP integrador · Arena de Combate
+
+Trabajo práctico que cierra las dos clases: los alumnos construyen un juego de combate por turnos
+en Python, de a una etapa por vez. Individual o en parejas de hasta dos personas.
+
+| Etapa | Qué se construye | Concepto que entra |
+|-------|------------------|--------------------|
+| 0 | La misión | cómo se trabaja |
+| 1 | Encontrar los objetos | objeto, atributos, métodos |
+| 2 | Tabla de diseño | qué va en cada clase |
+| 3 | `Personaje` | `__init__`, `self`, `return`, encapsulación |
+| 4 | `Arma` | clase vs objeto, `print()` vs `return` |
+| 5 | `Jugador` | herencia, `super()`, composición |
+| 6 | `Enemigo` | segunda clase hija |
+| 7 | `Guerrero` | herencia de varios niveles |
+| 8 | `Dragon` y `Goblin` | polimorfismo |
+| 9 | La pelea | el `while`, todo junto |
+| 10 | Experiencia y niveles | información y comportamiento nuevos |
+| 11 | El menú y el programa completo | `Pocion`, `input()`, `if`/`elif` |
+| 12 | Desafíos de ampliación | 5 niveles, de fácil a difícil |
+| 13 | Cierre | checklist, reflexión, entrega y rúbrica |
+
+Cada etapa arranca con una **pregunta antes de la respuesta** y las soluciones quedan bloqueadas
+hasta que el alumno intenta la actividad. Incluye 38 actividades corregidas automáticamente
+(elegir, clasificar, ordenar, unir, completar código, predecir), tres simuladores que corren en el
+navegador (la vida en negativo, el combate y la subida de nivel), la consigna de entrega y la rúbrica.
+
+Se puede hacer en casa, entero, sin el profesor al lado.
+
 ---
 
 ## Uso sin internet
@@ -99,6 +132,7 @@ que cambia es la tipografía, que se carga desde internet.
 | `index.html` | Página de inicio con el listado de clases |
 | `clase-1.html` | Presentación de la clase 1 |
 | `clase-2.html` | Presentación de la clase 2 |
+| `tp-arena-de-combate.html` | Trabajo práctico integrador |
 
 Cada presentación es un único archivo HTML, sin dependencias más allá de las
 tipografías de Google Fonts.
