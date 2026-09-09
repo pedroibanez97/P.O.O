@@ -1,0 +1,2990 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Apunte del TP · Arena de Combate</title>
+<meta name="description" content="Apunte imprimible del trabajo práctico integrador de POO: construir un juego de combate por turnos en Python.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+
+/* ============================================================
+   APUNTE DE ESTUDIO · POO CLASE 2
+   Hereda los tokens de la presentación (clase-2.html)
+   ============================================================ */
+:root{
+  --paper:#e7eaef; --sheet:#fbfcfd; --sheet-2:#f1f4f8;
+  --ink:#111a26; --ink-2:#546275; --ink-3:#6c7889;
+  --line:#ccd4e0; --line-soft:#e2e8f0;
+  --blue:#1548c8; --flame:#bf400e; --teal:#0a7566; --violet:#5d34c9; --rose:#bd1f62;
+  --good:#0f7d55; --bad:#b7361b;
+  --chip:rgba(21,72,200,.08);
+  --shadow:0 1px 2px rgba(17,26,38,.06), 0 24px 70px -30px rgba(17,26,38,.4);
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Instrument Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --cd-k:#8b2bb9; --cd-s:#b0450f; --cd-n:#1548c8; --cd-c:#7b8794; --cd-fn:#0a6a86;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#080d14; --sheet:#111924; --sheet-2:#18212e;
+    --ink:#e9eef6; --ink-2:#9aa9bd; --ink-3:#7e8da1;
+    --line:#2a3543; --line-soft:#222c39;
+    --blue:#7ba4ff; --flame:#ff8a5c; --teal:#3fcfb5; --violet:#b49bff; --rose:#ff7aae;
+    --good:#4fd08a; --bad:#ff7f66;
+    --chip:rgba(123,164,255,.12);
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 24px 60px -24px rgba(0,0,0,.85);
+    --cd-k:#d99bf0; --cd-s:#ffab7d; --cd-n:#8fb4ff; --cd-c:#7e8da1; --cd-fn:#67d6e8;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#080d14; --sheet:#111924; --sheet-2:#18212e;
+  --ink:#e9eef6; --ink-2:#9aa9bd; --ink-3:#7e8da1;
+  --line:#2a3543; --line-soft:#222c39;
+  --blue:#7ba4ff; --flame:#ff8a5c; --teal:#3fcfb5; --violet:#b49bff; --rose:#ff7aae;
+  --good:#4fd08a; --bad:#ff7f66;
+  --chip:rgba(123,164,255,.12);
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 24px 60px -24px rgba(0,0,0,.85);
+  --cd-k:#d99bf0; --cd-s:#ffab7d; --cd-n:#8fb4ff; --cd-c:#7e8da1; --cd-fn:#67d6e8;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+  font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:3px}
+
+/* ---------- hoja ---------- */
+.doc{max-width:1000px;margin:0 auto;background:var(--sheet);border-left:1px solid var(--line);
+  border-right:1px solid var(--line);box-shadow:var(--shadow);padding:0 clamp(20px,6vw,86px) 90px}
+
+/* ---------- tipografía ---------- */
+h1,h2,h3,h4{margin:0;font-family:var(--display);letter-spacing:-.025em;line-height:1.05;text-wrap:balance}
+h1{font-size:clamp(38px,6.4vw,62px);font-weight:800}
+h2{font-size:clamp(27px,3.6vw,36px);font-weight:700;letter-spacing:-.03em}
+h3{font-size:clamp(20px,2.4vw,25px);font-weight:600;letter-spacing:-.018em;line-height:1.15}
+h4{font-size:18px;font-weight:600;letter-spacing:-.01em}
+p{margin:0}
+strong{font-weight:600;color:var(--ink)}
+em{font-style:italic}
+a{color:var(--blue)}
+code{font-family:var(--mono);font-size:.88em;background:var(--sheet-2);border:1px solid var(--line-soft);
+  border-radius:5px;padding:1px 5px;color:var(--ink);white-space:nowrap}
+.eyebrow{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink-3)}
+.lead{font-size:20px;line-height:1.55;color:var(--ink-2)}
+.dim{color:var(--ink-2)}
+.hl{color:var(--accent,var(--blue))}
+.u{background:linear-gradient(transparent 60%,color-mix(in srgb,var(--accent,var(--blue)) 20%,transparent) 60%);padding:0 .1em}
+
+/* ---------- portada ---------- */
+.cover{padding:clamp(46px,7vw,80px) 0 34px;border-bottom:2px solid var(--ink);
+  display:flex;flex-direction:column;gap:22px}
+.cover-top{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line-soft);padding-bottom:14px}
+.cover h1{max-width:15ch}
+.cover .lead{max-width:56ch}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.badge{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:6px 12px;border:1px solid var(--line);background:var(--sheet-2);color:var(--ink-2)}
+.printbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:6px}
+button.print{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:10px 18px;border:1px solid var(--ink);background:var(--ink);color:var(--sheet);cursor:pointer}
+button.print:hover{background:transparent;color:var(--ink)}
+.printbar span{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+
+/* ---------- secciones ---------- */
+section.s{padding-top:60px;display:flex;flex-direction:column;gap:24px}
+.s-head{display:flex;gap:20px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:16px}
+.s-num{flex:none;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent,var(--blue));
+  border:1.5px solid var(--accent,var(--blue));width:38px;height:38px;display:grid;place-items:center;margin-top:4px}
+.s-head .t{display:flex;flex-direction:column;gap:6px}
+.s[data-a="blue"]{--accent:var(--blue)}
+.s[data-a="flame"]{--accent:var(--flame)}
+.s[data-a="teal"]{--accent:var(--teal)}
+.s[data-a="violet"]{--accent:var(--violet)}
+.s[data-a="rose"]{--accent:var(--rose)}
+.body-col{max-width:70ch;display:flex;flex-direction:column;gap:16px}
+.stack{display:flex;flex-direction:column;gap:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:stretch}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:stretch}
+@media (max-width:760px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+
+/* ---------- cajas ---------- */
+.box{border:1px solid var(--line);background:var(--sheet-2);padding:20px 22px;
+  display:flex;flex-direction:column;gap:10px}
+.box .lbl{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3)}
+.box p{font-size:16.5px;line-height:1.6;color:var(--ink-2)}
+.box.key{border-color:color-mix(in srgb,var(--accent,var(--blue)) 45%,transparent);
+  background:color-mix(in srgb,var(--accent,var(--blue)) 6%,var(--sheet-2))}
+.box.key .lbl{color:var(--accent,var(--blue))}
+.box.key p{color:var(--ink)}
+.box.warn{border-style:dashed;border-color:color-mix(in srgb,var(--flame) 50%,transparent);
+  background:color-mix(in srgb,var(--flame) 5%,transparent)}
+.box.warn .lbl{color:var(--flame)}
+.box.ask{border:none;background:transparent;padding:0}
+.box h4{margin-bottom:2px}
+
+/* pregunta de clase */
+.ask{position:relative;padding-left:46px;min-height:32px;font-family:var(--display);font-weight:600;
+  font-size:22px;line-height:1.3;letter-spacing:-.015em;max-width:38ch}
+.ask::before{content:"?";position:absolute;left:0;top:1px;width:32px;height:32px;border-radius:50%;
+  background:var(--accent,var(--blue));color:var(--sheet);font-family:var(--display);font-weight:800;
+  font-size:20px;display:grid;place-items:center}
+.ask code{font-size:.82em;white-space:normal}
+.qa{display:flex;flex-direction:column;gap:12px;border-left:2px solid var(--line);padding-left:20px}
+.qa .a{font-size:16.5px;color:var(--ink-2);max-width:62ch}
+.qa .a b{color:var(--ink);font-weight:600}
+
+/* ---------- código ---------- */
+pre{margin:0;background:var(--sheet-2);border:1px solid var(--line-soft);padding:18px 20px;
+  overflow-x:auto;font-family:var(--mono);font-size:14.5px;line-height:1.7;color:var(--ink);
+  white-space:pre;tab-size:2}
+pre.sm{font-size:13.5px}
+.cd-k{color:var(--cd-k);font-weight:700}
+.cd-s{color:var(--cd-s)}
+.cd-n{color:var(--cd-n)}
+.cd-c{color:var(--cd-c);font-style:italic}
+.cd-fn{color:var(--cd-fn);font-weight:700}
+figure{margin:0;display:flex;flex-direction:column;gap:8px}
+.grid2:has(>figure+figure)>figure>pre{flex:1 1 auto}
+.grid2>.stack,.grid3>.stack{height:100%}
+figcaption{font-size:14.5px;color:var(--ink-2);line-height:1.5}
+figcaption b{color:var(--ink)}
+
+/* ---------- caja UML ---------- */
+.uml{border:2px solid var(--ink);background:var(--sheet);min-width:0;overflow:hidden}
+.uml-h{background:var(--ink);color:var(--sheet);font-family:var(--display);font-weight:700;
+  font-size:19px;padding:8px 14px;text-align:center}
+.uml ul{margin:0;padding:11px 15px;list-style:none;display:flex;flex-direction:column;gap:3px;
+  font-family:var(--mono);font-size:13.5px;color:var(--ink-2)}
+.uml ul+ul{border-top:1px solid var(--line)}
+.uml ul.at li{color:var(--flame)}
+.uml ul.me li{color:var(--teal)}
+.uml.ghost{border-style:dashed}
+.uml.sm .uml-h{font-size:16px;padding:6px 12px}
+.uml.sm ul{font-size:12.5px;padding:9px 13px}
+
+/* ---------- pills ---------- */
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{font-family:var(--mono);font-size:14.5px;padding:6px 12px;border:1px solid var(--line-soft);
+  background:var(--sheet-2)}
+.pill.a{color:var(--flame);border-color:color-mix(in srgb,var(--flame) 35%,transparent);
+  background:color-mix(in srgb,var(--flame) 7%,var(--sheet-2))}
+.pill.m{color:var(--teal);border-color:color-mix(in srgb,var(--teal) 35%,transparent);
+  background:color-mix(in srgb,var(--teal) 7%,var(--sheet-2))}
+
+/* ---------- las dos preguntas ---------- */
+.two-q{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line)}
+@media (max-width:640px){.two-q{grid-template-columns:1fr}}
+.two-q>div{padding:20px 22px;display:flex;flex-direction:column;gap:10px}
+.two-q>div+div{border-left:1px solid var(--line)}
+@media (max-width:640px){.two-q>div+div{border-left:none;border-top:1px solid var(--line)}}
+.two-q .q{font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:-.02em}
+.two-q .word{font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.two-q .tiene{background:color-mix(in srgb,var(--flame) 5%,transparent)}
+.two-q .tiene .q,.two-q .tiene .word{color:var(--flame)}
+.two-q .hace{background:color-mix(in srgb,var(--teal) 5%,transparent)}
+.two-q .hace .q,.two-q .hace .word{color:var(--teal)}
+.two-q p{font-size:15.5px;color:var(--ink-2);line-height:1.55}
+
+/* ---------- tablas ---------- */
+table{border-collapse:collapse;width:100%;font-size:15.5px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top;line-height:1.5}
+thead th{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);border-bottom:1.5px solid var(--line)}
+tbody td:first-child{font-weight:600;color:var(--ink);width:26%}
+.tw{overflow-x:auto}
+
+/* ---------- comparación bien / mal ---------- */
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:760px){.vs{grid-template-columns:1fr}}
+.vs>div{border:1px solid var(--line);display:flex;flex-direction:column}
+.vs .top{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  padding:9px 16px;border-bottom:1px solid var(--line)}
+.vs .bad .top{color:var(--bad);background:color-mix(in srgb,var(--bad) 8%,transparent)}
+.vs .good .top{color:var(--good);background:color-mix(in srgb,var(--good) 8%,transparent)}
+.vs pre{border:none;background:transparent;padding:16px}
+.vs .note{padding:0 16px 16px;font-size:15px;color:var(--ink-2);line-height:1.55}
+
+/* ---------- árbol de herencia ---------- */
+.tree{display:flex;flex-direction:column;align-items:center;gap:0}
+.tree .parent{max-width:280px;width:100%}
+.tree svg{display:block;width:100%;max-width:520px;height:52px;color:var(--line)}
+.tree svg path{stroke:currentColor;stroke-width:1.5;fill:none}
+.tree .kids{display:grid;grid-template-columns:1fr 1fr;gap:18px;width:100%;max-width:520px}
+@media (max-width:640px){.tree .kids{grid-template-columns:1fr}.tree svg{height:30px}}
+
+/* ---------- polimorfismo: una orden, tres respuestas ---------- */
+.poly{border:1px solid var(--line);display:flex;flex-direction:column}
+.poly .order{padding:14px;text-align:center;font-family:var(--mono);font-size:17px;font-weight:700;
+  color:var(--violet);background:color-mix(in srgb,var(--violet) 7%,transparent);
+  border-bottom:1px solid var(--line)}
+.poly .outs{display:grid;grid-template-columns:repeat(3,1fr)}
+@media (max-width:640px){.poly .outs{grid-template-columns:1fr}}
+.poly .outs>div{padding:16px;display:flex;flex-direction:column;gap:5px;align-items:center;text-align:center}
+.poly .outs>div+div{border-left:1px solid var(--line-soft)}
+@media (max-width:640px){.poly .outs>div+div{border-left:none;border-top:1px solid var(--line-soft)}}
+.poly .who{font-family:var(--mono);font-size:13px;letter-spacing:.06em;color:var(--ink-3);text-transform:uppercase}
+.poly .say{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02em}
+.poly .em{font-size:28px;line-height:1}
+
+/* ---------- pilar ---------- */
+.pillar{display:flex;flex-direction:column;gap:20px;padding-top:34px;border-top:1px solid var(--line-soft)}
+.pillar.first{border-top:none;padding-top:6px}
+.pillar[data-a="rose"]{--accent:var(--rose)}
+.pillar[data-a="teal"]{--accent:var(--teal)}
+.pillar[data-a="violet"]{--accent:var(--violet)}
+.pillar[data-a="flame"]{--accent:var(--flame)}
+.p-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.p-head .ico{font-size:26px;line-height:1}
+.p-head h3{color:var(--accent)}
+.p-head .oneline{font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;color:var(--accent);
+  border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);padding:5px 11px;
+  background:color-mix(in srgb,var(--accent) 7%,transparent)}
+
+/* ---------- recordar ---------- */
+.remember{border:2px solid var(--ink);padding:0;display:flex;flex-direction:column}
+.remember .rh{background:var(--ink);color:var(--sheet);padding:14px 22px;font-family:var(--display);
+  font-weight:700;font-size:21px;letter-spacing:-.02em}
+.remember ol{margin:0;padding:22px 22px 22px 44px;display:flex;flex-direction:column;gap:14px;
+  font-size:16.5px;line-height:1.55;color:var(--ink-2)}
+.remember ol b{color:var(--ink);font-weight:600}
+.remember li::marker{font-family:var(--mono);font-weight:700;color:var(--blue);font-size:14px}
+
+.four{display:grid;grid-template-columns:repeat(2,1fr);gap:0;border:1px solid var(--line)}
+@media (max-width:640px){.four{grid-template-columns:1fr}}
+.four>div{padding:18px 20px;display:flex;flex-direction:column;gap:6px;
+  border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.four>div:nth-child(2n){border-right:none}
+.four>div:nth-last-child(-n+2){border-bottom:none}
+@media (max-width:640px){.four>div{border-right:none}.four>div:last-child{border-bottom:none}
+  .four>div:nth-last-child(2){border-bottom:1px solid var(--line)}}
+.four .n{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.four .fr{font-family:var(--display);font-weight:600;font-size:19px;line-height:1.25;letter-spacing:-.015em}
+.four .ex{font-size:14.5px;color:var(--ink-2);line-height:1.5}
+
+/* siete preguntas */
+.seven{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:640px){.seven{grid-template-columns:1fr}}
+.seven div{display:flex;gap:10px;align-items:baseline;font-size:16px;color:var(--ink-2);
+  border-bottom:1px dotted var(--line);padding-bottom:9px}
+.seven div b{color:var(--ink);font-weight:600}
+.seven .e{flex:none;font-size:15px}
+
+/* ---------- ejercicios ---------- */
+.ex-item{border:1px solid var(--line);display:flex;flex-direction:column;gap:0}
+.ex-top{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line);
+  background:var(--sheet-2);flex-wrap:wrap}
+.ex-top .tag{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  padding:4px 9px;border:1px solid var(--line)}
+.ex-top .tag.e1{color:var(--good);border-color:color-mix(in srgb,var(--good) 40%,transparent)}
+.ex-top .tag.e2{color:var(--blue);border-color:color-mix(in srgb,var(--blue) 40%,transparent)}
+.ex-top .tag.e3{color:var(--rose);border-color:color-mix(in srgb,var(--rose) 40%,transparent)}
+.ex-top h4{flex:1;min-width:200px}
+.ex-body{padding:18px;display:flex;flex-direction:column;gap:14px;font-size:16px;color:var(--ink-2);line-height:1.6}
+.ex-body b{color:var(--ink);font-weight:600}
+.ex-body ul,.ex-body ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:7px}
+.ex-body li::marker{color:var(--ink-3)}
+
+.sol{border:1px dashed var(--line);padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.sol .lbl{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--good)}
+.sol p{font-size:15.5px;color:var(--ink-2);line-height:1.6}
+.sol b{color:var(--ink);font-weight:600}
+
+/* ---------- cierre ---------- */
+.closing{margin-top:70px;border-top:2px solid var(--ink);padding-top:34px;display:flex;
+  flex-direction:column;gap:18px}
+.quote{font-family:var(--display);font-weight:700;font-size:clamp(24px,3.4vw,34px);line-height:1.15;
+  letter-spacing:-.03em;max-width:24ch}
+.colofon{font-family:var(--mono);font-size:12px;color:var(--ink-3);letter-spacing:.04em;
+  display:flex;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line-soft);padding-top:16px}
+
+/* ---------- impresión ---------- */
+@media print{
+  :root:root:root{color-scheme:light;--paper:#fff;--sheet:#fff;--sheet-2:#f6f8fb;--ink:#101820;--ink-2:#3f4a59;--ink-3:#69737f;
+    --line:#c3ccd8;--line-soft:#dfe5ed;--shadow:none;
+    --blue:#0f3aa8;--flame:#a2360c;--teal:#0a6355;--violet:#4d2ab0;--rose:#a11a53;
+    --good:#0b6845;--bad:#9c2d16;
+    --cd-k:#7a239f;--cd-s:#9a3b0d;--cd-n:#0f3aa8;--cd-c:#6b7684;--cd-fn:#085a72}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#fff;color:var(--ink);font-size:10pt;line-height:1.45}
+  .doc{max-width:none;box-shadow:none;border:none;padding:0}
+  .printbar{display:none}
+  @page{size:A4;margin:14mm 14mm}
+  h1{font-size:30pt} h2{font-size:17pt} h3{font-size:13pt} h4{font-size:11pt}
+  .lead{font-size:11.5pt;line-height:1.45}
+  .quote{font-size:19pt}
+  .ask{font-size:12.5pt}
+  .box p,.ex-body,.sol p,.qa .a,figcaption,table{font-size:9.6pt}
+  section.s{padding-top:14px;gap:13px;break-inside:auto}
+  .stack{gap:11px} .grid2{gap:12px} .grid3,.grid4{gap:10px}
+  .box{padding:12px 14px;gap:7px}
+  .remember ol{padding:14px 16px 14px 34px;gap:9px}
+  .ex-body{padding:12px 14px;gap:9px}
+  .sol{padding:11px 13px}
+  .two-q>div,.four>div{padding:12px 14px}
+  .cover{padding-bottom:18px;gap:14px}
+  .s-head{break-after:avoid}
+  h1,h2,h3,h4{break-after:avoid}
+  pre,figure,.box,.uml,.two-q,.vs,.poly,.tree,.ex-item,.remember,.four,table{break-inside:avoid}
+  .cover{break-after:page;padding-top:0}
+  #pilares,#ejercicios{break-before:page}
+  pre{font-size:8.6pt;padding:11px 13px;line-height:1.55}
+  a{color:inherit;text-decoration:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ============================================================
+   COMPONENTES PROPIOS DE LA CLASE 2
+   ============================================================ */
+
+/* ---------- el método de trabajo (4 pasos) ---------- */
+.method{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:2px solid var(--ink)}
+@media (max-width:760px){.method{grid-template-columns:1fr 1fr}}
+@media (max-width:460px){.method{grid-template-columns:1fr}}
+.method>div{padding:16px 18px;display:flex;flex-direction:column;gap:7px;border-right:1px solid var(--line)}
+.method>div:last-child{border-right:none}
+@media (max-width:760px){
+  .method>div:nth-child(2n){border-right:none}
+  .method>div:nth-child(-n+2){border-bottom:1px solid var(--line)}
+}
+.method .n{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.16em;color:var(--blue)}
+.method .t{font-family:var(--display);font-weight:600;font-size:18px;line-height:1.2;letter-spacing:-.015em}
+.method .d{font-size:14px;color:var(--ink-2);line-height:1.45}
+
+/* ---------- escalera de herencia (varios niveles) ---------- */
+.ladder{display:flex;flex-direction:column;align-items:center;gap:0}
+.ladder .rung{width:100%;max-width:330px}
+.ladder .arw{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;color:var(--ink-3)}
+.ladder .arw i{display:block;width:1.5px;height:16px;background:var(--line)}
+.ladder .arw span{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.ladder .arw b{color:var(--ink-3);font-size:14px;line-height:1}
+
+/* ---------- composición: dos objetos conectados ---------- */
+.comp{display:grid;grid-template-columns:1fr auto 1fr;gap:0;align-items:center}
+@media (max-width:640px){.comp{grid-template-columns:1fr;gap:10px;justify-items:center}}
+.comp .link{display:flex;flex-direction:column;align-items:center;gap:3px;padding:0 14px;color:var(--flame)}
+.comp .link span{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.comp .link i{font-size:19px;font-style:normal;line-height:1}
+
+/* ---------- diagrama de memoria: un objeto adentro de otro ---------- */
+.mem{display:grid;grid-template-columns:1fr auto 1fr;gap:0;align-items:center;font-family:var(--mono)}
+@media (max-width:640px){.mem{grid-template-columns:1fr;gap:12px}}
+.mem .obj{border:1.5px solid var(--ink);background:var(--sheet)}
+.mem .obj .oh{background:var(--ink);color:var(--sheet);padding:7px 13px;font-size:13px;font-weight:700;
+  letter-spacing:.08em}
+.mem .obj ul{margin:0;padding:11px 14px;list-style:none;display:flex;flex-direction:column;gap:6px;
+  font-size:13px;color:var(--ink-2)}
+.mem .obj li b{color:var(--ink);font-weight:700}
+.mem .obj li .ref{color:var(--rose);font-weight:700}
+.mem .to{display:flex;flex-direction:column;align-items:center;gap:3px;padding:0 12px;color:var(--rose)}
+.mem .to span{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.mem .to i{font-style:normal;font-size:19px;line-height:1}
+
+/* ---------- print vs return ---------- */
+.pr{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:640px){.pr{grid-template-columns:1fr}}
+.pr>div{border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;
+  gap:8px;padding:20px 18px;text-align:center}
+.pr .w{font-family:var(--mono);font-size:17px;font-weight:700}
+.pr .ar{font-size:19px;line-height:1;color:var(--ink-3)}
+.pr .dest{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.02em;
+  padding:8px 16px;border:1.5px solid currentColor}
+.pr .note{font-size:14.5px;color:var(--ink-2);line-height:1.5;max-width:32ch}
+.pr .can{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;
+  font-size:14px;color:var(--ink-2);text-align:left}
+.pr .p{color:var(--violet)}
+.pr .r{color:var(--teal)}
+.pr .p .w,.pr .p .dest{color:var(--violet)}
+.pr .r .w,.pr .r .dest{color:var(--teal)}
+
+/* ---------- pasos numerados (orden de ejecución) ---------- */
+.steps{display:flex;flex-direction:column;gap:0;border:1px solid var(--line)}
+.steps>div{display:flex;gap:14px;align-items:flex-start;padding:13px 16px}
+.steps>div+div{border-top:1px solid var(--line-soft)}
+.steps .k{flex:none;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--accent,var(--blue));width:62px;padding-top:2px}
+.steps .v{font-size:15.5px;color:var(--ink-2);line-height:1.55}
+.steps .v b{color:var(--ink);font-weight:600}
+.steps .v code{white-space:normal}
+
+/* ---------- clasificación ES UN / TIENE UN ---------- */
+.rel{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+@media (max-width:640px){.rel{grid-template-columns:1fr}}
+.rel>div{display:flex;gap:11px;align-items:baseline;border-bottom:1px dotted var(--line);padding-bottom:9px;
+  font-size:15.5px;color:var(--ink-2)}
+.rel .m{flex:none;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.06em}
+.rel .es .m{color:var(--rose)}
+.rel .tiene .m{color:var(--flame)}
+.rel b{color:var(--ink);font-weight:600}
+
+/* ---------- casos (¿print o return?) ---------- */
+.cases{display:flex;flex-direction:column;gap:0;border:1px solid var(--line)}
+.cases>div{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;padding:13px 16px;align-items:baseline}
+@media (max-width:640px){.cases>div{grid-template-columns:1fr;gap:5px}}
+.cases>div+div{border-top:1px solid var(--line-soft)}
+.cases .c{font-size:15.5px;color:var(--ink)}
+.cases .r{font-size:15px;color:var(--ink-2);line-height:1.5}
+.cases .r b{font-family:var(--mono);font-weight:700}
+.cases .r .pp{color:var(--violet)}
+.cases .r .rr{color:var(--teal)}
+
+/* ---------- errores frecuentes ---------- */
+.errs{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line)}
+@media (max-width:760px){.errs{grid-template-columns:1fr}}
+.errs>div{padding:17px 19px;display:flex;flex-direction:column;gap:7px;border-right:1px solid var(--line)}
+.errs>div:last-child{border-right:none}
+@media (max-width:760px){.errs>div{border-right:none;border-bottom:1px solid var(--line)}
+  .errs>div:last-child{border-bottom:none}}
+.errs .ico{font-size:21px;line-height:1}
+.errs h4{color:var(--flame)}
+.errs p{font-size:14.5px;color:var(--ink-2);line-height:1.5}
+.errs .sym{font-family:var(--mono);font-size:12.5px;color:var(--bad);line-height:1.5}
+
+/* ---------- índice ---------- */
+.toc{border:1px solid var(--line);display:flex;flex-direction:column}
+.toc .th{background:var(--ink);color:var(--sheet);padding:12px 20px;font-family:var(--display);
+  font-weight:700;font-size:19px;letter-spacing:-.02em}
+.toc ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column}
+.toc li{display:grid;grid-template-columns:42px 1fr;gap:14px;padding:12px 20px;align-items:baseline}
+.toc li+li{border-top:1px solid var(--line-soft)}
+.toc .k{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--c,var(--blue));
+  letter-spacing:.06em}
+.toc .n{font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:-.015em;
+  line-height:1.2}
+.toc .q{display:block;font-family:var(--body);font-weight:400;font-size:15px;color:var(--ink-2);
+  line-height:1.45;margin-top:3px;letter-spacing:0}
+@media (max-width:520px){.toc li{grid-template-columns:1fr;gap:2px}}
+
+/* ---------- soluciones (sección final) ---------- */
+.sol-item{display:flex;flex-direction:column;gap:9px}
+.sol-item h4{color:var(--accent,var(--blue))}
+.sol-item .sol{border-style:solid;border-color:var(--line)}
+.sol-item+.sol-item{padding-top:20px;border-top:1px solid var(--line-soft)}
+
+/* ---------- machete de una hoja ---------- */
+.machete{border:2px solid var(--ink);display:flex;flex-direction:column;margin-top:8px}
+.machete .mh{background:var(--ink);color:var(--sheet);padding:12px 20px;display:flex;
+  justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
+.machete .mh b{font-family:var(--display);font-weight:800;font-size:21px;letter-spacing:-.02em}
+.machete .mh span{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  opacity:.72}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+@media (max-width:640px){.mgrid{grid-template-columns:1fr}}
+.mcell{padding:13px 16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+  display:flex;flex-direction:column;gap:7px;min-width:0}
+.mcell:nth-child(2n){border-right:none}
+@media (max-width:640px){.mcell{border-right:none}}
+.mcell.wide{grid-column:1 / -1;border-right:none}
+.mcell .mt{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--c,var(--blue))}
+.mcell p{font-size:13.5px;line-height:1.45;color:var(--ink-2);margin:0}
+.mcell p b{color:var(--ink);font-weight:600}
+.mcell code{font-size:12px;white-space:nowrap}
+.mrow{display:flex;gap:9px;align-items:baseline;font-size:13.5px;color:var(--ink-2);line-height:1.4}
+.mrow .mk{flex:none;font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--c,var(--blue))}
+.mrow b{color:var(--ink);font-weight:600}
+.msplit{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.msplit>div{display:flex;flex-direction:column;gap:4px}
+.mbig{font-family:var(--display);font-weight:800;font-size:17px;letter-spacing:-.02em;line-height:1.1}
+.mflow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px;
+  font-weight:700;letter-spacing:.04em}
+.mflow i{font-style:normal;color:var(--ink-3)}
+.mflow em{font-style:normal;padding:4px 9px;border:1px solid var(--line);background:var(--sheet-2)}
+
+/* ---------- impresión · componentes nuevos ---------- */
+@media print{
+  .method>div,.errs>div{padding:11px 13px;gap:5px}
+  .method .t{font-size:11.5pt}
+  .method .d,.errs p,.rel>div,.cases .c,.cases .r,.steps .v,.pr .note{font-size:9.4pt}
+  .steps>div,.cases>div{padding:9px 12px}
+  .pr>div{padding:13px 12px}
+  .mem .obj ul,.ladder .rung{font-size:9pt}
+  .method,.ladder,.comp,.mem,.pr,.steps,.rel>div,.cases,.errs{break-inside:avoid}
+  #practica{break-before:page}
+
+  /* densidad de impresión: que el apunte entre en menos hojas */
+  @page{margin:12mm 12mm}
+  body{font-size:9.6pt;line-height:1.4}
+  h1{font-size:28pt} h2{font-size:15.5pt} h3{font-size:12pt} h4{font-size:10.5pt}
+  .lead{font-size:11pt} .quote{font-size:18pt} .ask{font-size:11.5pt}
+  .box p,.ex-body,.sol p,.qa .a,figcaption,table,.remember ol{font-size:9.2pt}
+  section.s{padding-top:11px;gap:11px}
+  .stack{gap:9px} .grid2{gap:10px} .grid3,.grid4{gap:9px}
+  .box{padding:10px 12px;gap:6px}
+  .remember ol{padding:12px 14px 12px 30px;gap:7px}
+  .ex-body{padding:10px 12px;gap:8px}
+  .sol{padding:9px 11px}
+  .two-q>div,.four>div,.method>div,.errs>div{padding:10px 12px}
+  pre{font-size:8pt;padding:9px 11px;line-height:1.5}
+  .closing{margin-top:26px;padding-top:20px}
+  /* un flex estirado que se parte entre hojas se superpone: que mida lo suyo */
+  .grid2>.stack,.grid3>.stack{height:auto}
+  h4{break-after:avoid}
+  .sol-item{break-inside:avoid}
+  .toc{break-inside:avoid} .toc li{padding:8px 14px} .toc .n{font-size:11pt} .toc .q{font-size:9.2pt}
+  /* el machete: una sola hoja, arranca en página nueva */
+  #machete{break-before:page;padding-top:0;gap:8px}
+  .machete{break-inside:avoid}
+  .machete .mh{padding:9px 15px} .machete .mh b{font-size:15pt}
+  .mcell{padding:8px 11px;gap:5px}
+  .mcell p,.mrow{font-size:8.6pt;line-height:1.34}
+  .mcell .mt{font-size:7.4pt} .mcell code{font-size:7.8pt}
+  .mbig{font-size:11.5pt} .mflow{font-size:7.8pt} .mflow em{padding:3px 6px}
+  .sol-item+.sol-item{padding-top:11px}
+}
+
+/* ============================================================
+   AGREGADOS PROPIOS DEL APUNTE DEL TP
+   ============================================================ */
+.etapas-map{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:2px solid var(--ink)}
+@media (max-width:760px){.etapas-map{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:440px){.etapas-map{grid-template-columns:1fr}}
+.etapas-map>div{padding:11px 13px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+  display:flex;flex-direction:column;gap:3px}
+.etapas-map>div .n{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-3)}
+.etapas-map>div .t{font-family:var(--display);font-weight:600;font-size:15.5px;line-height:1.2;letter-spacing:-.01em}
+.etapas-map>div .d{font-size:13px;color:var(--ink-2);line-height:1.4}
+
+/* barra de etapa dentro de una sección */
+.etapa-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-left:3px solid var(--accent,var(--blue));
+  padding:8px 0 8px 14px;margin-bottom:2px}
+.etapa-bar .num{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--accent,var(--blue))}
+.etapa-bar .obj{font-size:15.5px;color:var(--ink-2);line-height:1.45}
+
+/* teoría: ficha de concepto */
+.fichas{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.fichas{grid-template-columns:1fr}}
+.ficha{border:1px solid var(--line);border-top:3px solid var(--c,var(--blue));background:var(--sheet);
+  padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.ficha .ft{font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:-.015em}
+.ficha .fq{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--c,var(--blue))}
+.ficha p{font-size:15px;line-height:1.55;color:var(--ink-2)}
+.ficha pre{font-size:12.5px;padding:10px 12px;line-height:1.5}
+
+/* checklist para completar a mano */
+.chklist{display:flex;flex-direction:column;gap:0;border:1px solid var(--line)}
+.chklist>div{display:flex;gap:12px;align-items:flex-start;padding:11px 14px;border-bottom:1px solid var(--line-soft);
+  font-size:15.5px;color:var(--ink-2);line-height:1.5}
+.chklist>div:last-child{border-bottom:none}
+.chklist .cb{flex:none;width:16px;height:16px;border:1.5px solid var(--ink-3);margin-top:3px}
+.chklist b{color:var(--ink);font-weight:600}
+
+/* renglones para escribir */
+.renglones{border:1px dashed var(--line);padding:14px 16px}
+.renglones .rl{border-bottom:1px solid var(--line-soft);height:26px}
+.renglones .rl:last-child{border-bottom:none}
+
+/* rúbrica */
+table.rub{width:100%;border-collapse:collapse;font-size:15px}
+table.rub th,table.rub td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+table.rub th{background:var(--sheet-2);font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:700}
+table.rub td{color:var(--ink-2);line-height:1.5}
+table.rub td b{color:var(--ink)}
+table.rub td:first-child{width:32%;color:var(--ink);font-weight:600}
+
+/* tabla de diseño para completar */
+table.dis{width:100%;border-collapse:collapse;font-size:15px}
+table.dis th,table.dis td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+table.dis th{background:var(--sheet-2);font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:700}
+table.dis td{height:52px;color:var(--ink-2)}
+table.dis td:first-child{width:22%;color:var(--ink);font-weight:600;height:auto}
+
+@media print{
+  table.rub,table.dis,.chklist,.ficha,.etapas-map,.renglones{break-inside:avoid}
+  table.rub,table.dis,.chklist>div,.ficha p{font-size:9.2pt}
+  .ficha pre{font-size:8pt;line-height:1.5}
+  .etapa-bar .obj{font-size:9.6pt}
+  /* solo estas dos arrancan en hoja nueva: son las que se imprimen por separado.
+     Forzar más saltos regala media hoja en blanco cada vez. */
+  #soluciones,#machete{break-before:page}
+  table.dis td{height:38px}
+
+  /* Una hoja A4 mide ~661px útiles, así que se activaban los breakpoints de
+     celular y todo caía a una sola columna. En papel eso desperdicia media hoja
+     por bloque: acá recuperamos las grillas. */
+  /* sin min-width:0 una línea de código larga estira su columna y se lleva
+     puesto el ancho de la hoja; y en papel lo que desborda no se scrollea: se pierde */
+  .grid2>*,.grid3>*,.grid4>*,.fichas>*,.vs>*,.errs>*,.two-q>*,.method>*,.etapas-map>*{min-width:0}
+  pre{white-space:pre-wrap;overflow-wrap:break-word;overflow-x:hidden}
+  .grid2,.fichas,.vs,.errs{grid-template-columns:1fr 1fr}
+  .grid3{grid-template-columns:repeat(3,1fr)}
+  .grid4{grid-template-columns:1fr 1fr}
+  .etapas-map{grid-template-columns:repeat(3,1fr)}
+  .method{grid-template-columns:repeat(4,1fr)}
+  .method>div{padding:9px 11px;border-right:1px solid var(--line)}
+  .method>div:last-child{border-right:none}
+  .method .n{font-size:7.6pt} .method .t{font-size:10pt} .method .d{font-size:8pt}
+  .errs>div{padding:11px 13px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .errs>div:nth-child(2n){border-right:none}
+  .errs>div:nth-last-child(-n+2){border-bottom:none}
+  .errs p{font-size:8.6pt} .errs .sym{font-size:8pt}
+  .etapas-map>div{padding:8px 10px}
+  .etapas-map>div .n{font-size:7.4pt}
+  .etapas-map>div .t{font-size:9.4pt} .etapas-map>div .d{font-size:8pt}
+  .ficha{padding:11px 13px;gap:6px} .ficha .ft{font-size:11pt} .ficha .fq{font-size:7.6pt}
+  .chklist>div{padding:7px 10px}
+  .two-q>div{padding:12px 14px}
+  .sol-item+.sol-item{padding-top:12px}
+  .renglones .rl{height:22px}
+}
+</style>
+
+<div class="doc">
+<!-- ==================== PORTADA ==================== -->
+<header class="cover">
+  <div class="cover-top">
+    <span class="eyebrow">Trabajo práctico integrador &middot; Programación</span>
+    <span class="eyebrow">Apunte para imprimir y trabajar</span>
+  </div>
+  <h1>🎮 Arena de Combate</h1>
+  <p class="lead">Construí tu propio videojuego con Programación Orientada a Objetos. Este apunte tiene
+  <strong>todo el trabajo práctico en papel</strong>: la consigna, la teoría que vas a necesitar, el código
+  paso a paso, los desafíos, la entrega y la rúbrica. Es la versión imprimible de la guía interactiva, y
+  se puede hacer entero desde acá.</p>
+  <div class="badges">
+    <span class="badge">Consigna</span>
+    <span class="badge">Teoría de repaso</span>
+    <span class="badge">Código paso a paso</span>
+    <span class="badge">Desafíos</span>
+    <span class="badge">Ayudas y errores</span>
+    <span class="badge">Rúbrica</span>
+  </div>
+  <div class="printbar">
+    <button class="print" type="button" onclick="window.print()">Imprimir / Guardar PDF</button>
+    <span>o usá Cmd&nbsp;+&nbsp;P (Mac) &middot; Ctrl&nbsp;+&nbsp;P (Windows) → Guardar como PDF</span>
+  </div>
+</header>
+
+<!-- ==================== ÍNDICE ==================== -->
+<section class="s" data-a="blue" id="indice" style="padding-top:44px">
+  <div class="toc">
+    <div class="th">Qué hay adentro</div>
+    <ol>
+      <li style="--c:var(--flame)"><span class="k">01</span><span class="n">La misión
+        <span class="q">Qué hay que construir, cómo se trabaja y el método que se repite en todas las etapas.</span></span></li>
+      <li style="--c:var(--blue)"><span class="k">02</span><span class="n">Repaso: la teoría que vas a usar
+        <span class="q">Las diez ideas de las clases 1 y 2, en fichas, para tener al lado mientras programás.</span></span></li>
+      <li style="--c:var(--teal)"><span class="k">03</span><span class="n">Etapas 1 y 2 · Pensar y diseñar
+        <span class="q">Encontrar los objetos y decidir qué va en cada clase. Sin escribir código.</span></span></li>
+      <li style="--c:var(--violet)"><span class="k">04</span><span class="n">Etapa 3 · La clase Personaje
+        <span class="q">La primera clase: <code>__init__</code>, <code>self</code>, <code>return</code> y el <code>if</code> que la protege.</span></span></li>
+      <li style="--c:var(--rose)"><span class="k">05</span><span class="n">Etapa 4 · El objeto Arma
+        <span class="q">Una clase que no es un personaje, y por qué su método devuelve en vez de mostrar.</span></span></li>
+      <li style="--c:var(--flame)"><span class="k">06</span><span class="n">Etapa 5 · El jugador tiene un arma
+        <span class="q">Herencia para lo que ES, composición para lo que TIENE. Y <code>super()</code>.</span></span></li>
+      <li style="--c:var(--teal)"><span class="k">07</span><span class="n">Etapas 6 y 7 · Enemigos y varios niveles
+        <span class="q">La segunda clase hija, y qué pasa cuando el hijo tiene a su vez un hijo.</span></span></li>
+      <li style="--c:var(--violet)"><span class="k">08</span><span class="n">Etapa 8 · Polimorfismo
+        <span class="q">Misma orden, distinta respuesta. Y un <code>for</code> sin un solo <code>if</code>.</span></span></li>
+      <li style="--c:var(--blue)"><span class="k">09</span><span class="n">Etapa 9 · La pelea
+        <span class="q">El <code>while</code> que hace chocar todo lo que construiste.</span></span></li>
+      <li style="--c:var(--rose)"><span class="k">10</span><span class="n">Etapas 10 y 11 · Niveles y menú
+        <span class="q">Experiencia, subir de nivel, la poción y la forma de jugarlo.</span></span></li>
+      <li style="--c:var(--ink)"><span class="k">11</span><span class="n">El programa completo
+        <span class="q">Todo junto, para comparar con el tuyo. Leelo, no lo copies de memoria.</span></span></li>
+      <li style="--c:var(--flame)"><span class="k">12</span><span class="n">Desafíos de ampliación
+        <span class="q">Cinco niveles, de fácil a difícil, y qué concepto practica cada uno.</span></span></li>
+      <li style="--c:var(--bad)"><span class="k">13</span><span class="n">Cuando algo no anda
+        <span class="q">Los errores que vas a cometer: síntoma, causa y cómo salir.</span></span></li>
+      <li style="--c:var(--teal)"><span class="k">14</span><span class="n">Entrega y evaluación
+        <span class="q">Qué hay que entregar, y con qué criterios se corrige.</span></span></li>
+      <li style="--c:var(--violet)"><span class="k">15</span><span class="n">Autoevaluación
+        <span class="q">Ejercicios de repaso para comprobar que entendiste, no que copiaste.</span></span></li>
+      <li style="--c:var(--good)"><span class="k">16</span><span class="n">Soluciones
+        <span class="q">Al final a propósito: primero intentá vos.</span></span></li>
+      <li style="--c:var(--ink)"><span class="k">★</span><span class="n">Machete
+        <span class="q">La última hoja, para arrancar y llevar: todo el TP en una carilla.</span></span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ==================== 1 · LA MISIÓN ==================== -->
+<section class="s" data-a="flame" id="mision">
+  <div class="s-head">
+    <div class="s-num">01</div>
+    <div class="t">
+      <span class="eyebrow">La consigna</span>
+      <h2>La misión</h2>
+    </div>
+  </div>
+
+  <div class="body-col">
+    <p class="lead">Bienvenido a la Arena de Combate. Tu misión es construir un videojuego usando
+    Programación Orientada a Objetos.</p>
+    <p>Nadie te va a dar el juego terminado. Lo vas a ir construyendo vos, etapa por etapa, y en cada una
+    el juego va a poder hacer <strong>una cosa más</strong> que antes. Al principio tu personaje solo va a
+    existir. Después va a poder recibir daño. Después va a tener un arma. Después va a aparecer un enemigo.
+    Y en algún momento vas a tener una pelea por turnos funcionando en tu computadora.</p>
+    <p><strong>La parte importante no es el juego.</strong> Es que al final vas a poder explicar por qué lo
+    hiciste así, y eso te va a servir para cualquier problema, no solo para este.</p>
+  </div>
+
+  <div class="box key">
+    <span class="lbl">El objetivo real</span>
+    <p>Que al terminar puedas explicar, con tus palabras y señalando tu propio código, qué es una clase,
+    qué es un objeto, qué son los atributos y los métodos, cómo funciona la herencia, para qué sirve
+    <code>super()</code>, qué diferencia hay entre <code>print()</code> y <code>return</code>, qué es la
+    composición, qué es el polimorfismo y cómo varios objetos colaboran entre ellos.</p>
+  </div>
+
+  <h3>Cómo se trabaja</h3>
+  <div class="grid4">
+    <div class="box">
+      <span class="lbl">👥 Solo o en pareja</span>
+      <p>Individual o en <b>parejas de máximo dos personas</b>. Si son dos, los dos tienen que poder
+      explicar todo el código: no sirve repartirse "vos las clases, yo el menú".</p>
+    </div>
+    <div class="box">
+      <span class="lbl">🐍 Python puro</span>
+      <p>Sin librerías raras y sin cosas que no vimos. Todo lo que necesitás ya lo sabés: variables,
+      <code>if</code>, <code>while</code>, funciones, listas y clases.</p>
+    </div>
+    <div class="box">
+      <span class="lbl">💾 Un solo archivo</span>
+      <p>Abrí un archivo nuevo, ponele <code>juego.py</code> y tenelo al lado mientras avanzás. Cada etapa
+      le agrega algo. <b>No arranques de cero en cada etapa.</b></p>
+    </div>
+    <div class="box">
+      <span class="lbl">✏️ Papel primero</span>
+      <p>Varias etapas empiezan sin computadora. No es para hacerte perder tiempo: es para que el código
+      salga solo cuando llegues al teclado.</p>
+    </div>
+  </div>
+
+  <h3>El método, que no cambia nunca</h3>
+  <div class="body-col">
+    <p>Este es el camino que se repite en <strong>todas</strong> las etapas, y el que vas a usar el día que
+    te den un problema que no tenga nada que ver con videojuegos.</p>
+  </div>
+
+  <div class="method">
+    <div><span class="n">Paso 1</span><span class="t">Pensar el problema</span>
+      <span class="d">¿De qué se trata? ¿Qué tiene que poder hacer el programa?</span></div>
+    <div><span class="n">Paso 2</span><span class="t">Identificar los objetos</span>
+      <span class="d">¿Qué cosas hay acá? Cada una va a ser una clase.</span></div>
+    <div><span class="n">Paso 3</span><span class="t">Atributos y métodos</span>
+      <span class="d">¿Qué información tiene cada uno? ¿Qué puede hacer?</span></div>
+    <div><span class="n">Paso 4</span><span class="t">Pensar las relaciones</span>
+      <span class="d">¿Cuál <em>es un</em> otro? ¿Cuál <em>tiene un</em> otro?</span></div>
+  </div>
+  <div class="method" style="border-top:none">
+    <div><span class="n">Paso 5</span><span class="t">Diseñar las clases</span>
+      <span class="d">Dibujarlas con cajas y flechas, todavía sin Python.</span></div>
+    <div><span class="n">Paso 6</span><span class="t">Escribir el código</span>
+      <span class="d">Recién acá. Cuando ya sabés qué querés, escribirlo es lo fácil.</span></div>
+    <div><span class="n">Paso 7</span><span class="t">Probar y detectar errores</span>
+      <span class="d">Ejecutar, ver qué se rompe y entender por qué.</span></div>
+    <div><span class="n">Paso 8</span><span class="t">Mejorar</span>
+      <span class="d">Arreglarlo y volver a probar. Eso no es fracasar: eso es programar.</span></div>
+  </div>
+
+  <div class="box warn">
+    <span class="lbl">⚠️ Mirá dónde está el código</span>
+    <p>En el <b>sexto</b> lugar. Cinco pasos antes de tocar el teclado. <b>No memorices: razoná.</b>
+    Si arrancás por el código, te vas a trabar — y eso ya lo vimos en las dos clases.</p>
+  </div>
+
+  <h3>Las 13 etapas de un vistazo</h3>
+  <div class="etapas-map">
+    <div><span class="n">Etapa 1</span><span class="t">Pensar antes de programar</span><span class="d">Encontrar los objetos de la escena.</span></div>
+    <div><span class="n">Etapa 2</span><span class="t">Diseñar las clases</span><span class="d">La tabla de atributos y métodos.</span></div>
+    <div><span class="n">Etapa 3</span><span class="t">Clase Personaje</span><span class="d">La clase de arriba, la que heredan todos.</span></div>
+    <div><span class="n">Etapa 4</span><span class="t">Objeto Arma</span><span class="d">Una clase que no es un personaje.</span></div>
+    <div><span class="n">Etapa 5</span><span class="t">El jugador tiene un arma</span><span class="d">Herencia + composición + <code>super()</code>.</span></div>
+    <div><span class="n">Etapa 6</span><span class="t">Crear enemigos</span><span class="d">La segunda clase hija.</span></div>
+    <div><span class="n">Etapa 7</span><span class="t">Herencia de varios niveles</span><span class="d">Personaje → Jugador → Guerrero.</span></div>
+    <div><span class="n">Etapa 8</span><span class="t">Polimorfismo</span><span class="d">Misma orden, distinta respuesta.</span></div>
+    <div><span class="n">Etapa 9</span><span class="t">Construir la pelea</span><span class="d">El <code>while</code> con todo adentro.</span></div>
+    <div><span class="n">Etapa 10</span><span class="t">Experiencia y niveles</span><span class="d">Información y comportamiento nuevos.</span></div>
+    <div><span class="n">Etapa 11</span><span class="t">Menú interactivo</span><span class="d">La forma de usar lo que construiste.</span></div>
+    <div><span class="n">Etapa 12</span><span class="t">Desafíos de ampliación</span><span class="d">Cinco niveles, de fácil a difícil.</span></div>
+  </div>
+
+  <div class="box">
+    <span class="lbl">💻 La versión interactiva</span>
+    <p>Este apunte es el mismo trabajo práctico que la guía web, que además corrige las actividades sola y
+    tiene simuladores para probar el combate sin instalar nada:
+    <b>pedroibanez97.github.io/P.O.O/tp-arena-de-combate.html</b><br>
+    Podés usar los dos: la guía para trabajar y este apunte para estudiar, subrayar y tener a mano.</p>
+  </div>
+</section>
+
+<!-- ==================== 2 · TEORÍA DE REPASO ==================== -->
+<section class="s" data-a="blue" id="teoria">
+  <div class="s-head">
+    <div class="s-num">02</div>
+    <div class="t">
+      <span class="eyebrow">La ayuda que vas a tener al lado</span>
+      <h2>Repaso: la teoría que vas a usar</h2>
+    </div>
+  </div>
+
+  <div class="body-col">
+    <p class="lead">Nada de lo que viene es nuevo: es todo de las clases 1 y 2. Está acá para que no tengas
+    que ir a buscarlo mientras programás.</p>
+    <p>No hace falta que te lo aprendas de memoria antes de empezar. Arrancá el trabajo práctico y volvé a
+    esta sección cada vez que te trabes. <strong>Esa es la forma en que esto se aprende de verdad.</strong></p>
+  </div>
+
+  <h3>Antes que nada: las dos preguntas</h3>
+  <div class="two-q">
+    <div class="tiene">
+      <span class="word">Pregunta 1</span>
+      <span class="q">¿Qué información tiene?</span>
+      <div class="pills">
+        <span class="pill a">nombre</span><span class="pill a">vida</span><span class="pill a">nivel</span>
+      </div>
+      <p>Lo que el objeto guarda adentro. Son <strong>sustantivos</strong>. En Python los llamamos
+      <strong>atributos</strong>.</p>
+    </div>
+    <div class="hace">
+      <span class="word">Pregunta 2</span>
+      <span class="q">¿Qué puede hacer?</span>
+      <div class="pills">
+        <span class="pill m">atacar()</span><span class="pill m">curarse()</span><span class="pill m">esta_vivo()</span>
+      </div>
+      <p>Las acciones que sabe realizar. Son <strong>verbos</strong> y llevan <code>()</code>. En Python los
+      llamamos <strong>métodos</strong>.</p>
+    </div>
+  </div>
+
+  <div class="box key">
+    <span class="lbl">Si dudás</span>
+    <p>Decilo en voz alta con las dos frases: <b>"el personaje tiene…"</b> y <b>"el personaje puede…"</b>.
+    Una de las dos va a sonar mal. "El personaje tiene atacar" suena horrible: entonces
+    <code>atacar()</code> es un método.</p>
+  </div>
+
+  <h3>Las diez fichas</h3>
+
+  <div class="fichas">
+
+    <div class="ficha" style="--c:var(--blue)">
+      <span class="fq">Ficha 1 · ¿de dónde salen los objetos?</span>
+      <span class="ft">Clase y objeto</span>
+      <p>La clase es <b>el molde</b>: describe qué van a tener y qué van a poder hacer todos, pero no existe.
+      El objeto es <b>uno concreto</b>, con valores propios. Una clase, todos los objetos que quieras.</p>
+      <pre><span class="cd-k">class</span> <span class="cd-fn">Arma</span>:          <span class="cd-c"># el molde</span>
+    ...
+
+espada = <span class="cd-fn">Arma</span>(<span class="cd-s">"Espada"</span>, <span class="cd-n">25</span>)   <span class="cd-c"># un objeto</span>
+arco = <span class="cd-fn">Arma</span>(<span class="cd-s">"Arco"</span>, <span class="cd-n">15</span>)      <span class="cd-c"># otro</span></pre>
+      <p><b>La clase describe. El objeto existe.</b> Cambiarle el daño a la espada no toca al arco: son
+      independientes.</p>
+    </div>
+
+    <div class="ficha" style="--c:var(--blue)">
+      <span class="fq">Ficha 2 · lo que tiene y lo que hace</span>
+      <span class="ft">Atributos y métodos</span>
+      <p>Los atributos son los datos que el objeto guarda; los métodos, las funciones que viven adentro
+      del objeto y trabajan sobre esos datos.</p>
+      <pre>espada.nombre        <span class="cd-c"># atributo: un dato</span>
+espada.<span class="cd-fn">usar</span>()        <span class="cd-c"># método: una acción</span></pre>
+      <p>Los paréntesis son la pista: <b>sin paréntesis lo leés o lo cambiás; con paréntesis se ejecuta.</b></p>
+    </div>
+
+    <div class="ficha" style="--c:var(--teal)">
+      <span class="fq">Ficha 3 · el momento en que nace</span>
+      <span class="ft"><code>__init__</code></span>
+      <p>Es un método especial que <b>se ejecuta solo, una sola vez</b>: justo cuando escribís
+      <code>Arma("Espada", 25)</code>. Ahí el objeto recibe sus datos y queda armado. También se lo llama
+      <b>constructor</b>.</p>
+      <pre><span class="cd-k">class</span> <span class="cd-fn">Arma</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, danio):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.danio = danio</pre>
+      <p>Los valores que van entre paréntesis al crear el objeto caen en los parámetros de
+      <code>__init__</code>.</p>
+    </div>
+
+    <div class="ficha" style="--c:var(--teal)">
+      <span class="fq">Ficha 4 · el objeto hablando de sí mismo</span>
+      <span class="ft"><code>self</code></span>
+      <p>Quiere decir <b>"yo"</b>. <code>self.vida</code> es <i>"mi vida"</i>: el objeto refiriéndose a sus
+      propios datos, para no confundirlos con los de otro objeto.</p>
+      <pre><span class="cd-k">def</span> <span class="cd-fn">recibir_danio</span>(<span class="cd-k">self</span>, cantidad):
+    <span class="cd-k">self</span>.vida = <span class="cd-k">self</span>.vida - cantidad</pre>
+      <p><b>El error número uno:</b> olvidarte el <code>self.</code> al guardar un atributo. Si escribís
+      <code>vida = vida</code>, el dato no se guarda en el objeto y después "desaparece".</p>
+    </div>
+
+    <div class="ficha" style="--c:var(--rose)">
+      <span class="fq">Ficha 5 · si podés decir "ES UN"</span>
+      <span class="ft">🧬 Herencia</span>
+      <p>Escribimos <b>una sola vez</b> lo que comparten y cada hijo agrega solo lo suyo. Es
+      <b>una sola cosa</b> que recibe todo lo del padre.</p>
+      <pre><span class="cd-c"># Jugador ES UN Personaje</span>
+<span class="cd-k">class</span> <span class="cd-fn">Jugador</span>(Personaje):
+    ...</pre>
+      <p>El test: <i>"un jugador <b>es un</b> personaje"</i>. Si la frase suena rara, no era herencia. Y al
+      revés: <b>si estás copiando y pegando una clase, ahí hay una herencia esperando.</b></p>
+    </div>
+
+    <div class="ficha" style="--c:var(--rose)">
+      <span class="fq">Ficha 6 · que el padre haga su parte</span>
+      <span class="ft"><code>super()</code></span>
+      <p><code>super()</code> quiere decir <b>"la clase de arriba"</b>. Traducido al castellano:
+      <i>"Padre, encargate vos de nombre y vida. Yo me ocupo de lo mío."</i></p>
+      <pre><span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida, arma):
+    <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>(nombre, vida)
+    <span class="cd-k">self</span>.arma = arma</pre>
+      <p>Va como <b>primera línea</b> del <code>__init__</code> del hijo. Así cada dato se escribe en
+      <b>un solo lugar</b> del programa.</p>
+    </div>
+
+    <div class="ficha" style="--c:var(--violet)">
+      <span class="fq">Ficha 7 · el hijo de un hijo</span>
+      <span class="ft">🪜 Varios niveles</span>
+      <p>Cada escalón <b>suma, no reemplaza</b>. El guerrero no recibe solo lo del jugador: recibe todo lo
+      que hay más arriba en la cadena, y todo vive en <b>un solo objeto</b>.</p>
+      <pre>Personaje  →  Jugador  →  Guerrero
+ nombre        arma        fuerza
+ vida</pre>
+      <p><b>Dos o tres niveles alcanzan casi siempre.</b> Si necesitás ocho, casi seguro no era herencia
+      lo que buscabas.</p>
+    </div>
+
+    <div class="ficha" style="--c:var(--good)">
+      <span class="fq">Ficha 8 · mostrar no es entregar</span>
+      <span class="ft">📦 <code>print()</code> vs <code>return</code></span>
+      <p><code>print()</code> manda algo a la pantalla: lo ve una persona y ahí termina.
+      <code>return</code> <b>te entrega</b> el valor: lo podés guardar, comparar en un <code>if</code> o
+      volver a usar.</p>
+      <pre><span class="cd-k">def</span> <span class="cd-fn">esta_vivo</span>(<span class="cd-k">self</span>):
+    <span class="cd-k">return</span> <span class="cd-k">self</span>.vida &gt; <span class="cd-n">0</span>
+
+<span class="cd-k">if</span> jugador.<span class="cd-fn">esta_vivo</span>():
+    <span class="cd-fn">print</span>(<span class="cd-s">"Seguí jugando"</span>)</pre>
+      <p><b>La pregunta que resuelve la duda: ¿lo necesita una persona o lo necesita el programa?</b></p>
+    </div>
+
+    <div class="ficha" style="--c:var(--flame)">
+      <span class="fq">Ficha 9 · si podés decir "TIENE UN"</span>
+      <span class="ft">🎁 Composición</span>
+      <p><b>Un atributo también puede ser otro objeto.</b> Son <b>dos objetos distintos</b>, conectados: el
+      jugador guarda adentro un arma entera, no un texto ni un número.</p>
+      <pre><span class="cd-k">self</span>.arma = arma   <span class="cd-c"># la línea de siempre</span>
+
+<span class="cd-fn">print</span>(jugador.arma.nombre)
+<span class="cd-c"># "el nombre del arma del jugador"</span></pre>
+      <p>El punto se lee <b>"de", de derecha a izquierda</b>. Y el jugador no sabe cuánto daño hace:
+      <b>le pregunta al arma</b>. Cada objeto se ocupa de lo suyo.</p>
+    </div>
+
+    <div class="ficha" style="--c:var(--violet)">
+      <span class="fq">Ficha 10 · misma orden, distinta respuesta</span>
+      <span class="ft">🎭 Polimorfismo</span>
+      <p>Le damos <b>la misma orden</b> a objetos distintos y cada uno responde <b>a su manera</b>. El
+      código que los usa no cambia nunca, aunque agregues diez enemigos más.</p>
+      <pre><span class="cd-k">for</span> enemigo <span class="cd-k">in</span> [dragon, goblin, lobo]:
+    <span class="cd-fn">print</span>(enemigo.<span class="cd-fn">atacar</span>())</pre>
+      <p>¿Cuántos <code>if</code> hay en ese <code>for</code>? <b>Cero.</b> Cada objeto sabe cómo responder.</p>
+    </div>
+
+  </div>
+
+  <h3>Y una que aparece sin que la nombremos: encapsulación</h3>
+  <div class="grid2">
+    <div class="box warn">
+      <span class="lbl">✗ Sin control</span>
+      <pre>jugador.vida = -<span class="cd-n">999999</span></pre>
+      <p>Si cualquier parte del programa puede escribir eso, el juego se rompe: personajes con vida
+      negativa, monedas infinitas, trampa pura. <b>El dato miente.</b></p>
+    </div>
+    <div class="box key">
+      <span class="lbl">✓ Con control</span>
+      <pre><span class="cd-k">def</span> <span class="cd-fn">recibir_danio</span>(<span class="cd-k">self</span>, cantidad):
+    <span class="cd-k">self</span>.vida = <span class="cd-k">self</span>.vida - cantidad
+    <span class="cd-k">if</span> <span class="cd-k">self</span>.vida &lt; <span class="cd-n">0</span>:
+        <span class="cd-k">self</span>.vida = <span class="cd-n">0</span></pre>
+      <p>Ese <code>if</code> es la única razón por la que la vida no queda en negativo. Y ese control
+      <b>vive adentro del objeto</b>: solo el objeto decide cómo cambian sus propios datos.</p>
+    </div>
+  </div>
+
+  <h3>Ayuda de sintaxis: lo mínimo que vas a escribir</h3>
+  <figure>
+    <pre><span class="cd-k">class</span> <span class="cd-fn">Nombre</span>:                        <span class="cd-c"># definir una clase (con mayúscula)</span>
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, dato1, dato2):    <span class="cd-c"># el constructor</span>
+        <span class="cd-k">self</span>.dato1 = dato1               <span class="cd-c"># guardar un atributo</span>
+        <span class="cd-k">self</span>.dato2 = dato2
+
+    <span class="cd-k">def</span> <span class="cd-fn">hacer_algo</span>(<span class="cd-k">self</span>):                <span class="cd-c"># un método que NO devuelve</span>
+        <span class="cd-k">self</span>.dato1 = <span class="cd-k">self</span>.dato1 + <span class="cd-n">1</span>
+
+    <span class="cd-k">def</span> <span class="cd-fn">contestar</span>(<span class="cd-k">self</span>):                 <span class="cd-c"># un método que SÍ devuelve</span>
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.dato1
+
+<span class="cd-k">class</span> <span class="cd-fn">Hija</span>(Nombre):                  <span class="cd-c"># heredar</span>
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, dato1, dato2, extra):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>(dato1, dato2)   <span class="cd-c"># el padre hace su parte</span>
+        <span class="cd-k">self</span>.extra = extra               <span class="cd-c"># el hijo agrega lo suyo</span>
+
+objeto = <span class="cd-fn">Hija</span>(<span class="cd-s">"a"</span>, <span class="cd-s">"b"</span>, <span class="cd-s">"c"</span>)         <span class="cd-c"># crear el objeto</span>
+<span class="cd-fn">print</span>(objeto.dato1)                  <span class="cd-c"># leer un atributo</span>
+objeto.<span class="cd-fn">hacer_algo</span>()                  <span class="cd-c"># ejecutar un método</span>
+resultado = objeto.<span class="cd-fn">contestar</span>()       <span class="cd-c"># guardar lo que devuelve</span></pre>
+    <figcaption>Si te acordás de este esqueleto, ya podés escribir cualquier clase del trabajo práctico.
+    Todo lo demás son <code>if</code>, <code>while</code> y listas, que ya sabías desde antes de POO.</figcaption>
+  </figure>
+</section>
+
+<!-- ==================== 3 · ETAPAS 1 Y 2 ==================== -->
+<section class="s" data-a="teal" id="pensar">
+  <div class="s-head">
+    <div class="s-num">03</div>
+    <div class="t">
+      <span class="eyebrow">Etapas 1 y 2 &middot; sin computadora</span>
+      <h2>Pensar y diseñar</h2>
+    </div>
+  </div>
+
+  <div class="etapa-bar">
+    <span class="num">Etapa 1 · Objetivo</span>
+    <span class="obj">Mirar la escena de un juego y encontrar los objetos, sin escribir una sola línea de código.</span>
+  </div>
+
+  <div class="body-col">
+    <p>Te pasan la captura de un juego y te dicen: <strong>"programalo"</strong>. En la pantalla hay un héroe
+    llamado Aria (nivel 3, 80 de 100 de vida, 40 puntos de experiencia), un goblin con 33 de 60 de vida, una
+    espada, una poción y el fondo de la arena.</p>
+  </div>
+
+  <p class="ask">¿Qué objetos necesitamos para construir un juego de combate?</p>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e1">Actividad 1</span><h4>Buscá los objetos en la escena</h4></div>
+    <div class="ex-body">
+      <p>Marcá todo lo que te parece que merece ser <b>un objeto</b> del programa, o sea, algo con su
+      propia clase. Ojo: no todo lo que ves en la pantalla es un objeto.</p>
+      <div class="chklist">
+        <div><span class="cb"></span><span>🧍 El héroe</span></div>
+        <div><span class="cb"></span><span>👾 El goblin</span></div>
+        <div><span class="cb"></span><span>⚔️ La espada</span></div>
+        <div><span class="cb"></span><span>🧪 La poción</span></div>
+        <div><span class="cb"></span><span>❤️ La barra de vida</span></div>
+        <div><span class="cb"></span><span>⭐ Los 40 puntos de experiencia</span></div>
+        <div><span class="cb"></span><span>🌙 El fondo de la arena</span></div>
+      </div>
+      <p><b>Después de marcar</b>, escribí al lado de cada una <i>por qué</i>. Esa explicación vale más que
+      la marca. La solución está en la sección 16.</p>
+    </div>
+  </div>
+
+  <div class="box key">
+    <span class="lbl">La regla</span>
+    <p>Un <b>objeto</b> es algo que tiene información <i>y además</i> hace algo. Si solo guarda un dato y
+    no hace nada, casi siempre es un <b>atributo de alguien más</b>.
+    <b>Que algo se te ocurra no significa que merezca ser una clase.</b></p>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e1">Actividad 2</span><h4>Atributo o método</h4></div>
+    <div class="ex-body">
+      <p>Le hacemos las dos preguntas al héroe. Escribí <b>A</b> (atributo) o <b>M</b> (método) al lado de
+      cada uno, y probá leyéndolo en voz alta con "el héroe tiene…" / "el héroe puede…".</p>
+      <div class="pills">
+        <span class="pill">nombre</span><span class="pill">atacar()</span><span class="pill">vida</span>
+        <span class="pill">recibir_danio()</span><span class="pill">experiencia</span><span class="pill">subir_nivel()</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="body-col">
+    <h3>Un objeto que todavía no viste</h3>
+    <p>Mirá al héroe y al goblin. Los dos tienen <strong>nombre</strong>, los dos tienen <strong>vida</strong>,
+    a los dos les pueden pegar y los dos pueden morir. Si todo eso lo comparten, escribirlo dos veces sería
+    un error: acordate de que <strong>si estás copiando y pegando una clase, ahí hay una herencia esperando</strong>.</p>
+    <p>Entonces creamos una clase de arriba con lo que comparten. La vamos a llamar <strong>Personaje</strong>,
+    y de ahí van a heredar el jugador y el enemigo.</p>
+  </div>
+
+  <div class="etapa-bar">
+    <span class="num">Etapa 2 · Objetivo</span>
+    <span class="obj">Dejar decidido, en una tabla, qué va a tener y qué va a poder hacer cada clase. Recién después, código.</span>
+  </div>
+
+  <p class="ask">¿Qué información tiene cada clase y qué puede hacer cada una?</p>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e2">Actividad 3</span><h4>Completá la tabla de diseño</h4></div>
+    <div class="ex-body">
+      <p>Primero la tuya. No mires ninguna solución todavía: escribí lo que <b>vos</b> creés, aunque no estés
+      seguro. Esto se hace en papel y tarda cinco minutos; saltearlo tarda dos horas.</p>
+      <table class="dis">
+        <thead><tr><th>Clase</th><th>Atributos · ¿qué tiene?</th><th>Métodos · ¿qué puede hacer?</th></tr></thead>
+        <tbody>
+          <tr><td>Personaje<br><span style="font-weight:400;font-size:13px">la de arriba</span></td><td></td><td></td></tr>
+          <tr><td>Jugador</td><td></td><td></td></tr>
+          <tr><td>Enemigo</td><td></td><td></td></tr>
+          <tr><td>Arma</td><td></td><td></td></tr>
+        </tbody>
+      </table>
+      <p><b>Ojo:</b> en Jugador y en Enemigo <b>no repitas</b> <code>nombre</code> ni <code>vida</code>. Eso ya
+      está en Personaje y lo van a heredar. En la tabla de un hijo va <b>solo lo que agrega</b>.</p>
+    </div>
+  </div>
+
+  <div class="box warn">
+    <span class="lbl">⚠️ La decisión difícil del diseño</span>
+    <p>No es <i>qué</i> atributos existen: es <b>en qué clase va cada uno</b>. La regla es siempre la misma:
+    <b>arriba va solo lo que comparten todos</b>. Si le ponés <code>experiencia</code> a Personaje, entonces
+    los goblins, las piedras y los cofres también tienen experiencia. Y el <code>arma</code> no va en
+    Personaje: no todos los personajes tienen un arma.</p>
+  </div>
+
+  <h3>El diseño que vamos a construir</h3>
+  <div class="tree">
+    <div class="uml parent">
+      <div class="uml-h">Personaje</div>
+      <ul class="at"><li>nombre</li><li>vida</li></ul>
+      <ul class="me"><li>recibir_danio()</li><li>esta_vivo()</li></ul>
+    </div>
+    <svg viewBox="0 0 520 52" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M130 52 V26 H390 V52 M260 0 V26"/>
+    </svg>
+    <div class="kids">
+      <div class="uml">
+        <div class="uml-h">Jugador 🧍</div>
+        <ul class="at"><li>arma</li><li>nivel</li><li>experiencia</li></ul>
+        <ul class="me"><li>atacar()</li><li>ganar_experiencia()</li></ul>
+      </div>
+      <div class="uml">
+        <div class="uml-h">Enemigo 👾</div>
+        <ul class="at"><li>danio</li></ul>
+        <ul class="me"><li>atacar()</li></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="comp">
+    <div class="uml">
+      <div class="uml-h">Jugador 🧍</div>
+      <ul class="at"><li>arma</li></ul>
+      <ul class="me"><li>atacar()</li></ul>
+    </div>
+    <div class="link"><i>◆──▶</i><span>tiene un</span></div>
+    <div class="uml">
+      <div class="uml-h">Arma ⚔️</div>
+      <ul class="at"><li>nombre</li><li>danio</li></ul>
+      <ul class="me"><li>usar()</li></ul>
+    </div>
+  </div>
+
+  <div class="body-col">
+    <p><strong>Dos flechas, dos relaciones distintas.</strong> La de arriba dice <b>ES UN</b> y es herencia.
+    La del costado dice <b>TIENE UN</b> y es composición. Copiá este dibujo en tu carpeta: es parte de la
+    entrega final.</p>
+  </div>
+
+  <div class="box">
+    <span class="lbl">⚖️ Puede haber otras respuestas correctas</span>
+    <p>Si vos pusiste <code>vida_maxima</code> en Personaje, o un método <code>mostrar_info()</code>, o le
+    pusiste <code>fuerza</code> al Jugador: <b>está bien</b>, siempre que puedas justificarlo. Diseñar es
+    tomar decisiones y casi nunca hay una sola correcta.</p>
+  </div>
+</section>
+
+<!-- ==================== 4 · ETAPA 3 ==================== -->
+<section class="s" data-a="violet" id="personaje">
+  <div class="s-head">
+    <div class="s-num">04</div>
+    <div class="t">
+      <span class="eyebrow">Etapa 3 &middot; ahora sí, al teclado</span>
+      <h2>La clase <code>Personaje</code></h2>
+    </div>
+  </div>
+
+  <div class="etapa-bar">
+    <span class="num">Objetivo</span>
+    <span class="obj">Escribir la primera clase del juego: la de arriba, la que van a heredar todos los demás.</span>
+  </div>
+
+  <p class="ask">¿Por qué conviene empezar por <code>Personaje</code> y no por <code>Jugador</code>?</p>
+  <div class="qa">
+    <p class="a">Porque los demás van a heredar de ella: <b>primero tiene que existir el padre</b>. Y además,
+    poner lo común arriba es justamente lo que evita repetir código.</p>
+  </div>
+
+  <h3>Paso 1 · los atributos</h3>
+  <figure>
+    <pre><span class="cd-k">class</span> <span class="cd-fn">Personaje</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.vida = vida</pre>
+    <figcaption>Todavía no existe ningún personaje: solo dijimos <b>cómo se fabrican</b>. La clase se
+    escribe con mayúscula, por convención.</figcaption>
+  </figure>
+
+  <h3>Paso 2 · que pueda recibir daño</h3>
+  <figure>
+    <pre>    <span class="cd-k">def</span> <span class="cd-fn">recibir_danio</span>(<span class="cd-k">self</span>, cantidad):
+        <span class="cd-k">self</span>.vida = <span class="cd-k">self</span>.vida - cantidad</pre>
+    <figcaption>Un personaje al que no le podés pegar no sirve para una arena. Este método <b>modifica los
+    datos del propio objeto</b>: nadie le toca la vida desde afuera.</figcaption>
+  </figure>
+
+  <div class="box">
+    <span class="lbl">📝 Nota sobre los nombres</span>
+    <p>En la clase 2 lo escribimos <code>recibir_daño</code>, con ñ. Acá lo escribimos
+    <code>recibir_danio</code>, sin ñ. <b>Python acepta las dos</b>, pero sin ñ te evitás problemas al copiar
+    código, al cambiar de teclado o al compartir el archivo. Es exactamente la misma idea, con otro nombre.</p>
+  </div>
+
+  <h3>Paso 3 · que pueda contestar si sigue vivo</h3>
+  <figure>
+    <pre>    <span class="cd-k">def</span> <span class="cd-fn">esta_vivo</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.vida &gt; <span class="cd-n">0</span></pre>
+    <figcaption>El método más importante de todo el juego, aunque parezca el más chiquito: no imprime nada,
+    <b>devuelve</b> <code>True</code> o <code>False</code>.</figcaption>
+  </figure>
+
+  <div class="two-q">
+    <div class="tiene">
+      <span class="word">¿Por qué <code>esta_vivo()</code> usa return?</span>
+      <p>Porque <b>contesta una pregunta</b> y el programa va a usar esa respuesta adentro de un
+      <code>if</code> y del <code>while</code> de la pelea. Si hiciera <code>print</code>, el
+      <code>while</code> sería imposible de escribir.</p>
+    </div>
+    <div class="hace">
+      <span class="word">¿Y por qué <code>recibir_danio()</code> no?</span>
+      <p>Porque <b>hace un cambio en el objeto</b> y listo: modifica la vida y no tiene nada que entregar.
+      Siempre la misma pregunta: <b>¿lo necesita una persona o el programa?</b></p>
+    </div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e1">Predicción</span><h4>Antes de ejecutar</h4></div>
+    <div class="ex-body">
+      <ol>
+        <li>Si la vida es <b>100</b> y el personaje recibe <b>30</b> de daño, ¿cuánta vida le queda?</li>
+        <li>Si la vida es <b>0</b>, ¿qué devuelve <code>esta_vivo()</code>?</li>
+        <li>¿Y si el personaje tiene 100 de vida y recibe <b>500</b> de daño?</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="box warn">
+    <span class="lbl">⚠️ El problema escondido</span>
+    <p>La vida queda en <b>−400</b>. Y un personaje con vida negativa no existe: <b>el dato miente</b>.
+    Esto ya lo arreglaste una vez, en el ejercicio de la mascota de la clase 1.</p>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e2">Desafío</span><h4>Arreglalo vos</h4></div>
+    <div class="ex-body">
+      <p>Hacé que la vida <b>nunca</b> quede por debajo de cero. Completá los tres huecos:</p>
+      <pre>    <span class="cd-k">def</span> <span class="cd-fn">recibir_danio</span>(<span class="cd-k">self</span>, cantidad):
+        <span class="cd-k">self</span>.vida = <span class="cd-k">self</span>.vida - cantidad
+        ______ <span class="cd-k">self</span>.vida ___ <span class="cd-n">0</span>:
+            <span class="cd-k">self</span>.vida = ___</pre>
+      <p><b>Pista:</b> primero restás y <b>después</b> te fijás si te pasaste. El arreglo tiene que vivir
+      <b>adentro del objeto</b>, porque es el objeto el que decide cómo cambian sus propios datos. Eso es
+      <b>encapsulación</b>.</p>
+    </div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e2">En la compu</span><h4>Probalo</h4></div>
+    <div class="ex-body">
+      <p>Escribí la clase completa en <code>juego.py</code> y, <b>antes de ejecutar</b>, anotá en la carpeta
+      qué esperás que imprima cada línea:</p>
+      <pre>aria = <span class="cd-fn">Personaje</span>(<span class="cd-s">"Aria"</span>, <span class="cd-n">100</span>)
+aria.<span class="cd-fn">recibir_danio</span>(<span class="cd-n">30</span>)
+<span class="cd-fn">print</span>(aria.vida)
+aria.<span class="cd-fn">recibir_danio</span>(<span class="cd-n">500</span>)
+<span class="cd-fn">print</span>(aria.vida)
+<span class="cd-fn">print</span>(aria.<span class="cd-fn">esta_vivo</span>())</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 5 · ETAPA 4 ==================== -->
+<section class="s" data-a="rose" id="arma">
+  <div class="s-head">
+    <div class="s-num">05</div>
+    <div class="t">
+      <span class="eyebrow">Etapa 4</span>
+      <h2>El objeto <code>Arma</code></h2>
+    </div>
+  </div>
+
+  <div class="etapa-bar">
+    <span class="num">Objetivo</span>
+    <span class="obj">Fabricar un objeto que no es un personaje, y ver por qué su método devuelve en vez de mostrar.</span>
+  </div>
+
+  <p class="ask">¿Un Arma <em>es un</em> Personaje? ¿Debería heredar de <code>Personaje</code>?</p>
+  <div class="qa">
+    <p class="a"><b>No.</b> Leelo en voz alta: <i>"una espada es un personaje"</i>. Suena raro, y cuando la
+    frase suena rara, la respuesta es no. ¿Cuánta vida tiene una espada? ¿Se muere? Es <b>otra cosa</b>: una
+    clase aparte, que no hereda de nadie.</p>
+  </div>
+
+  <figure>
+    <pre><span class="cd-k">class</span> <span class="cd-fn">Arma</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, danio):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.danio = danio
+
+    <span class="cd-k">def</span> <span class="cd-fn">usar</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.danio</pre>
+    <figcaption>Las dos preguntas de siempre. <b>¿Qué tiene?</b> Un nombre y un daño. <b>¿Qué puede hacer?</b>
+    Usarse: entregar cuánto daño hace.</figcaption>
+  </figure>
+
+  <div class="box key">
+    <span class="lbl">📦 Por qué <code>usar()</code> devuelve</span>
+    <p>Porque ese daño <b>no es para mirarlo</b>: es para restárselo a la vida del enemigo. Lo necesita el
+    <b>programa</b>, no una persona. Con <code>print</code> el número se vería en pantalla y se perdería,
+    y nadie podría agarrarlo.</p>
+  </div>
+
+  <div class="box">
+    <span class="lbl">📝 Nota sobre los nombres</span>
+    <p>En la clase 2 este método se llamaba <code>atacar()</code>. Acá le decimos <code>usar()</code> porque
+    el arma <b>no ataca sola</b>: la usa alguien. El nombre lo elegís vos; lo que no se negocia es que
+    <b>devuelva</b> el daño.</p>
+  </div>
+
+  <h3>Del molde a las armas de verdad</h3>
+  <figure>
+    <pre>espada = <span class="cd-fn">Arma</span>(<span class="cd-s">"Espada"</span>, <span class="cd-n">25</span>)
+arco = <span class="cd-fn">Arma</span>(<span class="cd-s">"Arco"</span>, <span class="cd-n">15</span>)
+
+<span class="cd-fn">print</span>(espada.<span class="cd-fn">usar</span>())        <span class="cd-c"># ?</span>
+<span class="cd-fn">print</span>(arco.<span class="cd-fn">usar</span>())          <span class="cd-c"># ?</span>
+<span class="cd-fn">print</span>(espada.nombre)        <span class="cd-c"># ?</span>
+
+resultado = espada.<span class="cd-fn">usar</span>()   <span class="cd-c"># el número queda GUARDADO</span>
+<span class="cd-fn">print</span>(resultado - <span class="cd-n">5</span>)        <span class="cd-c"># ← puedo seguir haciendo cuentas</span></pre>
+    <figcaption>Un solo molde, dos armas <b>independientes</b>. Predecí qué imprime cada línea antes de
+    ejecutarlo. La última es la importante: como <code>usar()</code> devuelve, el valor se puede guardar en
+    una variable y seguir usándolo. Con <code>print</code>, <code>resultado</code> valdría <code>None</code>.</figcaption>
+  </figure>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e1">Entrenamiento</span><h4>¿print() o return?</h4></div>
+    <div class="ex-body">
+      <p>Para cada método del juego, escribí cuál corresponde y por qué:</p>
+      <ol>
+        <li>Un método que calcula el daño de un golpe.</li>
+        <li>Un método que muestra el menú de opciones.</li>
+        <li>Un método que dice si el enemigo sigue vivo.</li>
+        <li>Un método que saluda al empezar la partida.</li>
+        <li>Un método que calcula cuánta experiencia falta para el próximo nivel.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e2">Desafío</span><h4>Forjá tu propia arma</h4></div>
+    <div class="ex-body">
+      <p>Inventá el arma con la que va a pelear <b>tu</b> personaje: ponele el nombre que quieras y decidí
+      cuánto daño hace. Te va a acompañar durante todo el trabajo práctico.</p>
+      <div class="renglones">
+        <div class="rl"></div><div class="rl"></div>
+      </div>
+      <p>Escribila en <code>juego.py</code> y probá <code>print(mi_arma.usar())</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 6 · ETAPA 5 ==================== -->
+<section class="s" data-a="flame" id="composicion">
+  <div class="s-head">
+    <div class="s-num">06</div>
+    <div class="t">
+      <span class="eyebrow">Etapa 5 &middot; el corazón del trabajo práctico</span>
+      <h2>El jugador <em>tiene</em> un arma</h2>
+    </div>
+  </div>
+
+  <div class="etapa-bar">
+    <span class="num">Objetivo</span>
+    <span class="obj">Conectar dos objetos: herencia para lo que <b>es</b>, composición para lo que <b>tiene</b>.</span>
+  </div>
+
+  <div class="body-col">
+    <p>Tenemos un <strong>Personaje</strong> y tenemos un <strong>Arma</strong>. Están sueltos: ninguno de
+    los dos sabe que el otro existe. Hay que decidir <strong>cómo se relacionan</strong> — y eso se decide
+    <em>antes</em> de escribir código, leyendo dos frases en voz alta.</p>
+  </div>
+
+  <div class="two-q">
+    <div class="hace">
+      <span class="word">Pregunta 1</span>
+      <span class="q">¿Un Jugador <b>ES</b> un Arma?</span>
+      <p><i>"Un jugador es un arma."</i> Suena horrible. Y cuando la frase suena rara, <b>la respuesta es
+      no</b>. Acá <b>no</b> va herencia.</p>
+    </div>
+    <div class="tiene">
+      <span class="word">Pregunta 2</span>
+      <span class="q">¿Un Jugador <b>TIENE</b> un Arma?</span>
+      <p><i>"Un jugador tiene un arma."</i> Esa sí suena natural. Entonces va <b>composición</b>: dos
+      objetos distintos, conectados.</p>
+    </div>
+  </div>
+
+  <h3>Paso 1 · la herencia y el <code>super()</code></h3>
+  <figure>
+    <pre><span class="cd-k">class</span> <span class="cd-fn">Jugador</span>(Personaje):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>(nombre, vida)</pre>
+    <figcaption>El <code>(Personaje)</code> es todo lo que hace falta para decir <b>"Jugador ES UN
+    Personaje"</b>: con eso el jugador ya tiene <code>recibir_danio()</code> y <code>esta_vivo()</code> sin
+    escribirlos. Y <code>super()</code> es pedirle al padre que guarde <code>nombre</code> y
+    <code>vida</code>, para no repetirlos.</figcaption>
+  </figure>
+
+  <div class="steps">
+    <div><span class="k">Paso 1</span><span class="v">Python entra al <code>__init__</code> de
+    <b>Jugador</b> con los datos que le pasamos.</span></div>
+    <div><span class="k">Paso 2</span><span class="v">La línea <code>super().__init__(nombre, vida)</code>
+    <b>sube a Personaje</b>, que guarda <code>nombre</code> y <code>vida</code>.</span></div>
+    <div><span class="k">Paso 3</span><span class="v">Vuelve a <b>Jugador</b>, que guarda lo suyo. Listo:
+    el objeto quedó completo, y al usarlo <b>no se nota</b> quién puso cada cosa.</span></div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e1">Detectá el error</span><h4>Esto explota en la última línea</h4></div>
+    <div class="ex-body">
+      <pre><span class="cd-k">class</span> <span class="cd-fn">Jugador</span>(Personaje):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida):
+        <span class="cd-k">self</span>.vida = vida        <span class="cd-c"># se olvidó del super()</span>
+
+aria = <span class="cd-fn">Jugador</span>(<span class="cd-s">"Aria"</span>, <span class="cd-n">100</span>)
+<span class="cd-fn">print</span>(aria.nombre)</pre>
+      <p>¿Qué error da y por qué? Escribilo con tus palabras antes de mirar la sección 16.</p>
+    </div>
+  </div>
+
+  <h3>Paso 2 · el arma entra adentro del jugador</h3>
+  <figure>
+    <pre><span class="cd-k">class</span> <span class="cd-fn">Jugador</span>(Personaje):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida, arma):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>(nombre, vida)
+        <span class="cd-k">self</span>.arma = arma          <span class="cd-c"># ← ¡acá!</span>
+
+espada = <span class="cd-fn">Arma</span>(<span class="cd-s">"Espada"</span>, <span class="cd-n">25</span>)
+aria = <span class="cd-fn">Jugador</span>(<span class="cd-s">"Aria"</span>, <span class="cd-n">100</span>, espada)</pre>
+    <figcaption><b>Primero</b> fabricamos el arma, <b>después</b> el jugador pasándole esa arma. El objeto
+    <code>espada</code> entra adentro del objeto <code>aria</code>.</figcaption>
+  </figure>
+
+  <div class="box key">
+    <span class="lbl">🎁 Toda la novedad, en una línea</span>
+    <p><code>self.arma = arma</code> es <b>la misma línea de siempre</b>: <code>self.algo = algo</code>. Lo
+    único distinto es <b>qué</b> estamos guardando: no es un texto ni un número, es <b>un objeto entero</b>.
+    <b>Un atributo también puede ser otro objeto.</b></p>
+  </div>
+
+  <div class="mem">
+    <div class="obj">
+      <div class="oh">aria</div>
+      <ul><li><b>nombre</b> → "Aria"</li><li><b>vida</b> → 100</li><li><b>arma</b> → <span class="ref">◆</span></li></ul>
+    </div>
+    <div class="to"><i>▶</i><span>apunta a</span></div>
+    <div class="obj">
+      <div class="oh">espada</div>
+      <ul><li><b>nombre</b> → "Espada"</li><li><b>danio</b> → 25</li></ul>
+    </div>
+  </div>
+
+  <figure>
+    <pre><span class="cd-fn">print</span>(aria.nombre)          <span class="cd-c"># Aria</span>
+<span class="cd-fn">print</span>(aria.arma.nombre)     <span class="cd-c"># Espada</span>
+<span class="cd-fn">print</span>(aria.arma.<span class="cd-fn">usar</span>())     <span class="cd-c"># 25</span></pre>
+    <figcaption>El punto se lee <b>"de", de derecha a izquierda</b>: <code>aria.arma.nombre</code> es
+    <i>"el nombre <b>del</b> arma <b>de</b> Aria"</i>. Cada punto es un paso más adentro. Si te perdés en
+    una línea larga con muchos puntos, leela así y se ordena sola.</figcaption>
+  </figure>
+
+  <h3>Paso 3 · que ataque: dos objetos colaborando</h3>
+  <figure>
+    <pre>    <span class="cd-k">def</span> <span class="cd-fn">atacar</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.arma.<span class="cd-fn">usar</span>()</pre>
+    <figcaption>La línea más importante de la etapa.</figcaption>
+  </figure>
+
+  <div class="quote" style="max-width:32ch">El jugador <em>no sabe</em> cuánto daño hace. Le
+  <em>pregunta al arma</em>.</div>
+
+  <div class="body-col">
+    <p>En <code>return self.arma.usar()</code> participan <strong>dos objetos</strong>: el jugador le pide
+    el daño a <em>su</em> arma y devuelve lo que el arma le contestó. No hay ninguna cuenta en el código del
+    jugador. <strong>Cada objeto se ocupa de lo suyo: eso es que los objetos "hablen entre ellos".</strong></p>
+  </div>
+
+  <div class="box key">
+    <span class="lbl">¿Y para qué sirve tanto lío? Para cambiar de arma</span>
+    <pre>hacha = <span class="cd-fn">Arma</span>(<span class="cd-s">"Hacha"</span>, <span class="cd-n">40</span>)
+aria.arma = hacha
+<span class="cd-fn">print</span>(aria.<span class="cd-fn">atacar</span>())    <span class="cd-c"># 40</span></pre>
+    <p><b>¿Qué línea de la clase <code>Jugador</code> tuvimos que cambiar? Ninguna.</b> El jugador siempre
+    supo lo mismo: <i>"tengo un arma y le pido que ataque"</i>. Qué arma sea, no es su problema. Con 50 armas
+    distintas la clase sigue igual de corta; si hubiéramos usado herencia, cada arma nueva sería un tipo de
+    jugador nuevo. Un desastre.</p>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e1">Entrenamiento</span><h4>ES UN o TIENE UN</h4></div>
+    <div class="ex-body">
+      <p>Para cada par, escribí <b>ES UN</b> (herencia) o <b>TIENE UN</b> (composición). Leelo en voz alta
+      con las dos frases antes de contestar.</p>
+      <ol>
+        <li>Jugador / Personaje</li>
+        <li>Jugador / Arma</li>
+        <li>Auto / Rueda</li>
+        <li>Perro / Animal</li>
+        <li>Celular / Batería</li>
+        <li>JefeFinal / Enemigo</li>
+        <li>Jugador / Inventario</li>
+        <li>Guerrero / Jugador</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e2">En la compu</span><h4>Desafío de la etapa</h4></div>
+    <div class="ex-body">
+      <ol>
+        <li>Escribí la clase <code>Jugador</code> completa. Creá tu arma y tu jugador, y mostrá
+        <code>print(jugador.atacar())</code>.</li>
+        <li>Mostrá el nombre del arma del jugador en una sola línea.</li>
+        <li>Creá una segunda arma, cambiásela al jugador y volvé a atacar. <b>Sin tocar la clase
+        <code>Jugador</code>.</b></li>
+        <li><b>La difícil:</b> hacé que el jugador le pegue a un personaje de verdad, en dos líneas.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 7 · ETAPAS 6 Y 7 ==================== -->
+<section class="s" data-a="teal" id="enemigos">
+  <div class="s-head">
+    <div class="s-num">07</div>
+    <div class="t">
+      <span class="eyebrow">Etapas 6 y 7</span>
+      <h2>Enemigos y herencia de varios niveles</h2>
+    </div>
+  </div>
+
+  <div class="etapa-bar">
+    <span class="num">Etapa 6 · Objetivo</span>
+    <span class="obj">Escribir una segunda clase hija y ver que la herencia se escribe una vez y se usa muchas.</span>
+  </div>
+
+  <div class="body-col">
+    <p>Tu jugador pega, pero del otro lado no hay nadie. <strong>Falta el enemigo.</strong> Nuestro goblin
+    pelea a mordiscones: no usa arma, tiene un <code>danio</code> propio. (También se podría darle un
+    <code>Arma</code> llamada "mordisco" — las dos decisiones son defendibles; lo importante es poder
+    justificarla.)</p>
+  </div>
+
+  <figure>
+    <pre><span class="cd-k">class</span> <span class="cd-fn">Enemigo</span>(Personaje):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida, danio):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>(nombre, vida)
+        <span class="cd-k">self</span>.danio = danio
+
+    <span class="cd-k">def</span> <span class="cd-fn">atacar</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.danio</pre>
+    <figcaption>Es el <b>mismo molde</b> que <code>Jugador</code>, cambiando lo que agrega. Si ya lo podés
+    escribir casi sin pensar, es que entendiste el patrón.</figcaption>
+  </figure>
+
+  <div class="grid2">
+    <div class="box key">
+      <span class="lbl">Qué recibe de Personaje</span>
+      <p>Los atributos <code>nombre</code> y <code>vida</code>, y los métodos <code>recibir_danio()</code> y
+      <code>esta_vivo()</code>. <b>Ninguno está escrito adentro de <code>Enemigo</code>:</b> los hereda.</p>
+    </div>
+    <div class="box">
+      <span class="lbl">Qué agrega Enemigo</span>
+      <p>El atributo <code>danio</code> y el método <code>atacar()</code>. Eso es lo único suyo. Lo común
+      (nombre y vida) está arriba; lo específico, abajo.</p>
+    </div>
+  </div>
+
+  <figure>
+    <pre>goblin = <span class="cd-fn">Enemigo</span>(<span class="cd-s">"Goblin"</span>, <span class="cd-n">60</span>, <span class="cd-n">12</span>)
+esqueleto = <span class="cd-fn">Enemigo</span>(<span class="cd-s">"Esqueleto"</span>, <span class="cd-n">45</span>, <span class="cd-n">18</span>)
+lobo = <span class="cd-fn">Enemigo</span>(<span class="cd-s">"Lobo"</span>, <span class="cd-n">70</span>, <span class="cd-n">10</span>)</pre>
+    <figcaption>Con la clase escrita <b>una sola vez</b> ya podés poblar toda la arena. Tres objetos
+    independientes: bajarle la vida a uno no toca a los otros.</figcaption>
+  </figure>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e1">Comprobá</span><h4>¿Qué tiene el objeto goblin?</h4></div>
+    <div class="ex-body">
+      <p>Marcá cuáles de estas líneas funcionan y cuáles dan error, y explicá por qué:</p>
+      <div class="pills">
+        <span class="pill">goblin.nombre</span><span class="pill">goblin.vida</span>
+        <span class="pill">goblin.danio</span><span class="pill">goblin.esta_vivo()</span>
+        <span class="pill">goblin.recibir_danio(20)</span><span class="pill">goblin.arma</span>
+      </div>
+      <p>Y después, en la carpeta: <b>¿qué atributos de tu enemigo vienen de <code>Personaje</code> y cuáles
+      son propios de <code>Enemigo</code>?</b></p>
+    </div>
+  </div>
+
+  <div class="etapa-bar" style="--accent:var(--violet)">
+    <span class="num">Etapa 7 · Objetivo</span>
+    <span class="obj">Ver qué pasa cuando el hijo tiene a su vez un hijo, y hasta dónde conviene estirar la cadena.</span>
+  </div>
+
+  <div class="body-col">
+    <p>Tu juego crece: querés que existan <strong>clases de personaje</strong>, como en cualquier RPG.
+    Empezamos por el <strong>Guerrero</strong>, que es un jugador con <strong>fuerza</strong>. Hacé el test
+    de siempre, escalón por escalón: <i>"un guerrero es un jugador"</i> ✓, <i>"un jugador es un
+    personaje"</i> ✓. Los dos escalones aguantan la frase.</p>
+  </div>
+
+  <div class="ladder">
+    <div class="rung"><div class="uml"><div class="uml-h">Personaje</div>
+      <ul class="at"><li>nombre</li><li>vida</li></ul></div></div>
+    <div class="arw"><i></i><b>▲</b><span>es un</span></div>
+    <div class="rung"><div class="uml"><div class="uml-h">Jugador 🧍</div>
+      <ul class="at"><li>arma</li></ul></div></div>
+    <div class="arw"><i></i><b>▲</b><span>es un</span></div>
+    <div class="rung"><div class="uml"><div class="uml-h">Guerrero 🛡️</div>
+      <ul class="at"><li>fuerza</li></ul></div></div>
+  </div>
+
+  <figure>
+    <pre><span class="cd-k">class</span> <span class="cd-fn">Guerrero</span>(Jugador):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida, arma, fuerza):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>(nombre, vida, arma)
+        <span class="cd-k">self</span>.fuerza = fuerza</pre>
+    <figcaption>¿Qué hay de nuevo acá? <b>Nada.</b> Es exactamente lo mismo de la etapa 5, hecho una vez
+    más. Y fijate: <code>Guerrero</code> <b>nunca menciona</b> <code>vida</code>. Eso es asunto de
+    <code>Personaje</code>.</figcaption>
+  </figure>
+
+  <div class="box key">
+    <span class="lbl">La idea central</span>
+    <p><b>Cada escalón suma, no reemplaza.</b> <code>Guerrero</code> le pide a <code>Jugador</code>, y
+    <code>Jugador</code> le pide a <code>Personaje</code>. Cada clase se ocupa solamente de lo suyo y nadie
+    repite el trabajo de otro. Los cuatro atributos terminan viviendo en <b>un solo objeto</b>.</p>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e1">Predicción</span><h4>¿Cuáles funcionan?</h4></div>
+    <div class="ex-body">
+      <pre>espada = <span class="cd-fn">Arma</span>(<span class="cd-s">"Espada"</span>, <span class="cd-n">25</span>)
+aria = <span class="cd-fn">Guerrero</span>(<span class="cd-s">"Aria"</span>, <span class="cd-n">100</span>, espada, <span class="cd-n">8</span>)
+
+<span class="cd-fn">print</span>(aria.nombre)
+<span class="cd-fn">print</span>(aria.arma.nombre)
+<span class="cd-fn">print</span>(aria.fuerza)
+<span class="cd-fn">print</span>(aria.<span class="cd-fn">esta_vivo</span>())
+<span class="cd-fn">print</span>(aria.danio)</pre>
+      <p>Escribí qué imprime cada línea. <b>Una de las cinco da error:</b> encontrala y explicá por qué.</p>
+    </div>
+  </div>
+
+  <div class="box warn">
+    <span class="lbl">⚠️ Que se pueda no significa que convenga</span>
+    <p>Una cadena de ocho clases hace que, para entender <b>una</b>, haya que leer <b>ocho</b>.
+    <b>Dos o tres niveles alcanzan casi siempre.</b> Si necesitás ocho, casi seguro no era herencia lo que
+    buscabas.</p>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e2">En la compu</span><h4>Desafío de la etapa</h4></div>
+    <div class="ex-body">
+      <ol>
+        <li>Escribí <code>Guerrero</code> y creá uno. Imprimí sus cuatro datos.</li>
+        <li>Escribí <b>otra</b> clase hija de <code>Jugador</code>: un <code>Mago</code> que agregue
+        <code>magia</code>.</li>
+        <li>En la carpeta: <b>¿de quién hereda el Mago directamente? ¿Y qué atributos termina teniendo?</b></li>
+        <li><b>La difícil:</b> hacé que el <code>Guerrero</code> pegue más fuerte que un jugador común
+        usando su <code>fuerza</code>. Escribile su propio <code>atacar()</code>. Eso ya es polimorfismo,
+        que es justo lo que viene ahora.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 8 · ETAPA 8 ==================== -->
+<section class="s" data-a="violet" id="polimorfismo">
+  <div class="s-head">
+    <div class="s-num">08</div>
+    <div class="t">
+      <span class="eyebrow">Etapa 8</span>
+      <h2>Polimorfismo: misma orden, distinta respuesta</h2>
+    </div>
+  </div>
+
+  <div class="etapa-bar">
+    <span class="num">Objetivo</span>
+    <span class="obj">Que todos los enemigos entiendan <code>atacar()</code>, pero que cada uno conteste a su manera.</span>
+  </div>
+
+  <div class="body-col">
+    <p>Tu arena ya tiene goblins, esqueletos y lobos… y <strong>los tres pegan exactamente igual</strong>.
+    Aburridísimo. Queremos que el dragón sea temible y que el goblin sea un estorbo menor.</p>
+  </div>
+
+  <div class="vs">
+    <div class="bad">
+      <div class="top">✗ La idea que sale sola</div>
+      <pre><span class="cd-k">if</span> enemigo.tipo == <span class="cd-s">"dragon"</span>:
+    danio = enemigo.danio + <span class="cd-n">15</span>
+<span class="cd-k">elif</span> enemigo.tipo == <span class="cd-s">"goblin"</span>:
+    danio = enemigo.danio
+<span class="cd-k">elif</span> enemigo.tipo == <span class="cd-s">"esqueleto"</span>:
+    danio = enemigo.danio * <span class="cd-n">2</span>
+<span class="cd-c"># ... y así con cada enemigo nuevo</span></pre>
+    </div>
+    <div class="good">
+      <div class="top">✓ Que cada uno sepa atacar</div>
+      <pre><span class="cd-k">class</span> <span class="cd-fn">Dragon</span>(Enemigo):
+    <span class="cd-k">def</span> <span class="cd-fn">atacar</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.danio + <span class="cd-n">15</span>
+
+<span class="cd-k">class</span> <span class="cd-fn">Goblin</span>(Enemigo):
+    <span class="cd-k">def</span> <span class="cd-fn">atacar</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.danio</pre>
+    </div>
+  </div>
+
+  <div class="body-col">
+    <p>El problema del primero no es que no funcione: <strong>es que crece con cada enemigo nuevo</strong>.
+    Cada vez hay que volver a ese <code>if</code> y agregarle un <code>elif</code> — y si el mismo
+    <code>if</code> está en tres lugares del programa, hay que acordarse de los tres.</p>
+    <p>Ya sabíamos que un hijo puede <strong>agregar</strong> cosas. Acá usamos la otra mitad de la herencia:
+    un hijo también puede <strong>reemplazar</strong> un método del padre. Ninguno de los dos escribe
+    <code>__init__</code>: lo heredan tal cual, porque no agregan ningún atributo nuevo. Solo cambian
+    <strong>cómo responden</strong> a una orden.</p>
+  </div>
+
+  <figure>
+    <pre>dragon = <span class="cd-fn">Dragon</span>(<span class="cd-s">"Dragón"</span>, <span class="cd-n">90</span>, <span class="cd-n">20</span>)
+goblin = <span class="cd-fn">Goblin</span>(<span class="cd-s">"Goblin"</span>, <span class="cd-n">60</span>, <span class="cd-n">12</span>)
+lobo = <span class="cd-fn">Goblin</span>(<span class="cd-s">"Lobo"</span>, <span class="cd-n">70</span>, <span class="cd-n">10</span>)
+
+<span class="cd-k">for</span> enemigo <span class="cd-k">in</span> [dragon, goblin, lobo]:
+    <span class="cd-fn">print</span>(enemigo.nombre, <span class="cd-s">"ataca con"</span>, enemigo.<span class="cd-fn">atacar</span>())</pre>
+    <figcaption>Predecí qué imprime, antes de ejecutarlo. Y después contestá la pregunta que importa:
+    <b>¿cuántos <code>if</code> hay en ese <code>for</code>?</b></figcaption>
+  </figure>
+
+  <div class="box key">
+    <span class="lbl">🎭 La respuesta</span>
+    <p><b>Cero.</b> El <code>for</code> no sabe ni le importa quién es cada uno: <b>cada objeto sabe cómo
+    responder</b>. Y si mañana agregás un <code>Fantasma</code>, no tocás una sola línea del
+    <code>for</code>. <b>El juego solo grita <code>atacar()</code>; cada personaje sabe qué significa eso
+    para él.</b></p>
+  </div>
+
+  <div class="box">
+    <span class="lbl">🤔 Una pregunta para pensar</span>
+    <p>¿Hacía falta escribir <code>atacar()</code> en <code>Goblin</code>? <b>No.</b> Si lo borrás, el goblin
+    igual sabe atacar: lo hereda de <code>Enemigo</code>, que hace exactamente lo mismo. Lo dejamos escrito
+    solo para poder <b>comparar</b> las dos clases una al lado de la otra. En un programa de verdad, un hijo
+    escribe un método <b>solo cuando lo hace distinto</b>.</p>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e2">En la compu</span><h4>Desafío de la etapa</h4></div>
+    <div class="ex-body">
+      <ol>
+        <li>Creá un <code>Esqueleto(Enemigo)</code> cuyo <code>atacar()</code> devuelva
+        <code>self.danio * 2</code>.</li>
+        <li>Creá un <code>Slime(Enemigo)</code> que pegue la mitad: <code>self.danio // 2</code>.</li>
+        <li>Metelos a los cuatro en una lista y recorrela con un <code>for</code>.</li>
+        <li><b>Sin ejecutar</b>, escribí primero qué esperás que salga. Después comparalo.</li>
+      </ol>
+      <p><b>La reflexión:</b> agregaste dos enemigos nuevos. ¿Tuviste que cambiar una sola línea del
+      <code>for</code>? ¿Qué pasaría si lo hubieras hecho con <code>if</code> y <code>elif</code>, y mañana
+      quisieras veinte enemigos?</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 9 · ETAPA 9 ==================== -->
+<section class="s" data-a="blue" id="pelea">
+  <div class="s-head">
+    <div class="s-num">09</div>
+    <div class="t">
+      <span class="eyebrow">Etapa 9 &middot; todo junto</span>
+      <h2>Construir la pelea</h2>
+    </div>
+  </div>
+
+  <div class="etapa-bar">
+    <span class="num">Objetivo</span>
+    <span class="obj">Hacer chocar todo lo que construiste: herencia, composición, <code>return</code> y polimorfismo, en un solo <code>while</code>.</span>
+  </div>
+
+  <div class="body-col">
+    <p>Todas las piezas existen y ninguna se toca. Tenés un jugador con arma, un enemigo que pega y dos
+    personajes que saben decir si siguen vivos. <strong>Falta el pedazo de programa que los haga pelear.</strong></p>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e1">Antes de programar</span><h4>Ordená el turno</h4></div>
+    <div class="ex-body">
+      <p>Numerá del 1 al 7 en qué orden tienen que pasar las cosas en cada vuelta del combate:</p>
+      <ol style="list-style:none;padding-left:0">
+        <li>___ Si sigue vivo, el enemigo ataca</li>
+        <li>___ El jugador ataca y obtenemos el daño</li>
+        <li>___ Cuando uno cae, se muestra el ganador</li>
+        <li>___ El enemigo recibe ese daño</li>
+        <li>___ Se repite todo mientras los dos estén vivos</li>
+        <li>___ El jugador recibe el daño del enemigo</li>
+        <li>___ Se muestra cómo quedó la vida del enemigo</li>
+      </ol>
+    </div>
+  </div>
+
+  <h3>Pedazo 1 · la condición del <code>while</code></h3>
+  <figure>
+    <pre><span class="cd-k">while</span> aria.<span class="cd-fn">esta_vivo</span>() <span class="cd-k">and</span> goblin.<span class="cd-fn">esta_vivo</span>():</pre>
+    <figcaption>La pelea sigue <b>mientras los dos estén vivos</b>. Va <code>and</code> y no <code>or</code>
+    porque basta con que <b>uno</b> se muera para que la condición sea falsa y el combate termine; con
+    <code>or</code>, el sobreviviente le seguiría pegando a un muerto.</figcaption>
+  </figure>
+
+  <div class="box key">
+    <span class="lbl">📦 Mirá bien esa línea</span>
+    <p>Es <b>puro <code>return</code></b>. Los objetos contestan <code>True</code> o <code>False</code> y el
+    programa decide con eso. <b>Si <code>esta_vivo()</code> hiciera <code>print</code>, esta pelea sería
+    imposible de escribir.</b> Ahí se cobra todo lo de la clase 2.</p>
+  </div>
+
+  <h3>Pedazo 2 · el turno del jugador</h3>
+  <figure>
+    <pre>    danio = aria.<span class="cd-fn">atacar</span>()
+    goblin.<span class="cd-fn">recibir_danio</span>(danio)
+    <span class="cd-fn">print</span>(aria.nombre, <span class="cd-s">"hace"</span>, danio, <span class="cd-s">"de daño ·"</span>, goblin.nombre, <span class="cd-s">"queda con"</span>, goblin.vida)</pre>
+    <figcaption>Tres líneas, tres objetos hablando entre ellos. Esto es POO funcionando.</figcaption>
+  </figure>
+
+  <div class="steps">
+    <div><span class="k">Línea 1</span><span class="v">El jugador <b>le pregunta a su arma</b> cuánto pega.
+    Como <code>atacar()</code> usa <code>return</code>, ese número le queda en la mano, guardado en
+    <code>danio</code>. Si el arma hiciera <code>print</code>, acá no habría nada que guardar.</span></div>
+    <div><span class="k">Línea 2</span><span class="v">El jugador <b>le manda ese número al otro
+    personaje</b>, que se lo resta a <b>su propia</b> vida. Fijate que el jugador no toca la vida del otro a
+    mano: <b>se lo pide</b>. Cada objeto se ocupa de lo suyo.</span></div>
+    <div><span class="k">Línea 3</span><span class="v">Ahora sí un <code>print</code>: esto lo lee
+    <b>una persona</b>, no lo necesita el programa.</span></div>
+  </div>
+
+  <h3>Pedazo 3 · el contraataque (y un detalle importante)</h3>
+  <div class="body-col">
+    <p>Si el goblin quedó con 0 de vida y el enemigo igual contraataca, <strong>un enemigo muerto le sigue
+    pegando al jugador</strong>. El programa no da error: por eso es peligroso. Anda igual, pero el juego
+    queda mal. El <code>while</code> corta recién en la vuelta <em>siguiente</em>.</p>
+  </div>
+  <figure>
+    <pre>    <span class="cd-k">if</span> goblin.<span class="cd-fn">esta_vivo</span>():
+        golpe = goblin.<span class="cd-fn">atacar</span>()
+        aria.<span class="cd-fn">recibir_danio</span>(golpe)
+        <span class="cd-fn">print</span>(goblin.nombre, <span class="cd-s">"hace"</span>, golpe, <span class="cd-s">"de daño ·"</span>, aria.nombre, <span class="cd-s">"queda con"</span>, aria.vida)</pre>
+    <figcaption>De nuevo, el método que <b>devuelve</b> <code>True</code> o <code>False</code> es el que nos
+    salva.</figcaption>
+  </figure>
+
+  <h3>Todo junto</h3>
+  <figure>
+    <pre>espada = <span class="cd-fn">Arma</span>(<span class="cd-s">"Espada"</span>, <span class="cd-n">25</span>)
+aria = <span class="cd-fn">Jugador</span>(<span class="cd-s">"Aria"</span>, <span class="cd-n">100</span>, espada)
+goblin = <span class="cd-fn">Goblin</span>(<span class="cd-s">"Goblin"</span>, <span class="cd-n">60</span>, <span class="cd-n">12</span>)
+
+<span class="cd-fn">print</span>(<span class="cd-s">"¡Empieza el combate!"</span>)
+
+<span class="cd-k">while</span> aria.<span class="cd-fn">esta_vivo</span>() <span class="cd-k">and</span> goblin.<span class="cd-fn">esta_vivo</span>():
+    danio = aria.<span class="cd-fn">atacar</span>()
+    goblin.<span class="cd-fn">recibir_danio</span>(danio)
+    <span class="cd-fn">print</span>(aria.nombre, <span class="cd-s">"hace"</span>, danio, <span class="cd-s">"de daño ·"</span>, goblin.nombre, <span class="cd-s">"queda con"</span>, goblin.vida)
+
+    <span class="cd-k">if</span> goblin.<span class="cd-fn">esta_vivo</span>():
+        golpe = goblin.<span class="cd-fn">atacar</span>()
+        aria.<span class="cd-fn">recibir_danio</span>(golpe)
+        <span class="cd-fn">print</span>(goblin.nombre, <span class="cd-s">"hace"</span>, golpe, <span class="cd-s">"de daño ·"</span>, aria.nombre, <span class="cd-s">"queda con"</span>, aria.vida)
+
+<span class="cd-k">if</span> aria.<span class="cd-fn">esta_vivo</span>():
+    <span class="cd-fn">print</span>(<span class="cd-s">"Ganó"</span>, aria.nombre)
+<span class="cd-k">else</span>:
+    <span class="cd-fn">print</span>(<span class="cd-s">"Ganó"</span>, goblin.nombre)</pre>
+    <figcaption>Este código va <b>abajo de todas las clases</b>. Con estos números Aria gana en tres golpes
+    y queda con 76 de vida: hacé la cuenta a mano antes de ejecutarlo.</figcaption>
+  </figure>
+
+  <h3>¿Dónde está cada herramienta?</h3>
+  <div class="grid3">
+    <div class="box key"><span class="lbl">🧬 Herencia y super()</span>
+      <p><code>class Jugador(Personaje)</code>, <code>class Goblin(Enemigo)</code> y
+      <code>super().__init__(nombre, vida)</code>. Nadie volvió a escribir <code>vida</code>.</p></div>
+    <div class="box key"><span class="lbl">🎁 Composición</span>
+      <p><code>self.arma = arma</code>, y después <code>self.arma.usar()</code>: el jugador le pregunta a su
+      arma.</p></div>
+    <div class="box key"><span class="lbl">📦 return</span>
+      <p><code>esta_vivo()</code> hace funcionar al <code>while</code>; <code>atacar()</code> entrega el
+      número que se resta.</p></div>
+    <div class="box key"><span class="lbl">🎭 Polimorfismo</span>
+      <p>Cambiá <code>Goblin</code> por <code>Dragon</code> en una sola línea y la pelea entera se comporta
+      distinto. <b>Sin tocar el <code>while</code>.</b></p></div>
+    <div class="box key"><span class="lbl">🔐 Encapsulación</span>
+      <p>El <code>if</code> adentro de <code>recibir_danio()</code>: nadie toca la vida desde afuera y nunca
+      queda en negativo.</p></div>
+    <div class="box"><span class="lbl">🎨 Abstracción</span>
+      <p><code>aria.atacar()</code> es una línea. Adentro pasan varias cosas, pero eso no es problema de
+      quien usa el objeto.</p></div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e3">En la compu</span><h4>Desafío de la etapa</h4></div>
+    <div class="ex-body">
+      <ol>
+        <li>Escribí la pelea completa y ejecutala.</li>
+        <li>Cambiá el goblin por un <code>Dragon</code> en <b>una sola línea</b>. ¿Cambiaste algo del
+        <code>while</code>?</li>
+        <li>Agregá un contador de vueltas y mostrá al final: <i>"El combate duró 5 turnos"</i>.</li>
+        <li><b>La difícil.</b> En la clase 2 el ataque estaba empaquetado adentro del jugador:
+          <pre>    <span class="cd-k">def</span> <span class="cd-fn">atacar_a</span>(<span class="cd-k">self</span>, otro):
+        danio = <span class="cd-k">self</span>.arma.<span class="cd-fn">usar</span>()
+        otro.<span class="cd-fn">recibir_danio</span>(danio)
+        <span class="cd-k">return</span> danio</pre>
+          Escribilo en tu <code>Jugador</code> y reemplazá las dos líneas del turno por
+          <code>aria.atacar_a(goblin)</code>. Después contestá: <b>si ya le restó la vida al otro, ¿para qué
+          encima devuelve el daño?</b></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 10 · ETAPAS 10 Y 11 ==================== -->
+<section class="s" data-a="rose" id="niveles">
+  <div class="s-head">
+    <div class="s-num">10</div>
+    <div class="t">
+      <span class="eyebrow">Etapas 10 y 11</span>
+      <h2>Experiencia, niveles y menú</h2>
+    </div>
+  </div>
+
+  <div class="etapa-bar">
+    <span class="num">Etapa 10 · Objetivo</span>
+    <span class="obj">Agregarle al jugador información nueva (<code>nivel</code>, <code>experiencia</code>) y el comportamiento que la maneja.</span>
+  </div>
+
+  <div class="body-col">
+    <p>Ganaste la pelea… y no pasó absolutamente nada. Tu personaje sigue igual de fuerte que al empezar.
+    <strong>Falta la recompensa.</strong></p>
+    <p>Fijate que cuando un programa crece siempre es lo mismo: o le agregamos <strong>datos</strong> a un
+    objeto, o le agregamos <strong>acciones</strong>. Acá agregamos las dos cosas. Y van en
+    <strong>Jugador</strong>, no en <code>Personaje</code>: solo el jugador sube de nivel.</p>
+  </div>
+
+  <figure>
+    <pre><span class="cd-k">class</span> <span class="cd-fn">Personaje</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.vida = vida
+        <span class="cd-k">self</span>.vida_maxima = vida      <span class="cd-c"># ← nuevo: hasta dónde se puede curar</span></pre>
+    <figcaption>Esta sí va arriba: cualquier personaje puede tener un techo de vida.</figcaption>
+  </figure>
+
+  <figure>
+    <pre><span class="cd-k">class</span> <span class="cd-fn">Jugador</span>(Personaje):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida, arma):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>(nombre, vida)
+        <span class="cd-k">self</span>.arma = arma
+        <span class="cd-k">self</span>.nivel = <span class="cd-n">1</span>               <span class="cd-c"># ← nuevo</span>
+        <span class="cd-k">self</span>.experiencia = <span class="cd-n">0</span>         <span class="cd-c"># ← nuevo</span>
+
+    <span class="cd-k">def</span> <span class="cd-fn">ganar_experiencia</span>(<span class="cd-k">self</span>, cantidad):
+        <span class="cd-k">self</span>.experiencia = <span class="cd-k">self</span>.experiencia + cantidad
+        <span class="cd-fn">print</span>(<span class="cd-k">self</span>.nombre, <span class="cd-s">"ganó"</span>, cantidad, <span class="cd-s">"de experiencia"</span>)
+        <span class="cd-k">if</span> <span class="cd-k">self</span>.experiencia &gt;= <span class="cd-n">100</span>:
+            <span class="cd-k">self</span>.<span class="cd-fn">subir_nivel</span>()
+
+    <span class="cd-k">def</span> <span class="cd-fn">subir_nivel</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">self</span>.nivel = <span class="cd-k">self</span>.nivel + <span class="cd-n">1</span>
+        <span class="cd-k">self</span>.experiencia = <span class="cd-k">self</span>.experiencia - <span class="cd-n">100</span>
+        <span class="cd-k">self</span>.vida_maxima = <span class="cd-k">self</span>.vida_maxima + <span class="cd-n">20</span>
+        <span class="cd-k">self</span>.vida = <span class="cd-k">self</span>.vida_maxima
+        <span class="cd-fn">print</span>(<span class="cd-k">self</span>.nombre, <span class="cd-s">"subió al nivel"</span>, <span class="cd-k">self</span>.nivel)</pre>
+    <figcaption><code>nivel</code> y <code>experiencia</code> <b>no se piden por parámetro</b>: todos los
+    jugadores arrancan en nivel 1 con 0. Un atributo puede tener un valor fijo de arranque, sin que nadie se
+    lo pase — la misma idea del bonus de la clase 2: <i>si todas las motos tienen 2 ruedas, no hace falta
+    pedir el dato</i>.</figcaption>
+  </figure>
+
+  <div class="grid2">
+    <div class="box">
+      <span class="lbl">¿Por qué restar 100 y no poner 0?</span>
+      <p>Si ganó 130 de experiencia, sube de nivel y le <b>sobran 30</b>. Con <code>= 0</code> esos 30 se
+      pierden; restando, quedan para el próximo nivel. Es una decisión de diseño: la otra también es válida,
+      si la podés justificar.</p>
+    </div>
+    <div class="box">
+      <span class="lbl">¿Quién llama a <code>subir_nivel()</code>?</span>
+      <p>El propio jugador, desde adentro de <code>ganar_experiencia()</code>. Vos no tenés que acordarte de
+      nada: <b>el objeto se encarga solo</b>. Eso es encapsulación otra vez.</p>
+    </div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e1">Predicción</span><h4>Hacé la cuenta a mano</h4></div>
+    <div class="ex-body">
+      <pre>aria.<span class="cd-fn">ganar_experiencia</span>(<span class="cd-n">60</span>)
+aria.<span class="cd-fn">ganar_experiencia</span>(<span class="cd-n">60</span>)
+<span class="cd-fn">print</span>(aria.nivel)
+<span class="cd-fn">print</span>(aria.experiencia)</pre>
+      <p>¿Qué imprimen las dos últimas líneas? <b>Y una pregunta más:</b> ¿por qué usamos
+      <code>&gt;= 100</code> y no <code>== 100</code>?</p>
+    </div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e2">En la compu</span><h4>Desafíos de la etapa</h4></div>
+    <div class="ex-body">
+      <ol>
+        <li>Hacé que al ganar la pelea el jugador reciba experiencia:
+        <code>aria.ganar_experiencia(50)</code>.</li>
+        <li><b>Pensalo antes de escribirlo:</b> ¿qué más podría mejorar cuando el jugador sube de nivel?
+        Elegí una mejora y programala.</li>
+        <li><b>La difícil:</b> ¿cómo harías para que el arma pegue más fuerte al subir de nivel? Hay dos
+        caminos: tocarle el daño al arma (<code>self.arma.danio = self.arma.danio + 5</code>) o darle a
+        <code>Arma</code> un método <code>mejorar()</code> y pedírselo. <b>¿Cuál te parece mejor y por qué?</b>
+        Esa pregunta vale más que el código.</li>
+        <li>Que el enemigo dé más experiencia si es más difícil.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="etapa-bar" style="--accent:var(--teal)">
+    <span class="num">Etapa 11 · Objetivo</span>
+    <span class="obj">Ponerle al sistema que construiste una forma de usarlo.</span>
+  </div>
+
+  <div class="box warn">
+    <span class="lbl">⚠️ Que quede claro</span>
+    <p><b>El menú no es el objetivo del trabajo práctico.</b> Es solamente la forma de <i>usar</i> el sistema
+    que construiste. Lo importante ya está hecho: las clases, la herencia, la composición, el
+    <code>return</code> y el polimorfismo. El menú son <code>if</code> y <code>elif</code>, y eso ya lo
+    sabías hacer desde antes de POO.</p>
+  </div>
+
+  <div class="body-col">
+    <p>Igual, sin menú el juego no se juega: se ejecuta y se termina solo. Y antes falta un objeto, porque
+    una de las opciones va a ser curarse. <strong>¿Un jugador ES una poción?</strong> No.
+    <strong>¿TIENE una?</strong> Sí: es exactamente el mismo caso que el arma.</p>
+  </div>
+
+  <div class="grid2">
+    <figure>
+      <pre><span class="cd-k">class</span> <span class="cd-fn">Pocion</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, cura):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.cura = cura
+
+    <span class="cd-k">def</span> <span class="cd-fn">usar</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.cura</pre>
+      <figcaption><code>Arma</code> y <code>Pocion</code> son casi idénticas: guardan un número y lo
+      <b>devuelven</b>. Cuando entendés un patrón, el siguiente objeto sale solo.</figcaption>
+    </figure>
+    <figure>
+      <pre>    <span class="cd-k">def</span> <span class="cd-fn">curarse</span>(<span class="cd-k">self</span>, pocion):
+        <span class="cd-k">self</span>.vida = <span class="cd-k">self</span>.vida + pocion.<span class="cd-fn">usar</span>()
+        <span class="cd-k">if</span> <span class="cd-k">self</span>.vida &gt; <span class="cd-k">self</span>.vida_maxima:
+            <span class="cd-k">self</span>.vida = <span class="cd-k">self</span>.vida_maxima</pre>
+      <figcaption>El jugador tampoco calcula nada: <b>le pregunta a la poción</b> cuánto cura. Y ese
+      <code>if</code> es el mismo control que en <code>recibir_danio()</code>, pero del otro lado: uno impide
+      bajar de 0, el otro impide pasar del máximo.</figcaption>
+    </figure>
+  </div>
+
+  <figure>
+    <pre><span class="cd-k">while</span> <span class="cd-k">True</span>:
+    <span class="cd-fn">print</span>(<span class="cd-s">"=== ARENA DE COMBATE ==="</span>)
+    <span class="cd-fn">print</span>(<span class="cd-s">"1. Ver información"</span>)
+    <span class="cd-fn">print</span>(<span class="cd-s">"2. Atacar"</span>)
+    <span class="cd-fn">print</span>(<span class="cd-s">"3. Usar poción"</span>)
+    <span class="cd-fn">print</span>(<span class="cd-s">"4. Ver experiencia"</span>)
+    <span class="cd-fn">print</span>(<span class="cd-s">"5. Salir"</span>)
+    opcion = <span class="cd-fn">input</span>(<span class="cd-s">"Elegí una opción: "</span>)
+
+    <span class="cd-k">if</span> opcion == <span class="cd-s">"1"</span>:
+        heroe.<span class="cd-fn">mostrar_info</span>()
+    <span class="cd-k">elif</span> opcion == <span class="cd-s">"5"</span>:
+        <span class="cd-fn">print</span>(<span class="cd-s">"¡Hasta la próxima!"</span>)
+        <span class="cd-k">break</span></pre>
+    <figcaption><b>Dos detalles de Python:</b> <code>input()</code> siempre devuelve <b>texto</b>, por eso
+    comparamos con <code>"1"</code> entre comillas y no con <code>1</code>. Y <code>while True</code> repite
+    para siempre: la única forma de salir es el <code>break</code>. El programa completo está en la sección
+    siguiente.</figcaption>
+  </figure>
+</section>
+
+<!-- ==================== 11 · PROGRAMA COMPLETO ==================== -->
+<section class="s" data-a="blue" id="programa">
+  <div class="s-head">
+    <div class="s-num">11</div>
+    <div class="t">
+      <span class="eyebrow">Para comparar con el tuyo</span>
+      <h2>El programa completo</h2>
+    </div>
+  </div>
+
+  <div class="body-col">
+    <p class="lead">Todo lo que construiste en once etapas, junto.</p>
+    <p><strong>Leelo entero antes de copiarlo: tenés que poder explicar cada línea.</strong> Si hay alguna
+    que no entendés, volvé a la sección donde apareció. Y no lo uses como punto de partida: el trabajo es
+    llegar hasta acá, no arrancar desde acá.</p>
+  </div>
+
+  <figure>
+    <pre><span class="cd-c"># ===== ARENA DE COMBATE =====</span>
+<span class="cd-c"># Trabajo práctico integrador de POO</span>
+
+<span class="cd-k">class</span> <span class="cd-fn">Personaje</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.vida = vida
+        <span class="cd-k">self</span>.vida_maxima = vida
+
+    <span class="cd-k">def</span> <span class="cd-fn">recibir_danio</span>(<span class="cd-k">self</span>, cantidad):
+        <span class="cd-k">self</span>.vida = <span class="cd-k">self</span>.vida - cantidad
+        <span class="cd-k">if</span> <span class="cd-k">self</span>.vida &lt; <span class="cd-n">0</span>:
+            <span class="cd-k">self</span>.vida = <span class="cd-n">0</span>
+
+    <span class="cd-k">def</span> <span class="cd-fn">esta_vivo</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.vida &gt; <span class="cd-n">0</span>
+
+    <span class="cd-k">def</span> <span class="cd-fn">mostrar_info</span>(<span class="cd-k">self</span>):
+        <span class="cd-fn">print</span>(<span class="cd-k">self</span>.nombre, <span class="cd-s">"- Vida:"</span>, <span class="cd-k">self</span>.vida, <span class="cd-s">"/"</span>, <span class="cd-k">self</span>.vida_maxima)
+
+
+<span class="cd-k">class</span> <span class="cd-fn">Arma</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, danio):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.danio = danio
+
+    <span class="cd-k">def</span> <span class="cd-fn">usar</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.danio
+
+
+<span class="cd-k">class</span> <span class="cd-fn">Pocion</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, cura):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.cura = cura
+
+    <span class="cd-k">def</span> <span class="cd-fn">usar</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.cura
+
+
+<span class="cd-k">class</span> <span class="cd-fn">Jugador</span>(Personaje):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida, arma):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>(nombre, vida)
+        <span class="cd-k">self</span>.arma = arma
+        <span class="cd-k">self</span>.nivel = <span class="cd-n">1</span>
+        <span class="cd-k">self</span>.experiencia = <span class="cd-n">0</span>
+
+    <span class="cd-k">def</span> <span class="cd-fn">atacar</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.arma.<span class="cd-fn">usar</span>()
+
+    <span class="cd-k">def</span> <span class="cd-fn">curarse</span>(<span class="cd-k">self</span>, pocion):
+        <span class="cd-k">self</span>.vida = <span class="cd-k">self</span>.vida + pocion.<span class="cd-fn">usar</span>()
+        <span class="cd-k">if</span> <span class="cd-k">self</span>.vida &gt; <span class="cd-k">self</span>.vida_maxima:
+            <span class="cd-k">self</span>.vida = <span class="cd-k">self</span>.vida_maxima
+
+    <span class="cd-k">def</span> <span class="cd-fn">ganar_experiencia</span>(<span class="cd-k">self</span>, cantidad):
+        <span class="cd-k">self</span>.experiencia = <span class="cd-k">self</span>.experiencia + cantidad
+        <span class="cd-fn">print</span>(<span class="cd-k">self</span>.nombre, <span class="cd-s">"ganó"</span>, cantidad, <span class="cd-s">"de experiencia"</span>)
+        <span class="cd-k">if</span> <span class="cd-k">self</span>.experiencia &gt;= <span class="cd-n">100</span>:
+            <span class="cd-k">self</span>.<span class="cd-fn">subir_nivel</span>()
+
+    <span class="cd-k">def</span> <span class="cd-fn">subir_nivel</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">self</span>.nivel = <span class="cd-k">self</span>.nivel + <span class="cd-n">1</span>
+        <span class="cd-k">self</span>.experiencia = <span class="cd-k">self</span>.experiencia - <span class="cd-n">100</span>
+        <span class="cd-k">self</span>.vida_maxima = <span class="cd-k">self</span>.vida_maxima + <span class="cd-n">20</span>
+        <span class="cd-k">self</span>.vida = <span class="cd-k">self</span>.vida_maxima
+        <span class="cd-fn">print</span>(<span class="cd-k">self</span>.nombre, <span class="cd-s">"subió al nivel"</span>, <span class="cd-k">self</span>.nivel)
+
+
+<span class="cd-k">class</span> <span class="cd-fn">Enemigo</span>(Personaje):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida, danio):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>(nombre, vida)
+        <span class="cd-k">self</span>.danio = danio
+
+    <span class="cd-k">def</span> <span class="cd-fn">atacar</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.danio
+
+
+<span class="cd-k">class</span> <span class="cd-fn">Goblin</span>(Enemigo):
+    <span class="cd-k">def</span> <span class="cd-fn">atacar</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.danio          <span class="cd-c"># igual que el padre: podría no escribirse</span>
+
+
+<span class="cd-k">class</span> <span class="cd-fn">Dragon</span>(Enemigo):
+    <span class="cd-k">def</span> <span class="cd-fn">atacar</span>(<span class="cd-k">self</span>):
+        <span class="cd-k">return</span> <span class="cd-k">self</span>.danio + <span class="cd-n">15</span>     <span class="cd-c"># el dragón pega más fuerte</span>
+
+
+<span class="cd-c"># ===== creamos los objetos =====</span>
+espada = <span class="cd-fn">Arma</span>(<span class="cd-s">"Espada"</span>, <span class="cd-n">25</span>)
+pocion = <span class="cd-fn">Pocion</span>(<span class="cd-s">"Poción chica"</span>, <span class="cd-n">30</span>)
+heroe = <span class="cd-fn">Jugador</span>(<span class="cd-s">"Aria"</span>, <span class="cd-n">150</span>, espada)     <span class="cd-c"># 150 de vida: el dragón pega fuerte</span>
+enemigo = <span class="cd-fn">Dragon</span>(<span class="cd-s">"Dragón rojo"</span>, <span class="cd-n">90</span>, <span class="cd-n">20</span>)  <span class="cd-c"># 20 + 15 = 35 de daño por golpe</span>
+
+<span class="cd-c"># ===== el menú =====</span>
+<span class="cd-k">while</span> <span class="cd-k">True</span>:
+    <span class="cd-fn">print</span>()
+    <span class="cd-fn">print</span>(<span class="cd-s">"=== ARENA DE COMBATE ==="</span>)
+    <span class="cd-fn">print</span>(<span class="cd-s">"1. Ver información"</span>)
+    <span class="cd-fn">print</span>(<span class="cd-s">"2. Atacar"</span>)
+    <span class="cd-fn">print</span>(<span class="cd-s">"3. Usar poción"</span>)
+    <span class="cd-fn">print</span>(<span class="cd-s">"4. Ver experiencia"</span>)
+    <span class="cd-fn">print</span>(<span class="cd-s">"5. Salir"</span>)
+    opcion = <span class="cd-fn">input</span>(<span class="cd-s">"Elegí una opción: "</span>)
+
+    <span class="cd-k">if</span> opcion == <span class="cd-s">"1"</span>:
+        heroe.<span class="cd-fn">mostrar_info</span>()
+        enemigo.<span class="cd-fn">mostrar_info</span>()
+
+    <span class="cd-k">elif</span> opcion == <span class="cd-s">"2"</span>:
+        danio = heroe.<span class="cd-fn">atacar</span>()
+        enemigo.<span class="cd-fn">recibir_danio</span>(danio)
+        <span class="cd-fn">print</span>(heroe.nombre, <span class="cd-s">"atacó con"</span>, heroe.arma.nombre, <span class="cd-s">"e hizo"</span>, danio, <span class="cd-s">"de daño"</span>)
+
+        <span class="cd-k">if</span> enemigo.<span class="cd-fn">esta_vivo</span>():
+            golpe = enemigo.<span class="cd-fn">atacar</span>()
+            heroe.<span class="cd-fn">recibir_danio</span>(golpe)
+            <span class="cd-fn">print</span>(enemigo.nombre, <span class="cd-s">"contraatacó e hizo"</span>, golpe, <span class="cd-s">"de daño"</span>)
+        <span class="cd-k">else</span>:
+            <span class="cd-fn">print</span>(enemigo.nombre, <span class="cd-s">"fue derrotado"</span>)
+            heroe.<span class="cd-fn">ganar_experiencia</span>(<span class="cd-n">50</span>)
+
+    <span class="cd-k">elif</span> opcion == <span class="cd-s">"3"</span>:
+        heroe.<span class="cd-fn">curarse</span>(pocion)
+        <span class="cd-fn">print</span>(heroe.nombre, <span class="cd-s">"usó"</span>, pocion.nombre, <span class="cd-s">"- Vida:"</span>, heroe.vida)
+
+    <span class="cd-k">elif</span> opcion == <span class="cd-s">"4"</span>:
+        <span class="cd-fn">print</span>(<span class="cd-s">"Nivel:"</span>, heroe.nivel, <span class="cd-s">"- Experiencia:"</span>, heroe.experiencia, <span class="cd-s">"/ 100"</span>)
+
+    <span class="cd-k">elif</span> opcion == <span class="cd-s">"5"</span>:
+        <span class="cd-fn">print</span>(<span class="cd-s">"¡Hasta la próxima!"</span>)
+        <span class="cd-k">break</span>
+
+    <span class="cd-k">else</span>:
+        <span class="cd-fn">print</span>(<span class="cd-s">"Esa opción no existe"</span>)
+
+    <span class="cd-k">if</span> <span class="cd-k">not</span> heroe.<span class="cd-fn">esta_vivo</span>():
+        <span class="cd-fn">print</span>(<span class="cd-s">"GAME OVER"</span>)
+        <span class="cd-k">break</span></pre>
+    <figcaption>Con estos números el héroe derrota al dragón en cuatro ataques y gana 50 de experiencia.
+    Probá cambiar <code>Dragon</code> por <code>Goblin</code> en la línea del enemigo y contá
+    <b>cuántas líneas más del programa tuviste que tocar</b>.</figcaption>
+  </figure>
+
+  <div class="box key">
+    <span class="lbl">🔍 Buscá los conceptos en tu propio código</span>
+    <p>Antes de seguir, marcá en tu archivo con un comentario dónde está cada cosa: <b>herencia</b>,
+    <b><code>super()</code></b>, <b>composición</b>, <b>polimorfismo</b>, <b><code>return</code></b> y
+    <b>encapsulación</b>. Si alguna no la encontrás, esa es la que tenés que repasar. Y además te va a
+    servir para la entrega.</p>
+  </div>
+</section>
+
+<!-- ==================== 12 · DESAFÍOS ==================== -->
+<section class="s" data-a="flame" id="desafios">
+  <div class="s-head">
+    <div class="s-num">12</div>
+    <div class="t">
+      <span class="eyebrow">Etapa 12</span>
+      <h2>Desafíos de ampliación</h2>
+    </div>
+  </div>
+
+  <div class="body-col">
+    <p class="lead">Están ordenados de menor a mayor dificultad. <strong>No hace falta hacerlos todos.</strong></p>
+    <p>Vale mucho más hacer dos bien y poder explicarlos, que hacer cinco a medias. Y antes de empezar
+    cualquiera, hacé lo de siempre aunque sea en dos líneas: <strong>¿qué objetos aparecen? ¿qué información
+    tienen? ¿qué pueden hacer? ¿cómo se relacionan?</strong></p>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e1">Nivel 1</span><h4>Poblar la arena</h4></div>
+    <div class="ex-body">
+      <div class="chklist">
+        <div><span class="cb"></span><span>Creá <b>otra arma</b> con distinto daño y hacé que el jugador pueda elegir con cuál pelear.</span></div>
+        <div><span class="cb"></span><span>Creá <b>otro enemigo</b> con distinta vida y daño.</span></div>
+        <div><span class="cb"></span><span>Agregale un método <code>mostrar_info()</code> a <code>Arma</code> y otro a <code>Enemigo</code>.</span></div>
+      </div>
+      <p><b>Qué practicás:</b> clase vs objeto · atributos · métodos · <code>print()</code> vs
+      <code>return</code>.<br>
+      <b>La pregunta:</b> <code>mostrar_info()</code>, ¿usa <code>print()</code> o <code>return</code>? ¿Por qué?</p>
+    </div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e1">Nivel 2</span><h4>Pociones que curan de verdad</h4></div>
+    <div class="ex-body">
+      <div class="chklist">
+        <div><span class="cb"></span><span>Si te salteaste la etapa 11: creá la clase <b>Pocion</b> y el método <code>curarse()</code>.</span></div>
+        <div><span class="cb"></span><span>Hacé que la vida <b>nunca supere</b> la <code>vida_maxima</code>. Probalo curándote con la vida casi llena.</span></div>
+        <div><span class="cb"></span><span>Que la poción tenga <b>usos limitados</b>: un atributo <code>usos</code> que baje cada vez y avise cuando se acabó.</span></div>
+        <div><span class="cb"></span><span>Creá una <b>poción grande</b> y una <b>chica</b>, con distinta cura.</span></div>
+      </div>
+      <p><b>Qué practicás:</b> composición (TIENE UN) · encapsulación · un objeto le pregunta a otro.<br>
+      <b>La pregunta:</b> el control de la vida máxima, ¿va adentro de <code>curarse()</code> o afuera, en el
+      menú? ¿Quién tiene que decidir cómo cambia la vida del jugador?</p>
+    </div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e2">Nivel 3</span><h4>Clases de personaje y habilidades</h4></div>
+    <div class="ex-body">
+      <div class="chklist">
+        <div><span class="cb"></span><span>Creá <b>Guerrero</b>, <b>Mago</b> y <b>Arquero</b>, hijos de <code>Jugador</code>, cada uno con un atributo propio.</span></div>
+        <div><span class="cb"></span><span>Que cada uno tenga su propio <code>atacar()</code>: el guerrero suma su fuerza, el mago su magia, el arquero pega doble cada dos turnos.</span></div>
+        <div><span class="cb"></span><span>Metelos a los tres en una <b>lista</b> y recorrela con un <code>for</code>. <b>Sin un solo <code>if</code>.</b></span></div>
+        <div><span class="cb"></span><span>Agregá una <b>habilidad especial</b> que se desbloquee al llegar a nivel 3.</span></div>
+      </div>
+      <p><b>Qué practicás:</b> herencia de varios niveles · <code>super()</code> · polimorfismo.<br>
+      <b>La pregunta:</b> cuando agregaste el tercer personaje al <code>for</code>, ¿tuviste que cambiar el
+      <code>for</code>? Esa es exactamente la ventaja del polimorfismo.</p>
+    </div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e2">Nivel 4</span><h4>Inventario</h4></div>
+    <div class="ex-body">
+      <div class="chklist">
+        <div><span class="cb"></span><span>Creá una clase <b>Inventario</b> que guarde una <b>lista</b> de objetos adentro.</span></div>
+        <div><span class="cb"></span><span>Métodos <code>agregar()</code>, <code>mostrar()</code> y <code>cantidad()</code>. Decidí cuál usa <code>return</code>.</span></div>
+        <div><span class="cb"></span><span>Que el jugador <b>tenga</b> un inventario y pueda <b>cambiar de arma</b> eligiendo una de la lista.</span></div>
+        <div><span class="cb"></span><span>Agregá la opción <b>Ver inventario</b> al menú.</span></div>
+      </div>
+      <p><b>Qué practicás:</b> composición con listas · objetos adentro de objetos · <code>return</code>.<br>
+      <b>La pregunta:</b> el jugador tiene un inventario, y el inventario tiene armas. ¿Cómo se lee
+      <code>jugador.inventario.armas[0].nombre</code>?</p>
+    </div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e3">Nivel 5</span><h4>Tienda y campaña</h4></div>
+    <div class="ex-body">
+      <div class="chklist">
+        <div><span class="cb"></span><span>Agregale <b>monedas</b> al jugador y hacé que ganar una pelea dé monedas.</span></div>
+        <div><span class="cb"></span><span>Creá una clase <b>Tienda</b> con un método <code>comprar()</code> que revise si al jugador le alcanza. <b>Ese método tiene que devolver algo.</b></span></div>
+        <div><span class="cb"></span><span>Creá una <b>lista de enemigos</b> y peleá contra todos, uno tras otro, con un <code>for</code>.</span></div>
+        <div><span class="cb"></span><span>Que el último sea un <b>JefeFinal</b> (hijo de <code>Enemigo</code>) con un ataque especial.</span></div>
+        <div><span class="cb"></span><span>Entre pelea y pelea, que el jugador pueda curarse o ir a la tienda.</span></div>
+      </div>
+      <p><b>Qué practicás:</b> todo junto · varios objetos colaborando · herencia + composición +
+      polimorfismo · diseño.<br>
+      <b>La pregunta:</b> el <code>for</code> que recorre los enemigos, ¿necesita saber si el que viene es un
+      goblin, un dragón o el jefe final?</p>
+    </div>
+  </div>
+
+  <div class="box warn">
+    <span class="lbl">⚠️ Cuidado con una trampa</span>
+    <p>No agregues clases <b>porque sí</b>. Si creás <code>Moneda</code>, <code>PuntoDeVida</code> y
+    <code>NumeroDeTurno</code> como clases, volviste al desorden del principio. Preguntate siempre:
+    <b>¿esto tiene información propia <i>y</i> hace algo?</b> Si no, es un atributo de alguien.</p>
+  </div>
+</section>
+
+<!-- ==================== 13 · AYUDAS ==================== -->
+<section class="s" data-a="flame" id="ayudas">
+  <div class="s-head">
+    <div class="s-num">13</div>
+    <div class="t">
+      <span class="eyebrow">Ayuda de emergencia</span>
+      <h2>Cuando algo no anda</h2>
+    </div>
+  </div>
+
+  <div class="body-col">
+    <p class="lead">Estos errores los vas a cometer sí o sí. Lo importante es <strong>reconocer el
+    síntoma</strong> para saber enseguida qué te está pasando.</p>
+  </div>
+
+  <div class="errs">
+    <div>
+      <span class="ico">🧬</span>
+      <h4>Olvidarte el <code>super()</code></h4>
+      <p class="sym">AttributeError: … has no attribute 'nombre'</p>
+      <p>El padre nunca hizo su parte, así que ese atributo no existe. Andá al <code>__init__</code> del
+      hijo y fijate si está la llamada al padre, como <b>primera línea</b>.</p>
+    </div>
+    <div>
+      <span class="ico">📦</span>
+      <h4>Usar <code>print</code> donde iba <code>return</code></h4>
+      <p class="sym">Aparece None donde esperabas un número</p>
+      <p>El método mostró el valor pero no lo entregó. Cambiá <code>print</code> por <code>return</code> y
+      volvé a probar. Si el <code>while</code> de la pelea no corta nunca, casi seguro es esto.</p>
+    </div>
+    <div>
+      <span class="ico">🎁</span>
+      <h4>Heredar cuando había que componer</h4>
+      <p class="sym">"un jugador es un arma" 🤨</p>
+      <p>Si la frase "es un" suena rara al leerla en voz alta, no era herencia: era <b>tiene un</b>. Sacá el
+      <code>(Arma)</code> y poné <code>self.arma = arma</code>.</p>
+    </div>
+    <div>
+      <span class="ico">🪞</span>
+      <h4>Olvidarte el <code>self.</code></h4>
+      <p class="sym">El dato "desaparece" después del __init__</p>
+      <p>Si escribiste <code>vida = vida</code> en vez de <code>self.vida = vida</code>, el dato no se guardó
+      en el objeto: quedó en una variable que murió ahí. Es el error número uno de la clase 1.</p>
+    </div>
+    <div>
+      <span class="ico">🔢</span>
+      <h4>Comparar texto con número</h4>
+      <p class="sym">El menú no entra en ninguna opción</p>
+      <p><code>input()</code> devuelve <b>texto</b>. Hay que comparar con <code>opcion == "1"</code>, entre
+      comillas, y no con <code>opcion == 1</code>.</p>
+    </div>
+    <div>
+      <span class="ico">📐</span>
+      <h4>Indentación</h4>
+      <p class="sym">IndentationError · el método quedó afuera</p>
+      <p>Los métodos van indentados <b>adentro</b> de la clase. Si un <code>def</code> quedó pegado al
+      margen, dejó de ser un método y pasó a ser una función suelta.</p>
+    </div>
+  </div>
+
+  <h3>Preguntas que te sacan de casi cualquier atolladero</h3>
+  <div class="grid2">
+    <div class="box key">
+      <span class="lbl">Si no sabés dónde poner algo</span>
+      <p><b>¿Esto lo tienen todos o lo tiene uno solo?</b> Si lo tienen todos, va en la clase de arriba. Si
+      lo tiene uno solo, va en el hijo.</p>
+    </div>
+    <div class="box key">
+      <span class="lbl">Si no sabés si va herencia o composición</span>
+      <p>Leé las dos frases en voz alta: <b>"un X es un Y"</b> y <b>"un X tiene un Y"</b>. La que suena
+      natural es la correcta.</p>
+    </div>
+    <div class="box key">
+      <span class="lbl">Si no sabés si va print o return</span>
+      <p><b>¿Lo necesita una persona o lo necesita el programa?</b> Persona → <code>print()</code>.
+      Programa → <code>return</code>.</p>
+    </div>
+    <div class="box key">
+      <span class="lbl">Si una línea con muchos puntos te marea</span>
+      <p>Leela <b>de derecha a izquierda</b> poniendo un "de" en cada punto:
+      <code>jugador.arma.nombre</code> es "el nombre del arma del jugador".</p>
+    </div>
+  </div>
+
+  <div class="box">
+    <span class="lbl">🧭 Y si estás trabado de verdad, volvé a las 7 preguntas del diseño</span>
+    <p>1) ¿Qué objetos hay acá? · 2) ¿Qué debería tener la clase de arriba? · 3) ¿Qué agrega cada hijo? ·
+    4) ¿Dónde usamos <code>super()</code>? · 5) ¿Qué objeto tiene a otro adentro? · 6) ¿Qué método debería
+    devolver un valor? · 7) ¿Dónde herencia y dónde composición?</p>
+  </div>
+</section>
+
+<!-- ==================== 14 · ENTREGA ==================== -->
+<section class="s" data-a="teal" id="entrega">
+  <div class="s-head">
+    <div class="s-num">14</div>
+    <div class="t">
+      <span class="eyebrow">La consigna formal</span>
+      <h2>Entrega y evaluación</h2>
+    </div>
+  </div>
+
+  <div class="body-col">
+    <p class="lead">Cada estudiante o pareja (máximo dos personas) entrega estas seis cosas.</p>
+  </div>
+
+  <div class="chklist">
+    <div><span class="cb"></span><span><b>1 · El código completo.</b> El archivo <code>juego.py</code>, que tiene que
+      <b>ejecutarse sin errores</b>. Probalo de cero antes de entregar.</span></div>
+    <div><span class="cb"></span><span><b>2 · Una explicación del diseño.</b> Media carilla: qué objetos identificaste,
+      qué decisiones tomaste y <b>por qué</b>. Las decisiones discutibles, mejor: explicá por qué elegiste esa.</span></div>
+    <div><span class="cb"></span><span><b>3 · El diagrama de clases y relaciones.</b> Cajas y flechas, como los de la
+      clase 2, con las flechas de <b>ES UN</b> y <b>TIENE UN</b> bien marcadas. Puede ser a mano.</span></div>
+    <div><span class="cb"></span><span><b>4 · Una demostración del juego funcionando.</b> Una pelea completa, una subida
+      de nivel y el menú andando.</span></div>
+    <div><span class="cb"></span><span><b>5 · Dónde usaste cada concepto de POO.</b> Una lista con el número de línea:
+      herencia, <code>super()</code>, composición, polimorfismo, <code>return</code> y encapsulación.</span></div>
+    <div><span class="cb"></span><span><b>6 · Una lista de mejoras posibles.</b> Tres cosas que le agregarías si tuvieras
+      más tiempo, y <b>qué clase tocarías</b> para hacer cada una.</span></div>
+  </div>
+
+  <div class="box warn">
+    <span class="lbl">⚠️ Si trabajaron en pareja</span>
+    <p>Los dos tienen que poder explicar <b>todo</b> el código, no solo la parte que escribieron. En la
+    defensa se le pregunta a cualquiera de los dos, sobre cualquier parte.</p>
+  </div>
+
+  <h3>Cómo se evalúa</h3>
+  <div class="body-col">
+    <p>Se evalúa principalmente <strong>el razonamiento y la comprensión</strong>, no la cantidad de
+    funcionalidades. Un juego chiquito que entendés a fondo vale más que uno enorme que no sabés explicar.</p>
+  </div>
+
+  <table class="rub">
+    <thead><tr><th>Qué se mira</th><th>Lo esperado</th></tr></thead>
+    <tbody>
+      <tr><td>Identificación de objetos</td><td>Encontró los objetos del problema y no convirtió en clase cualquier cosa que se le ocurrió.</td></tr>
+      <tr><td>Diseño de clases</td><td>Lo común está arriba, lo específico abajo. Cada clase tiene un motivo para existir.</td></tr>
+      <tr><td>Atributos y métodos</td><td>Los atributos son datos y están en la clase correcta; los métodos son acciones y hacen una cosa cada uno.</td></tr>
+      <tr><td>Herencia</td><td>Se usa donde se puede decir "ES UN", y no para ahorrar líneas porque sí.</td></tr>
+      <tr><td>Uso de <code>super()</code></td><td>El hijo no repite los atributos del padre. Puede explicar qué pasa si lo saca.</td></tr>
+      <tr><td>Composición</td><td>Hay al menos un objeto adentro de otro, y sabe justificar por qué ahí no iba herencia.</td></tr>
+      <tr><td>Polimorfismo</td><td>Distintos objetos responden al mismo método a su manera, y el código que los usa no tiene cadenas de <code>if</code>.</td></tr>
+      <tr><td>Uso de <code>return</code></td><td>Devuelve cuando el programa necesita el valor; imprime cuando lo lee una persona. Puede explicar cada caso.</td></tr>
+      <tr><td>Funcionamiento</td><td>El programa corre sin errores y hace lo que dice que hace.</td></tr>
+      <tr><td><b>Capacidad de explicar las decisiones</b></td><td><b>Lo que más pesa.</b> Puede contar por qué diseñó así y qué otra opción había.</td></tr>
+      <tr><td>Prolijidad y mejoras</td><td>Nombres claros, código ordenado, y una idea concreta de cómo seguiría.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box key">
+    <span class="lbl">💡 Lo que nadie te va a pedir</span>
+    <p>Que recites la definición de polimorfismo. Lo que importa es que, frente a un problema, <b>sepas
+    encontrar los objetos y hacerles las dos preguntas</b>. El resto es vocabulario y se aprende usándolo.</p>
+  </div>
+</section>
+
+<!-- ==================== 15 · AUTOEVALUACIÓN ==================== -->
+<section class="s" data-a="violet" id="autoevaluacion">
+  <div class="s-head">
+    <div class="s-num">15</div>
+    <div class="t">
+      <span class="eyebrow">Antes de entregar</span>
+      <h2>Autoevaluación</h2>
+    </div>
+  </div>
+
+  <h3>Primera parte: ¿lo podés explicar?</h3>
+  <div class="body-col">
+    <p>Marcá cada casilla <strong>solo si podés explicarlo en voz alta, sin leer</strong>. Si alguna te queda
+    sin marcar, volvé a esa sección: ahí está lo que te falta.</p>
+  </div>
+
+  <div class="chklist">
+    <div><span class="cb"></span><span><b>Qué clases creé</b> y por qué existe cada una.</span></div>
+    <div><span class="cb"></span><span><b>Qué objetos creé</b> a partir de esas clases, y en qué se diferencia una clase de un objeto.</span></div>
+    <div><span class="cb"></span><span><b>Qué atributos usé</b> y por qué cada uno está en <i>esa</i> clase y no en otra.</span></div>
+    <div><span class="cb"></span><span><b>Qué métodos implementé</b> y qué hace cada uno.</span></div>
+    <div><span class="cb"></span><span><b>Dónde apliqué herencia</b> y por qué ahí sí se podía decir "ES UN".</span></div>
+    <div><span class="cb"></span><span><b>Dónde usé <code>super()</code></b> y qué pasaría si lo saco.</span></div>
+    <div><span class="cb"></span><span><b>Dónde aparece la composición</b> y por qué ahí no servía la herencia.</span></div>
+    <div><span class="cb"></span><span><b>Dónde aparece el polimorfismo</b> y qué problema me ahorró.</span></div>
+    <div><span class="cb"></span><span><b>Qué métodos usan <code>return</code></b> y por qué esos y no otros.</span></div>
+    <div><span class="cb"></span><span><b>Qué problema resolvió</b> la POO acá: qué hubiera pasado sin objetos.</span></div>
+    <div><span class="cb"></span><span><b>Qué mejoraría</b> de mi proyecto si tuviera una semana más.</span></div>
+  </div>
+
+  <h3>Segunda parte: ejercicios de repaso</h3>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e1">1</span><h4>ES UN o TIENE UN</h4></div>
+    <div class="ex-body">
+      <p>Para cada par, decidí si va herencia o composición. Leelos en voz alta.</p>
+      <ol>
+        <li>Una <b>Mochila</b> y un <b>Libro</b></li>
+        <li>Un <b>JefeFinal</b> y un <b>Enemigo</b></li>
+        <li>Una <b>Tienda</b> y una <b>Moneda</b></li>
+        <li>Un <b>Mago</b> y un <b>Jugador</b></li>
+        <li>Un <b>Inventario</b> y un <b>Arma</b></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e1">2</span><h4>¿Dónde va este atributo?</h4></div>
+    <div class="ex-body">
+      <p>Escribí en qué clase de <i>nuestro</i> juego tiene que estar cada uno, y por qué:
+      <code>nombre</code> · <code>vida</code> · <code>experiencia</code> · <code>arma</code> ·
+      <code>danio</code> (el de la espada) · <code>danio</code> (el del goblin) · <code>vida_maxima</code>.</p>
+    </div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e2">3</span><h4>Predecí la salida</h4></div>
+    <div class="ex-body">
+      <pre>espada = <span class="cd-fn">Arma</span>(<span class="cd-s">"Espada"</span>, <span class="cd-n">25</span>)
+aria = <span class="cd-fn">Jugador</span>(<span class="cd-s">"Aria"</span>, <span class="cd-n">100</span>, espada)
+goblin = <span class="cd-fn">Goblin</span>(<span class="cd-s">"Goblin"</span>, <span class="cd-n">60</span>, <span class="cd-n">12</span>)
+
+goblin.<span class="cd-fn">recibir_danio</span>(aria.<span class="cd-fn">atacar</span>())
+<span class="cd-fn">print</span>(goblin.vida)
+goblin.<span class="cd-fn">recibir_danio</span>(aria.<span class="cd-fn">atacar</span>())
+goblin.<span class="cd-fn">recibir_danio</span>(aria.<span class="cd-fn">atacar</span>())
+<span class="cd-fn">print</span>(goblin.vida)
+<span class="cd-fn">print</span>(goblin.<span class="cd-fn">esta_vivo</span>())</pre>
+      <p>Escribí qué imprime cada <code>print</code>. Hacé las cuentas a mano.</p>
+    </div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e2">4</span><h4>Encontrá los tres errores</h4></div>
+    <div class="ex-body">
+      <pre><span class="cd-k">class</span> <span class="cd-fn">Enemigo</span>(Personaje):
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida, danio):
+        danio = danio
+
+    <span class="cd-k">def</span> <span class="cd-fn">atacar</span>(<span class="cd-k">self</span>):
+        <span class="cd-fn">print</span>(<span class="cd-k">self</span>.danio)
+
+goblin = <span class="cd-fn">Enemigo</span>(<span class="cd-s">"Goblin"</span>, <span class="cd-n">60</span>, <span class="cd-n">12</span>)
+<span class="cd-fn">print</span>(goblin.nombre)
+danio = goblin.<span class="cd-fn">atacar</span>()
+<span class="cd-fn">print</span>(danio + <span class="cd-n">5</span>)</pre>
+      <p>Hay tres cosas mal. Encontralas, decí qué error da cada una y arreglalas.</p>
+    </div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e3">5</span><h4>Diseñá otra cosa</h4></div>
+    <div class="ex-body">
+      <p>Sin escribir código: diseñá el sistema de una <b>veterinaria</b> usando las 7 preguntas del diseño.
+      Entregá un dibujo con cajas y flechas. Tienen que aparecer al menos una <b>herencia</b>, una
+      <b>composición</b> y un método que <b>devuelva</b> un valor.</p>
+      <p>Este ejercicio parece que no tiene nada que ver con el trabajo práctico. <b>Es el más importante de
+      todos:</b> si te sale, entendiste que POO no era sobre videojuegos.</p>
+    </div>
+  </div>
+
+  <div class="ex-item">
+    <div class="ex-top"><span class="tag e3">6</span><h4>La reflexión final</h4></div>
+    <div class="ex-body">
+      <p>Si mañana te damos un problema completamente diferente —una veterinaria, un cine, una app de
+      música—, <b>¿qué deberías preguntarte antes de escribir código?</b> Escribilo con tus palabras.</p>
+      <div class="renglones">
+        <div class="rl"></div><div class="rl"></div><div class="rl"></div><div class="rl"></div><div class="rl"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 16 · SOLUCIONES ==================== -->
+<section class="s" data-a="good" id="soluciones">
+  <div class="s-head">
+    <div class="s-num">16</div>
+    <div class="t">
+      <span class="eyebrow">Recién ahora</span>
+      <h2>Soluciones</h2>
+    </div>
+  </div>
+
+  <div class="body-col">
+    <p>Están acá al final <strong>a propósito</strong>: si las tenés al lado del enunciado, el ojo las lee
+    antes de que la cabeza intente. Resolvé primero, aunque te salga mal — equivocarte y después entender por
+    qué es la parte que te lo deja aprendido.</p>
+    <p>En varios ejercicios <strong>no hay una única respuesta correcta</strong>. Si la tuya es distinta pero
+    pasa el test de leerla en voz alta, está bien.</p>
+  </div>
+
+  <div class="sol-item">
+    <h4>Sección 3 · Actividad 1 · Los objetos de la escena</h4>
+    <div class="sol">
+      <p><b>Sí son objetos:</b> el héroe, el goblin, la espada y la poción. Los cuatro guardan información
+      <i>y</i> hacen algo.</p>
+      <p><b>No son objetos:</b> la <b>barra de vida</b> (es la forma de <i>mostrar</i> un dato; la vida es un
+      atributo del personaje), los <b>40 puntos de experiencia</b> (un número que guarda el jugador: atributo
+      suyo) y el <b>fondo</b> (no tiene información ni hace nada: es decoración).</p>
+    </div>
+  </div>
+
+  <div class="sol-item">
+    <h4>Sección 3 · Actividad 2 · Atributo o método</h4>
+    <div class="sol">
+      <p><b>Atributos:</b> <code>nombre</code>, <code>vida</code>, <code>experiencia</code> — son
+      sustantivos, cosas que el héroe <i>tiene</i>.<br>
+      <b>Métodos:</b> <code>atacar()</code>, <code>recibir_danio()</code>, <code>subir_nivel()</code> — son
+      verbos con paréntesis, cosas que el héroe <i>hace</i>.</p>
+    </div>
+  </div>
+
+  <div class="sol-item">
+    <h4>Sección 3 · Actividad 3 · La tabla de diseño</h4>
+    <div class="sol">
+      <table class="rub">
+        <thead><tr><th>Clase</th><th>Atributos</th><th>Métodos</th></tr></thead>
+        <tbody>
+          <tr><td>Personaje</td><td>nombre, vida</td><td>recibir_danio(), esta_vivo()</td></tr>
+          <tr><td>Jugador</td><td>nivel, experiencia, arma</td><td>atacar(), ganar_experiencia()</td></tr>
+          <tr><td>Enemigo</td><td>danio</td><td>atacar()</td></tr>
+          <tr><td>Arma</td><td>nombre, danio</td><td>usar()</td></tr>
+        </tbody>
+      </table>
+      <p>En Jugador y en Enemigo <b>no se repiten</b> <code>nombre</code> ni <code>vida</code>: eso ya está en
+      Personaje y lo heredan. Si agregaste <code>vida_maxima</code> o <code>mostrar_info()</code>, también
+      está bien.</p>
+    </div>
+  </div>
+
+  <div class="sol-item">
+    <h4>Sección 4 · Predicciones y el arreglo de <code>recibir_danio()</code></h4>
+    <div class="sol">
+      <p><b>1.</b> Quedan <b>70</b>. <b>2.</b> Devuelve <b>False</b>: la cuenta <code>0 &gt; 0</code> da falso.
+      <b>3.</b> La vida queda en <b>−400</b>, y por eso hay que arreglarlo:</p>
+      <pre>    <span class="cd-k">def</span> <span class="cd-fn">recibir_danio</span>(<span class="cd-k">self</span>, cantidad):
+        <span class="cd-k">self</span>.vida = <span class="cd-k">self</span>.vida - cantidad
+        <span class="cd-k">if</span> <span class="cd-k">self</span>.vida &lt; <span class="cd-n">0</span>:
+            <span class="cd-k">self</span>.vida = <span class="cd-n">0</span>   <span class="cd-c"># nunca menos de 0</span></pre>
+      <p>Ese <code>if</code> es la única razón por la que la vida no queda en negativo. Si lo sacás, el pilar
+      de la <b>encapsulación</b> desaparece.</p>
+    </div>
+  </div>
+
+  <div class="sol-item">
+    <h4>Sección 5 · Las armas y ¿print o return?</h4>
+    <div class="sol">
+      <p><code>espada.usar()</code> → <b>25</b> · <code>arco.usar()</code> → <b>15</b> ·
+      <code>espada.nombre</code> → <b>Espada</b> · <code>resultado - 5</code> → <b>20</b>.</p>
+      <p><b>¿print o return?</b> 1. <code>return</code> (el daño se lo restamos a la vida del enemigo).
+      2. <code>print()</code> (lo lee una persona). 3. <code>return</code> (la respuesta va adentro de un
+      <code>if</code>). 4. <code>print()</code> (nadie lo reutiliza). 5. <code>return</code> (con ese número
+      después decidís si sube de nivel).</p>
+    </div>
+  </div>
+
+  <div class="sol-item">
+    <h4>Sección 6 · El error del <code>super()</code> y ES UN / TIENE UN</h4>
+    <div class="sol">
+      <p><b>El error:</b> <code>AttributeError: 'Jugador' object has no attribute 'nombre'</code>. Falta
+      <code>super().__init__(nombre, vida)</code> como primera línea: <b>el padre nunca hizo su parte</b>, así
+      que <code>nombre</code> jamás se guardó. Heredar la clase no alcanza: hay que <b>llamar</b> al
+      <code>__init__</code> del padre.</p>
+      <p><b>Los pares:</b> 1. ES UN · 2. TIENE UN · 3. TIENE UN · 4. ES UN · 5. TIENE UN · 6. ES UN ·
+      7. TIENE UN · 8. ES UN.</p>
+    </div>
+  </div>
+
+  <div class="sol-item">
+    <h4>Sección 7 · El objeto goblin y el Guerrero</h4>
+    <div class="sol">
+      <p><b>Funcionan:</b> <code>goblin.nombre</code> y <code>goblin.vida</code> (los puso Personaje a través
+      del <code>super()</code>), <code>goblin.danio</code> (propio de Enemigo), y
+      <code>goblin.esta_vivo()</code> y <code>goblin.recibir_danio(20)</code> — aunque <b>no estén escritos
+      adentro de Enemigo</b>: los heredó.<br>
+      <b>Da error:</b> <code>goblin.arma</code>. El arma es del Jugador, no de Personaje.</p>
+      <p><b>El Guerrero:</b> imprime <b>Aria</b>, <b>Espada</b>, <b>8</b> y <b>True</b>. La que falla es
+      <code>aria.danio</code>: ninguna clase de la cadena guarda "danio" en el jugador — el daño lo tiene el
+      arma. Sería <code>aria.arma.danio</code>.</p>
+    </div>
+  </div>
+
+  <div class="sol-item">
+    <h4>Sección 8 · El <code>for</code> polimórfico</h4>
+    <div class="sol">
+      <p>Imprime <b>Dragón 35</b> (20 + 15), <b>Goblin 12</b> y <b>Lobo 10</b>. El <code>+15</code> es solo
+      del dragón: está escrito adentro de <code>Dragon</code>, los goblins no lo heredan.</p>
+      <p>Y hay <b>cero <code>if</code></b> en ese <code>for</code>: cada objeto sabe cómo responder.</p>
+    </div>
+  </div>
+
+  <div class="sol-item">
+    <h4>Sección 9 · El orden del turno</h4>
+    <div class="sol">
+      <p><b>1.</b> El jugador ataca y obtenemos el daño · <b>2.</b> El enemigo recibe ese daño ·
+      <b>3.</b> Se muestra cómo quedó la vida del enemigo · <b>4.</b> Si sigue vivo, el enemigo ataca ·
+      <b>5.</b> El jugador recibe el daño del enemigo · <b>6.</b> Se repite mientras los dos estén vivos ·
+      <b>7.</b> Cuando uno cae, se muestra el ganador.</p>
+      <p><b>Y la difícil:</b> <code>atacar_a()</code> devuelve el daño aunque ya se lo haya restado al otro
+      porque <b>el golpe ya está dado, pero el programa todavía no sabe de cuánto fue</b>. Con el
+      <code>return</code> podés mostrarlo, sumarlo a un total o guardar el récord del golpe más fuerte. Sin
+      él, esa información se pierde.</p>
+    </div>
+  </div>
+
+  <div class="sol-item">
+    <h4>Sección 10 · Experiencia</h4>
+    <div class="sol">
+      <p>Imprime <b>nivel 2</b> y <b>experiencia 20</b>. La cuenta: 60 + 60 = 120; como
+      <code>120 &gt;= 100</code>, sube de nivel y le restamos 100, así que le quedan 20.</p>
+      <p>Usamos <code>&gt;=</code> y no <code>==</code> porque con <code>==</code> solo subiría si cayera
+      <b>justo</b> en 100. Con 120 no subiría nunca.</p>
+    </div>
+  </div>
+
+  <div class="sol-item">
+    <h4>Sección 15 · Ejercicios de repaso</h4>
+    <div class="sol">
+      <p><b>1.</b> 1) TIENE UN · 2) ES UN · 3) TIENE UN · 4) ES UN · 5) TIENE UN.</p>
+      <p><b>2.</b> <code>nombre</code>, <code>vida</code> y <code>vida_maxima</code> → <b>Personaje</b> (los
+      comparten todos). <code>experiencia</code> y <code>arma</code> → <b>Jugador</b> (solo él sube de nivel
+      y solo él lleva arma). <code>danio</code> de la espada → <b>Arma</b>. <code>danio</code> del goblin →
+      <b>Enemigo</b>.</p>
+      <p><b>3.</b> Primer <code>print</code>: <b>35</b> (60 − 25). Segundo: <b>0</b> — ojo, no −15, porque el
+      <code>if</code> de <code>recibir_danio()</code> lo frena en 0. Tercero: <b>False</b>.</p>
+      <p><b>4.</b> Los tres errores: (a) falta <code>super().__init__(nombre, vida)</code>, así que
+      <code>goblin.nombre</code> da <code>AttributeError</code>; (b) dice <code>danio = danio</code> en vez de
+      <code>self.danio = danio</code>, así que el dato no se guarda; (c) <code>atacar()</code> hace
+      <code>print</code> en vez de <code>return</code>, así que <code>danio</code> vale <code>None</code> y
+      <code>danio + 5</code> revienta.</p>
+      <p><b>5.</b> Una salida posible: <b>herencia</b> — <code>Perro</code> y <code>Gato</code> son ambos
+      <code>Animal</code>. <b>Composición</b> — un <code>Turno</code> <i>tiene</i> un <code>Animal</code> y un
+      <code>Veterinario</code>; una <code>HistoriaClinica</code> <i>tiene</i> una lista de
+      <code>Consulta</code>. <b>Return</b> — <code>turno.precio()</code> devuelve cuánto hay que cobrar. Y algo
+      que <b>no</b> va: <code>Consultorio</code> no hereda de <code>Veterinaria</code> — el consultorio está
+      <i>adentro</i>, no <i>es</i> una veterinaria.</p>
+      <p><b>6.</b> No hay una única forma de decirlo, pero tienen que estar estas preguntas, en este orden:
+      <b>¿Qué problema tengo? → ¿Qué objetos existen? → ¿Qué información tiene cada uno? → ¿Qué puede hacer?
+      → ¿Cómo se relacionan?</b> Y recién después, el código. Si tu respuesta empieza por "abro Python y…",
+      volvé a leerla. Fijate que en ninguna de esas preguntas aparece la palabra Python: por eso el método te
+      sirve para cualquier problema y en cualquier lenguaje.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== CIERRE ==================== -->
+<section class="s" data-a="blue" id="cierre">
+  <div class="closing">
+    <span class="eyebrow">Para cerrar</span>
+    <div class="quote">No estamos aprendiendo comandos sueltos. Estamos aprendiendo a pensar, diseñar y
+    construir programas.</div>
+    <div class="body-col">
+      <p>Empezaste con una pantalla en blanco y terminaste con un videojuego funcionando. Pero lo que de
+      verdad te llevás no es el juego: es que ahora, frente a cualquier problema, sabés por dónde empezar.</p>
+      <p>Y la primera pregunta va a seguir siendo siempre la misma:
+      <strong>"¿qué objetos hay acá?"</strong> Y ahora, además, una segunda:
+      <strong>"¿y cómo se relacionan entre ellos?"</strong></p>
+    </div>
+    <div class="colofon">
+      <span>Apunte del TP integrador</span>
+      <span>Arena de Combate</span>
+      <span>Programación Orientada a Objetos · Python</span>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== MACHETE ==================== -->
+<section class="s" data-a="blue" id="machete">
+  <div class="machete">
+    <div class="mh">
+      <b>Machete · Arena de Combate</b>
+      <span>Todo el trabajo práctico en una hoja</span>
+    </div>
+
+    <div class="mgrid">
+
+      <div class="mcell" style="--c:var(--blue)">
+        <span class="mt">🧭 Las dos preguntas de siempre</span>
+        <p><b>¿Qué información tiene?</b> → atributos (sustantivos).</p>
+        <p><b>¿Qué puede hacer?</b> → métodos (verbos con paréntesis).</p>
+        <p>Si dudás, decilo en voz alta: <em>"el personaje tiene…"</em> / <em>"el personaje puede…"</em>.</p>
+      </div>
+
+      <div class="mcell" style="--c:var(--rose)">
+        <span class="mt">🧬 Si podés decir "ES UN"</span>
+        <span class="mbig" style="color:var(--rose)">Herencia</span>
+        <p><code>class Jugador(Personaje):</code></p>
+        <p><em>"Un jugador <b>es un</b> personaje."</em> Una sola cosa que recibe todo lo del padre.</p>
+      </div>
+
+      <div class="mcell" style="--c:var(--flame)">
+        <span class="mt">🎁 Si podés decir "TIENE UN"</span>
+        <span class="mbig" style="color:var(--flame)">Composición</span>
+        <p><code>self.arma = arma</code></p>
+        <p><em>"Un jugador <b>tiene un</b> arma."</em> Dos objetos distintos, conectados.</p>
+      </div>
+
+      <div class="mcell" style="--c:var(--blue)">
+        <span class="mt">🧬 super()</span>
+        <p><code>super().__init__(nombre, vida)</code></p>
+        <p>= <b>"Padre, encargate vos de nombre y vida. Yo me ocupo del resto."</b></p>
+        <p>Va como <b>primera línea</b> del <code>__init__</code> del hijo.</p>
+      </div>
+
+      <div class="mcell" style="--c:var(--teal)">
+        <span class="mt">📦 print() vs return</span>
+        <p><b>¿Lo necesita una persona o el programa?</b></p>
+        <p><code>print()</code> → a la pantalla. Lo ve alguien y ahí termina.</p>
+        <p><code>return</code> → me lo entrega. Lo guardo, lo comparo en un <code>if</code>, lo reutilizo.</p>
+      </div>
+
+      <div class="mcell" style="--c:var(--violet)">
+        <span class="mt">🎭 Polimorfismo</span>
+        <p>Misma orden, distinta respuesta. Cada enemigo tiene su <code>atacar()</code>.</p>
+        <p>El <code>for</code> que los recorre <b>no tiene un solo <code>if</code></b>, y no cambia nunca
+        aunque agregues veinte enemigos.</p>
+      </div>
+
+      <div class="mcell" style="--c:var(--violet)">
+        <span class="mt">🔎 El punto se lee "de"</span>
+        <p><code>jugador.arma.nombre</code></p>
+        <p>= "el nombre <b>del</b> arma <b>del</b> jugador". De derecha a izquierda.</p>
+        <p>Un atributo —y también un parámetro— puede ser otro objeto entero.</p>
+      </div>
+
+      <div class="mcell" style="--c:var(--bad)">
+        <span class="mt">⚠️ Los errores · síntoma → causa</span>
+        <div class="mrow"><span class="mk">1</span><span><code>AttributeError</code> →
+          <b>falta el <code>super()</code></b>.</span></div>
+        <div class="mrow"><span class="mk">2</span><span>Aparece <code>None</code> →
+          <b><code>print</code> donde iba <code>return</code></b>.</span></div>
+        <div class="mrow"><span class="mk">3</span><span>"Es un" suena raro →
+          <b>era composición</b>.</span></div>
+        <div class="mrow"><span class="mk">4</span><span>El dato desaparece →
+          <b>te olvidaste el <code>self.</code></b></span></div>
+      </div>
+
+      <div class="mcell wide" style="--c:var(--good)">
+        <span class="mt">🎮 Las clases del juego</span>
+        <div class="mrow"><span class="mk">1</span><span><b>Personaje</b> · nombre, vida ·
+          recibir_danio(), esta_vivo()</span></div>
+        <div class="mrow"><span class="mk">2</span><span><b>Arma</b> · nombre, danio · usar()</span></div>
+        <div class="mrow"><span class="mk">3</span><span><b>Jugador</b>(Personaje) · arma, nivel,
+          experiencia · atacar()</span></div>
+        <div class="mrow"><span class="mk">4</span><span><b>Enemigo</b>(Personaje) · danio ·
+          atacar()</span></div>
+      </div>
+
+      <div class="mcell wide" style="--c:var(--blue)">
+        <span class="mt">🧭 Las 7 preguntas del diseño</span>
+        <div class="msplit">
+          <div>
+            <div class="mrow"><span class="mk">1</span><span>¿Qué objetos hay acá?</span></div>
+            <div class="mrow"><span class="mk">2</span><span>¿Qué debería tener la clase de arriba?</span></div>
+            <div class="mrow"><span class="mk">3</span><span>¿Qué agrega cada hijo?</span></div>
+            <div class="mrow"><span class="mk">4</span><span>¿Dónde usamos <code>super()</code>?</span></div>
+          </div>
+          <div>
+            <div class="mrow"><span class="mk">5</span><span>¿Qué objeto tiene a otro adentro?</span></div>
+            <div class="mrow"><span class="mk">6</span><span>¿Qué método debería devolver un valor?</span></div>
+            <div class="mrow"><span class="mk">7</span><span>¿Dónde herencia y dónde composición?</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mcell wide" style="--c:var(--blue);border-bottom:none">
+        <span class="mt">🪜 Y el orden, que no cambia nunca</span>
+        <div class="mflow">
+          <em>1 · Pensar el problema</em><i>→</i>
+          <em>2 · Identificar los objetos</em><i>→</i>
+          <em>3 · Atributos y métodos</em><i>→</i>
+          <em>4 · Pensar las relaciones</em><i>→</i>
+          <em>5 · Diseñar</em><i>→</i>
+          <em>6 · Código</em><i>→</i>
+          <em>7 · Probar</em><i>→</i>
+          <em>8 · Mejorar</em>
+        </div>
+        <p style="margin-top:3px">El código está <b>sexto</b>. Cinco pasos antes de tocar el teclado.
+        <b>No memorices: razoná.</b></p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+</div>
+</html>

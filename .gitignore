@@ -4,4 +4,6 @@
 *.jpeg
 *.png
 *.pdf
+# ...menos el apunte del TP, que es propio y se comparte por link:
+!apunte-tp-arena-de-combate.pdf
 .DS_Store

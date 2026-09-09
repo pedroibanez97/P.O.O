@@ -15,6 +15,7 @@ navegador, en compu o en celular. No hay que instalar nada.
 | 1 | Pensar en objetos | https://pedroibanez97.github.io/P.O.O/clase-1.html |
 | 2 | Relacionar objetos | https://pedroibanez97.github.io/P.O.O/clase-2.html |
 | TP | Arena de Combate (integrador) | https://pedroibanez97.github.io/P.O.O/tp-arena-de-combate.html |
+| TP | Apunte del TP (para imprimir) | https://pedroibanez97.github.io/P.O.O/apunte-tp-arena-de-combate.pdf |
 
 ---
 
@@ -118,6 +119,17 @@ navegador (la vida en negativo, el combate y la subida de nivel), la consigna de
 
 Se puede hacer en casa, entero, sin el profesor al lado.
 
+**El apunte imprimible.** El mismo trabajo práctico en formato apunte, con el diseño de los apuntes de
+las clases 1 y 2: `apunte-tp-arena-de-combate.html` (con botón de imprimir) y su PDF ya generado, de
+37 páginas. Además de la consigna y el código, suma una sección de **teoría de repaso** con diez fichas
+(clase y objeto, atributos y métodos, `__init__`, `self`, herencia, `super()`, varios niveles,
+`print()` vs `return`, composición y polimorfismo), una de **ayudas** con los seis errores frecuentes
+(síntoma → causa → cómo salir), las soluciones de todos los ejercicios al final y un **machete de una
+carilla**.
+
+Para regenerar el PDF después de editar el HTML: abrirlo y usar el botón *Imprimir / Guardar PDF*
+(A4, sin encabezados).
+
 ---
 
 ## Uso sin internet
@@ -132,7 +144,9 @@ que cambia es la tipografía, que se carga desde internet.
 | `index.html` | Página de inicio con el listado de clases |
 | `clase-1.html` | Presentación de la clase 1 |
 | `clase-2.html` | Presentación de la clase 2 |
-| `tp-arena-de-combate.html` | Trabajo práctico integrador |
+| `tp-arena-de-combate.html` | Trabajo práctico integrador (guía interactiva) |
+| `apunte-tp-arena-de-combate.html` | Apunte imprimible del TP |
+| `apunte-tp-arena-de-combate.pdf` | El mismo apunte, ya en PDF (37 páginas) |
 
 Cada presentación es un único archivo HTML, sin dependencias más allá de las
 tipografías de Google Fonts.
