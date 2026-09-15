@@ -1,0 +1,1580 @@
+<title>Incorporar Herramientas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --paper:#e7eaef; --sheet:#fbfcfd; --sheet-2:#f1f4f8;
+  --ink:#111a26; --ink-2:#546275; --ink-3:#626f80;
+  --line:#ccd4e0; --line-soft:#e2e8f0;
+  --grid:rgba(21,72,200,.055);
+  --blue:#1548c8; --flame:#bf400e; --teal:#0a7566; --violet:#5d34c9; --rose:#bd1f62;
+  --good:#0f7d55; --warn:#b26a00;
+  --chip:rgba(21,72,200,.08);
+  --shadow:0 1px 2px rgba(17,26,38,.06), 0 18px 50px -22px rgba(17,26,38,.35);
+  --bar:56px;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Instrument Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --cd-k:#8b2bb9; --cd-s:#b0450f; --cd-n:#1548c8; --cd-c:#7b8794; --cd-fn:#0a6a86;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#080d14; --sheet:#111924; --sheet-2:#18212e;
+    --ink:#e9eef6; --ink-2:#9aa9bd; --ink-3:#6f7f94;
+    --line:#2a3543; --line-soft:#1f2937;
+    --grid:rgba(140,180,255,.055);
+    --blue:#7ba4ff; --flame:#ff8a5c; --teal:#3fcfb5; --violet:#b49bff; --rose:#ff7aae;
+    --good:#4fd08a; --warn:#e8b552;
+    --chip:rgba(123,164,255,.12);
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 24px 60px -24px rgba(0,0,0,.8);
+    --cd-k:#d99bf0; --cd-s:#ffab7d; --cd-n:#8fb4ff; --cd-c:#6f7f94; --cd-fn:#67d6e8;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#080d14; --sheet:#111924; --sheet-2:#18212e;
+  --ink:#e9eef6; --ink-2:#9aa9bd; --ink-3:#6f7f94;
+  --line:#2a3543; --line-soft:#1f2937;
+  --grid:rgba(140,180,255,.055);
+  --blue:#7ba4ff; --flame:#ff8a5c; --teal:#3fcfb5; --violet:#b49bff; --rose:#ff7aae;
+  --good:#4fd08a; --warn:#e8b552;
+  --chip:rgba(123,164,255,.12);
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 24px 60px -24px rgba(0,0,0,.8);
+  --cd-k:#d99bf0; --cd-s:#ffab7d; --cd-n:#8fb4ff; --cd-c:#6f7f94; --cd-fn:#67d6e8;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);overflow:hidden}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:4px}
+
+/* ============ STAGE ============ */
+.viewport{position:fixed;inset:0 0 var(--bar) 0;display:grid;place-items:center;overflow:hidden;
+  transition:bottom .28s cubic-bezier(.2,.7,.3,1)}
+body.notes-open .viewport{bottom:calc(var(--bar) + 38vh)}
+.stage{position:relative;width:1280px;height:720px;flex:none;transform-origin:center center;
+  background:var(--sheet);box-shadow:var(--shadow);border:1px solid var(--line);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:40px 40px}
+.stage::after{content:"";position:absolute;inset:14px;border:1px solid var(--line-soft);pointer-events:none}
+
+.eyebrow{position:absolute;top:34px;left:44px;z-index:3;display:flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)}
+.eyebrow b{color:var(--accent,var(--blue));font-weight:700}
+.plate{position:absolute;right:14px;bottom:14px;z-index:3;display:flex;align-items:stretch;
+  border-left:1px solid var(--line-soft);border-top:1px solid var(--line-soft);background:var(--sheet)}
+.plate div{padding:9px 16px;font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--ink-3);
+  text-transform:uppercase;display:flex;align-items:center}
+.plate div+div{border-left:1px solid var(--line-soft)}
+.plate .pnum{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+
+/* ============ SLIDES ============ */
+.slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;
+  padding:80px 84px 92px;gap:26px}
+.slide.active{display:flex;animation:in .34s cubic-bezier(.2,.7,.3,1) both}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.slide[data-b="1"]{--accent:var(--blue)}
+.slide[data-b="2"]{--accent:var(--flame)}
+.slide[data-b="3"]{--accent:var(--teal)}
+.slide[data-b="4"]{--accent:var(--violet)}
+.slide[data-b="5"]{--accent:var(--rose)}
+.slide[data-b="6"]{--accent:var(--blue)}
+.slide[data-b="7"]{--accent:var(--good)}
+.slide.mid{justify-content:center}
+.slide.top{justify-content:flex-start;padding-top:96px}
+
+h1,h2,h3{margin:0;font-family:var(--display);text-wrap:balance;letter-spacing:-.025em;line-height:1.02}
+h1{font-size:88px;font-weight:800}
+h2{font-size:50px;font-weight:700}
+h3{font-size:30px;font-weight:600;letter-spacing:-.015em}
+p{margin:0}
+.lead{font-size:26px;line-height:1.45;color:var(--ink-2);max-width:56ch}
+.huge{font-family:var(--display);font-weight:800;font-size:72px;line-height:1.04;letter-spacing:-.03em}
+.tag{display:inline-flex;align-items:center;gap:9px;align-self:flex-start;padding:7px 15px;border-radius:999px;
+  background:var(--chip);color:var(--accent);font-family:var(--mono);font-size:13px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase}
+.hl{color:var(--accent)}
+.u{background:linear-gradient(transparent 62%,var(--chip) 62%);padding:0 .12em}
+
+/* question */
+.ask{display:block;position:relative;padding-left:60px;font-size:34px;line-height:1.25;font-weight:600;
+  font-family:var(--display);letter-spacing:-.015em;max-width:26ch}
+.ask::before{content:"?";position:absolute;left:0;top:2px;width:44px;height:44px;border-radius:50%;
+  background:var(--accent);color:var(--sheet);font-family:var(--display);font-weight:800;font-size:27px;
+  display:grid;place-items:center}
+.ask.sm{font-size:27px;padding-left:52px}
+.ask.sm::before{width:36px;height:36px;font-size:22px}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(8px);transition:opacity .3s ease,transform .3s cubic-bezier(.2,.7,.3,1)}
+.rv.on{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .rv{transition:opacity .01s}.slide.active{animation:none}
+  *{scroll-behavior:auto!important}
+}
+
+/* layout helpers */
+.cols{display:grid;gap:34px;align-items:start}
+.c2{grid-template-columns:1fr 1fr}
+.c2u{grid-template-columns:1.05fr .95fr}
+.c3{grid-template-columns:repeat(3,1fr)}
+.c4{grid-template-columns:repeat(4,1fr)}
+.row{display:flex;gap:18px;flex-wrap:wrap}
+.stack{display:flex;flex-direction:column;gap:18px}
+.gap-s{gap:12px}
+.center{align-items:center;text-align:center}
+.mid-all{justify-content:center;align-items:center;text-align:center}
+
+/* cards */
+.card{background:var(--sheet-2);border:1px solid var(--line-soft);border-radius:14px;padding:22px 24px}
+.card.acc{border-color:color-mix(in srgb,var(--accent) 38%,transparent);
+  background:color-mix(in srgb,var(--accent) 6%,var(--sheet-2))}
+.card h3{margin-bottom:8px}
+.card p{font-size:20px;line-height:1.4;color:var(--ink-2)}
+.lbl{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+
+/* pill list */
+.pills{display:flex;flex-wrap:wrap;gap:10px}
+.pill{font-family:var(--mono);font-size:20px;padding:9px 16px;border-radius:10px;
+  background:var(--sheet-2);border:1px solid var(--line-soft)}
+.pill.a{color:var(--flame);border-color:color-mix(in srgb,var(--flame) 34%,transparent);
+  background:color-mix(in srgb,var(--flame) 7%,var(--sheet-2))}
+.pill.m{color:var(--teal);border-color:color-mix(in srgb,var(--teal) 34%,transparent);
+  background:color-mix(in srgb,var(--teal) 7%,var(--sheet-2))}
+.pill.big{font-size:24px;padding:12px 20px}
+
+/* UML-ish class box */
+.uml{border:2px solid var(--ink);border-radius:12px;overflow:hidden;background:var(--sheet);min-width:210px}
+.uml-h{background:var(--ink);color:var(--sheet);font-family:var(--display);font-weight:700;font-size:24px;
+  padding:10px 18px;text-align:center;letter-spacing:.01em}
+.uml ul{margin:0;padding:12px 18px;list-style:none;display:flex;flex-direction:column;gap:5px;
+  font-family:var(--mono);font-size:17px;color:var(--ink-2)}
+.uml ul+ul{border-top:1px solid var(--line)}
+.uml ul.at li{color:var(--flame)}
+.uml ul.me li{color:var(--teal)}
+.uml.ghost{border-style:dashed;opacity:.85}
+
+/* code */
+pre{margin:0;background:var(--sheet-2);border:1px solid var(--line-soft);border-radius:14px;
+  padding:24px 26px;overflow-x:auto;font-family:var(--mono);font-size:22px;line-height:1.6;color:var(--ink)}
+pre.sm{font-size:19px;padding:18px 20px}
+pre.lg{font-size:25px}
+.cd-k{color:var(--cd-k);font-weight:700}
+.cd-s{color:var(--cd-s)}
+.cd-n{color:var(--cd-n)}
+.cd-c{color:var(--cd-c);font-style:italic}
+.cd-fn{color:var(--cd-fn);font-weight:700}
+.cd-hl{background:color-mix(in srgb,var(--accent) 14%,transparent);border-radius:4px;padding:1px 4px;margin:0 -4px}
+
+/* diagram connectors */
+.link{display:block;width:100%;height:56px;color:var(--ink-3)}
+.link path{stroke:currentColor;stroke-width:2;fill:none;vector-effect:non-scaling-stroke}
+.link.dash path{stroke-dasharray:6 6}
+.arrow-d{display:grid;place-items:center;font-size:34px;color:var(--accent);line-height:1}
+
+/* big statement */
+.statement{font-family:var(--display);font-weight:800;font-size:62px;line-height:1.06;letter-spacing:-.03em;
+  text-wrap:balance;max-width:20ch}
+.quote{font-family:var(--display);font-weight:600;font-size:44px;line-height:1.15;letter-spacing:-.02em}
+
+/* activity banner */
+.actbar{position:absolute;left:0;top:0;bottom:0;width:8px;background:var(--accent)}
+
+/* answer box */
+.answer{border:2px dashed color-mix(in srgb,var(--accent) 55%,transparent);border-radius:14px;padding:18px 22px;
+  background:color-mix(in srgb,var(--accent) 6%,transparent)}
+.answer .lbl{color:var(--accent)}
+.answer p{font-size:23px;line-height:1.4;margin-top:6px}
+
+/* misc */
+.emoji{font-size:64px;line-height:1}
+.emoji.sm{font-size:40px}
+.num{font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:.1em;color:var(--accent)}
+.mono{font-family:var(--mono)}
+.dim{color:var(--ink-2)}
+.strike{text-decoration:line-through;text-decoration-thickness:2px;color:var(--ink-3)}
+.kbd{font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-bottom-width:2px;
+  border-radius:5px;padding:2px 6px;background:var(--sheet-2);color:var(--ink-2)}
+
+.slide > aside.notes{display:none}
+
+.optchip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;
+  border:1px dashed var(--ink-3);color:var(--ink-3);font-family:var(--mono);font-size:11px;
+  letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.optchip[hidden]{display:none!important}
+.ov-i.opt{border-style:dashed}
+.ov-i .oflag{color:var(--ink-3);font-weight:700}
+.ov-legend{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.1em}
+
+/* ============ BOTTOM BAR ============ */
+.bar{position:fixed;left:0;right:0;bottom:0;height:var(--bar);z-index:20;display:flex;align-items:center;
+  gap:16px;padding:0 16px;background:var(--sheet);border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+.bar .seg{display:flex;gap:3px;flex:1;align-items:center}
+.seg .b{flex:var(--w,1);height:6px;border-radius:3px;background:var(--line-soft);overflow:hidden;position:relative;
+  cursor:pointer}
+.seg .b i{position:absolute;inset:0;transform-origin:left;transform:scaleX(var(--p,0));
+  background:var(--c);transition:transform .25s ease}
+.bar button{font:inherit;font-family:var(--mono);background:transparent;border:1px solid var(--line);color:var(--ink-2);
+  border-radius:7px;padding:5px 10px;cursor:pointer;letter-spacing:.04em}
+.bar button:hover{border-color:var(--blue);color:var(--blue)}
+.bar button[aria-pressed="true"]{background:var(--chip);border-color:var(--blue);color:var(--blue)}
+.count{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:700;min-width:62px;text-align:right}
+.clock{font-variant-numeric:tabular-nums;letter-spacing:.06em}
+.hint{color:var(--ink-3)}
+@media (max-width:820px){.hint,.blockname{display:none}}
+
+/* ============ NOTES DRAWER ============ */
+.notes-drawer{position:fixed;left:0;right:0;bottom:var(--bar);height:38vh;z-index:19;background:var(--sheet-2);
+  border-top:2px solid var(--accent-n,var(--blue));transform:translateY(101%);
+  transition:transform .28s cubic-bezier(.2,.7,.3,1);overflow:auto;padding:20px 26px 26px}
+body.notes-open .notes-drawer{transform:none}
+.nd-head{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;position:sticky;top:-20px;
+  background:var(--sheet-2);padding:4px 0 10px}
+.nd-head b{font-family:var(--display);font-size:19px}
+.nd-head span{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.notes{display:grid;grid-template-columns:150px 1fr;gap:10px 22px;max-width:1100px;align-items:baseline}
+.notes dt{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-n,var(--blue));
+  font-weight:700;padding-top:3px}
+.notes dd{margin:0;font-size:16px;line-height:1.5;color:var(--ink)}
+.notes dd em{color:var(--ink-2);font-style:normal}
+.notes dd code{font-family:var(--mono);font-size:14px;background:var(--sheet);border:1px solid var(--line-soft);
+  border-radius:4px;padding:1px 5px}
+
+/* ============ OVERVIEW ============ */
+.overview{position:fixed;inset:0;z-index:30;background:color-mix(in srgb,var(--paper) 94%,transparent);
+  backdrop-filter:blur(8px);overflow:auto;padding:28px 32px 90px;display:none}
+.overview.on{display:block}
+.ov-head{display:flex;align-items:baseline;gap:16px;margin-bottom:22px}
+.ov-head h2{font-size:30px}
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.ov-b{grid-column:1/-1;font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--c);font-weight:700;margin-top:14px;display:flex;align-items:center;gap:12px}
+.ov-b::after{content:"";flex:1;height:1px;background:var(--line)}
+.ov-i{text-align:left;background:var(--sheet);border:1px solid var(--line-soft);border-left:4px solid var(--c);
+  border-radius:10px;padding:12px 14px;cursor:pointer;font:inherit;color:var(--ink);display:flex;flex-direction:column;gap:6px}
+.ov-i:hover{border-color:var(--c);transform:translateY(-2px)}
+.ov-i b{font-family:var(--display);font-size:16px;font-weight:600;line-height:1.2}
+.ov-i span{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.1em}
+.ov-i.cur{background:color-mix(in srgb,var(--c) 10%,var(--sheet));border-color:var(--c)}
+
+/* chip de paso */
+.step{display:inline-flex;align-items:center;gap:8px;padding:5px 13px;border-radius:8px;
+  background:var(--accent);color:var(--sheet);font-family:var(--mono);font-size:12px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;align-self:flex-start}
+.step.off{background:var(--line);color:var(--ink-3)}
+
+/* tarjeta numerada de checklist */
+.qcard{background:var(--sheet-2);border:1px solid var(--line-soft);border-left:4px solid var(--accent);
+  border-radius:10px;padding:14px 16px;font-size:20px;line-height:1.35}
+.qcard > b:first-child{font-family:var(--mono);font-size:13px;color:var(--accent);display:block;letter-spacing:.14em;margin-bottom:4px}
+
+/* veredicto sí / no */
+.verdict{display:flex;align-items:center;gap:12px;font-family:var(--display);font-weight:700;font-size:26px}
+.verdict .mk{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:22px;
+  color:var(--sheet)}
+.verdict.no .mk{background:var(--flame)} .verdict.si .mk{background:var(--good)}
+.verdict.no{color:var(--ink-2)}
+
+/* consola */
+.term{background:#0d1420;border:1px solid #223046;border-radius:12px;padding:16px 20px;font-family:var(--mono);
+  font-size:20px;color:#cfe0ff;line-height:1.55;white-space:pre}
+.term .ok{color:#4fd08a} .term .bad{color:#ff8a8a} .term .dimt{color:#7b8ca8}
+
+/* ============ CLASE 3 · COMPONENTES NUEVOS ============ */
+
+/* cadena vertical de pasos, sin caja UML */
+.chain{display:flex;flex-direction:column;align-items:center;gap:0}
+.chain .down{height:30px;width:2px;background:var(--ink-3);position:relative}
+.chain .down::after{content:"";position:absolute;left:-5px;bottom:-1px;border:6px solid transparent;
+  border-top-color:var(--ink-3)}
+.chain .down.acc{background:var(--accent)}
+.chain .down.acc::after{border-top-color:var(--accent)}
+
+/* pasos de metodología, tarjeta compacta con número */
+.stepbox{background:var(--sheet-2);border:1px solid var(--line-soft);border-radius:12px;
+  padding:12px 18px;font-family:var(--mono);font-size:18px;font-weight:700;color:var(--ink);
+  display:flex;align-items:center;gap:12px;min-width:340px}
+.stepbox i{flex:none;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--sheet);
+  font-style:normal;font-size:13px;display:grid;place-items:center}
+.stepbox.big{background:color-mix(in srgb,var(--accent) 8%,var(--sheet-2));border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+
+/* evolución horizontal: CONSOLA → TKINTER → PYGAME */
+.hchain{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
+.hbox{border:2px solid var(--line);border-radius:14px;padding:20px 30px;background:var(--sheet-2);
+  font-family:var(--mono);font-weight:700;font-size:22px;text-align:center;letter-spacing:.02em;color:var(--ink-2)}
+.hbox.acc{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--sheet-2));color:var(--accent)}
+.hbox small{display:block;font-weight:400;font-size:13px;letter-spacing:.06em;color:var(--ink-3);margin-top:4px}
+.harr{flex:none;font-size:26px;color:var(--ink-3);padding:0 14px}
+
+/* ventana falsa de Tkinter */
+.win{border:2px solid var(--ink);border-radius:14px;overflow:hidden;background:var(--sheet);box-shadow:var(--shadow)}
+.win .tb{background:var(--ink);color:var(--sheet);padding:9px 16px;font-family:var(--mono);font-size:13px;
+  display:flex;align-items:center;gap:10px;letter-spacing:.04em}
+.win .tb .dots{display:flex;gap:6px}
+.win .tb .dots i{width:9px;height:9px;border-radius:50%;background:var(--ink-2);display:block}
+.win .body{padding:28px 32px;display:flex;flex-direction:column;gap:16px;align-items:center;text-align:center}
+.win .body h3{font-family:var(--display);font-weight:700;font-size:24px}
+.win .flabel{font-family:var(--mono);font-size:13px;color:var(--ink-3);letter-spacing:.1em;text-transform:uppercase}
+.win input.fake{font-family:var(--mono);font-size:16px;padding:9px 14px;border:1px solid var(--line);
+  border-radius:8px;background:var(--sheet-2);color:var(--ink-2);width:220px}
+.win button.fake{font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:.06em;padding:11px 30px;
+  border-radius:9px;border:none;background:var(--accent);color:var(--sheet)}
+.win .hpwrap{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:14px;color:var(--ink-2)}
+.win .hpbar{width:150px;height:10px;border-radius:6px;background:var(--line-soft);overflow:hidden}
+.win .hpbar i{display:block;height:100%;background:var(--good)}
+.win .hpbar i.low{background:var(--flame)}
+.win .log{font-family:var(--mono);font-size:14px;color:var(--ink-3);border-top:1px dashed var(--line);padding-top:12px;width:100%}
+
+/* firma de documentación */
+.docbox{border:1px solid var(--line-soft);border-radius:14px;background:var(--sheet-2);padding:22px 26px}
+.docbox .fn{font-family:var(--mono);font-size:23px;font-weight:700;color:var(--cd-fn)}
+.docbox dl{display:grid;grid-template-columns:120px 1fr;gap:9px 16px;margin:16px 0 0}
+.docbox dt{font-family:var(--mono);font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.1em;padding-top:2px}
+.docbox dd{margin:0;font-size:17px;color:var(--ink);font-family:var(--body)}
+.docbox dd .mono{color:var(--ink-2)}
+</style>
+
+<div class="viewport">
+  <div class="stage" id="stage">
+    <div class="eyebrow"><b id="ebNum">01</b><span id="ebName">Por qué existen las librerías</span><span class="optchip" id="ebOpt" hidden>◇ opcional</span></div>
+    <div class="plate"><div id="plBlock">BLOQUE 1</div><div class="pnum"><span id="plNum">1</span>&nbsp;/&nbsp;<span id="plTot">44</span></div></div>
+
+<!-- ══════════ BLOQUE 1 · POR QUÉ EXISTEN LAS LIBRERÍAS ══════════ -->
+
+<section class="slide" data-b="1" data-t="Portada">
+  <div class="stack" style="gap:22px">
+    <span class="tag">Clase 3 · Programación</span>
+    <h1>Incorporar<br><span class="hl">Herramientas</span></h1>
+    <p class="lead">Hasta ahora programamos con lo que Python ya nos daba.<br>Hoy aprendemos a <b>sumar herramientas nuevas</b> — y a investigarlas nosotros mismos.</p>
+    <div class="row rv" style="margin-top:14px">
+      <span class="pill">📦 librerías</span><span class="pill">🔎 investigar</span><span class="pill">🎲 random</span><span class="pill">🖼️ Tkinter</span><span class="pill">⚔️ Arena de Combate evoluciona</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Portada. Mismo estilo que las clases 1 y 2: esto es una continuación, no un tema nuevo y separado.</dd>
+      <dt>Decí</dt><dd>“Las dos clases pasadas programamos objetos con las herramientas que Python trae de fábrica. Hoy Python nos deja crecer.”</dd>
+      <dt>Preguntá</dt><dd>“¿Se puede programar sin saber absolutamente todo lo que existe en Python?” Dejalo picando, la contestamos en la próxima lámina.</dd>
+      <dt>Revelá cuando</dt><dd>Después de esa pregunta. Las pastillas son el mapa del día.</dd>
+      <dt>Duración</dt><dd>~2 min.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="1" data-t="La idea de hoy">
+  <div class="stack mid-all">
+    <p class="lbl">La frase de la clase de hoy</p>
+    <p class="statement" style="text-align:center;max-width:26ch;margin-top:6px">Hasta ahora usamos las herramientas que Python nos dio.</p>
+    <p class="quote rv" style="text-align:center;max-width:28ch;margin-top:18px;color:var(--accent)">Ahora aprendemos a <b>incorporar herramientas nuevas</b> — y a investigar cómo usarlas.</p>
+    <p class="lead rv" style="text-align:center;margin-top:22px;max-width:50ch">No se trata de memorizar una librería más. Se trata de una habilidad que vas a usar <b>toda la carrera</b>.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El propósito del día en una frase.</dd>
+      <dt>Decí</dt><dd>“No les voy a enseñar todas las librerías de Python. Nadie las sabe todas. Les voy a enseñar a aprender una que no conocen.”</dd>
+      <dt>Revelá cuando</dt><dd>Enseguida, es un cartel corto.</dd>
+      <dt>Idea clave</dt><dd>Esta es la clase donde el eje deja de ser “qué sintaxis nueva aprendo” y pasa a ser “cómo resuelvo algo que todavía no sé resolver”.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="1" data-t="¿Tenemos que programar todo nosotros?">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Para pensar · 2 minutos</span>
+    <p class="ask">¿Tenemos que programar <span class="hl">absolutamente todo</span> nosotros?</p>
+    <div class="pills rv" style="margin-top:14px">
+      <span class="pill big">🎲 números al azar</span><span class="pill big">📅 fechas</span><span class="pill big">🖼️ interfaces gráficas</span>
+      <span class="pill big">🔊 sonido</span><span class="pill big">🖌️ imágenes</span><span class="pill big">🎮 videojuegos</span><span class="pill big">🗄️ bases de datos</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La pregunta primero, sin las pastillas.</dd>
+      <dt>Preguntá</dt><dd>“Si yo les pido: generen un número al azar entre 1 y 100 sin usar nada de Python, ¿cómo lo harían?” Dejalos pensar en voz alta.</dd>
+      <dt>Respuesta esperada</dt><dd>Se puede, con matemática rara y trucos, pero es un montón de esfuerzo para algo que “ya debería existir”.</dd>
+      <dt>Revelá cuando</dt><dd>Después de la discusión. Las pastillas son ejemplos de cosas costosas o directamente inviables de programar desde cero en una clase.</dd>
+      <dt>Ojo</dt><dd>No frenes en ninguna pastilla a explicarla. Es una lista de “esto sería un embole reinventarlo”, nada más.</dd>
+      <dt>Conexión con Bases de Datos</dt><dd>Si alguien menciona MySQL, aprovechá: “en esa materia ya están usando una herramienta externa a Python sin darse cuenta del todo — hoy le ponemos nombre a eso.”</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="1" data-t="Alguien ya lo resolvió">
+  <div class="stack mid-all">
+    <p class="emoji">💡</p>
+    <p class="statement rv" style="text-align:center;max-width:22ch;margin-top:10px">Otra persona ya programó esa herramienta.</p>
+    <p class="quote rv" style="text-align:center;max-width:26ch;margin-top:16px;color:var(--accent)">Y la compartió para que la usemos.</p>
+    <p class="lead rv" style="text-align:center;margin-top:20px;max-width:48ch">Millones de programadores en el mundo ya se chocaron con estos mismos problemas antes que vos.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El descubrimiento central, revelado en tres pasos.</dd>
+      <dt>Preguntá</dt><dd>“¿Y si alguien ya escribió el código para generar un número al azar, probado y funcionando?”</dd>
+      <dt>Respuesta esperada</dt><dd>“Lo usamos, no lo reinventamos.”</dd>
+      <dt>Revelá cuando</dt><dd>Lo digan o se acerquen. La frase final es la idea que sostiene toda la clase.</dd>
+      <dt>Idea clave</dt><dd>Programar profesionalmente es, en gran parte, saber combinar herramientas existentes con la lógica propia — no escribir todo desde cero.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="1" data-t="¿Qué es una librería?">
+  <div class="stack">
+    <span class="tag">🧰 Definición</span>
+    <h2>Librería = caja de herramientas</h2>
+    <div class="cols c2u" style="margin-top:6px;align-items:center">
+      <div class="card acc"><p style="font-size:23px;color:var(--ink)">Una librería es un <b>conjunto de código</b> ya escrito que incorporamos a nuestro programa para usar funcionalidades que <b>no necesitamos construir desde cero</b>.</p></div>
+      <div class="stack gap-s rv">
+        <div class="qcard"><b>Tenemos</b>un problema.</div>
+        <div class="qcard"><b>Buscamos</b>una herramienta que lo resuelva.</div>
+        <div class="qcard"><b>Incorporamos</b>la librería a nuestro programa.</div>
+        <div class="qcard"><b>Usamos</b>la herramienta que necesitábamos.</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La definición formal, y al lado la analogía en cuatro pasos.</dd>
+      <dt>Decí</dt><dd>“Una caja de herramientas no te obliga a usar el martillo si necesitás el destornillador. Elegís la herramienta que te sirve para el problema puntual.”</dd>
+      <dt>Preguntá</dt><dd>“¿Ya usamos alguna herramienta de afuera de Python en la carrera, sin llamarla ‘librería’?” (MySQL, por ejemplo, en Bases de Datos.)</dd>
+      <dt>Idea clave</dt><dd>La librería no reemplaza lo que ya saben: se suma a la caja de herramientas que ya tienen (variables, funciones, clases).</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="1" data-t="Herramientas que ya existen">
+  <div class="stack">
+    <h2>Algunas cajas de herramientas de Python</h2>
+    <p class="dim" style="font-size:20px">Hoy vamos a usar dos. Las demás quedan para cuando las necesiten.</p>
+    <div class="cols c4" style="margin-top:10px">
+      <div class="card"><p class="lbl">random</p><p style="font-size:19px;color:var(--ink-2);margin-top:6px">números al azar, sortear, elegir</p></div>
+      <div class="card"><p class="lbl">math</p><p style="font-size:19px;color:var(--ink-2);margin-top:6px">raíz cuadrada, potencias, redondeo</p></div>
+      <div class="card"><p class="lbl">datetime</p><p style="font-size:19px;color:var(--ink-2);margin-top:6px">fechas y horarios</p></div>
+      <div class="card acc"><p class="lbl">tkinter</p><p style="font-size:19px;color:var(--ink)">ventanas, botones, interfaces gráficas</p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Cuatro librerías conocidas del ecosistema de Python, sin profundizar en ninguna todavía.</dd>
+      <dt>Decí</dt><dd>“No hace falta memorizar esta lista. Es solo para que vean que existen un montón, cada una resolviendo un problema distinto.”</dd>
+      <dt>Ojo</dt><dd>No entres en detalle de <code>math</code> ni <code>datetime</code> hoy. Aparecen solo como referencia — las protagonistas de la clase son <code>random</code> y <code>tkinter</code>.</dd>
+      <dt>Dato extra</dt><dd><code>random</code>, <code>math</code> y <code>datetime</code> vienen instaladas con Python (no hay que descargar nada). Lo vemos en el bloque 2.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="1" data-t="El plan de hoy">
+  <div class="stack">
+    <h2>El recorrido de hoy</h2>
+    <div class="stack gap-s" style="margin-top:8px">
+      <div class="qcard"><b>1 · import</b>Cómo se incorpora una librería a nuestro código.</div>
+      <div class="qcard rv"><b>2 · Investigar</b>Qué hacer cuando no conocemos una herramienta.</div>
+      <div class="qcard rv"><b>3 · random</b>Un laboratorio corto, y lo conectamos con Arena de Combate.</div>
+      <div class="qcard rv"><b>4 · Tkinter</b>La primera ventana gráfica de nuestro propio videojuego.</div>
+      <div class="qcard rv"><b>5 · Desafío</b>Cada uno investiga una mejora nueva, por su cuenta.</div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El mapa de la clase. Revelalo de a uno, a medida que lo contás.</dd>
+      <dt>Decí</dt><dd>“No vamos a ver una librería nueva por vez de forma aislada. Vamos a construir, con estas herramientas, la siguiente versión de Arena de Combate.”</dd>
+      <dt>Idea clave</dt><dd>Este esquema es literalmente el índice de la clase — podés volver a esta lámina con <span class="kbd">O</span> si se pierden.</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 2 · INCORPORAMOS UNA HERRAMIENTA: IMPORT ══════════ -->
+
+<section class="slide" data-b="2" data-t="Módulo, librería y paquete">
+  <div class="stack">
+    <span class="tag">Antes de arrancar · un poco de vocabulario</span>
+    <h2>Módulo, librería, paquete</h2>
+    <div class="cols c3" style="margin-top:10px">
+      <div class="card"><p class="lbl">Módulo</p><p style="font-size:19px;color:var(--ink-2);margin-top:6px">Un archivo <span class="mono">.py</span> con código reutilizable.</p></div>
+      <div class="card"><p class="lbl">Librería</p><p style="font-size:19px;color:var(--ink-2);margin-top:6px">Un conjunto de módulos, pensado para resolver un tipo de problema.</p></div>
+      <div class="card"><p class="lbl">Paquete</p><p style="font-size:19px;color:var(--ink-2);margin-top:6px">Una forma de organizar varias librerías juntas.</p></div>
+    </div>
+    <div class="answer rv" style="margin-top:6px"><p class="lbl">Para hoy</p><p>No hace falta que memoricen la diferencia exacta. En la práctica, casi siempre vamos a decir <b>“librería”</b> para cualquiera de las tres. Lo importante es lo que aprenden a <b>hacer</b> con ellas, no cómo se llaman.</p></div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La distinción técnica, resumida al mínimo, seguida del descargo de responsabilidad.</dd>
+      <dt>Decí</dt><dd>“Van a escuchar estas tres palabras un poco mezcladas, incluso en documentación oficial. No se traben con el nombre: trábense con qué hace.”</dd>
+      <dt>Ojo</dt><dd>No profundices en arquitectura de paquetes (subcarpetas, <code>__init__.py</code>, etc.). Es contenido de una materia futura.</dd>
+      <dt>Si preguntan</dt><dd>“¿Y <code>pip</code>?” → “Es la herramienta que instala paquetes que no vienen con Python. Hoy usamos solo lo que ya viene instalado.”</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="¿Cómo incorporamos una librería?">
+  <div class="stack">
+    <span class="tag">🔧 La primera herramienta: import</span>
+    <h2>Se escribe <span class="mono hl">import</span></h2>
+    <div class="cols c2u" style="margin-top:6px;align-items:center">
+      <pre><span class="cd-k">import</span> random</pre>
+      <div class="card acc rv"><p style="font-size:22px;color:var(--ink)">Con esa única línea, <b>todo</b> lo que trae la librería <span class="mono">random</span> queda disponible en nuestro programa.</p></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Una sola línea. Escribila en vivo si tenés el editor a mano.</dd>
+      <dt>Decí</dt><dd>“Esto no descarga nada de internet: <code>random</code> ya viene instalada con Python. <code>import</code> solo le dice a nuestro programa ‘quiero usar esto’.”</dd>
+      <dt>Preguntá</dt><dd>“¿En qué parte del archivo creen que conviene poner esta línea?” (Arriba de todo, antes de usarla.)</dd>
+      <dt>Idea clave</dt><dd><code>import</code> es el mismo verbo, sin importar qué librería: <code>import random</code>, <code>import math</code>, <code>import tkinter</code>.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="Usamos la herramienta">
+  <div class="stack">
+    <h2>Ahora usamos algo de adentro</h2>
+    <div class="cols c2u" style="margin-top:6px;align-items:start">
+      <pre><span class="cd-k">import</span> random
+
+numero = random.<span class="cd-fn">randint</span>(<span class="cd-n">1</span>, <span class="cd-n">10</span>)
+<span class="cd-fn">print</span>(numero)</pre>
+      <div class="term rv">random.randint(1, 10)
+<span class="ok">→ 7</span></div>
+    </div>
+    <p class="lead rv" style="margin-top:4px">Cada vez que lo corremos, puede salir un número distinto entre 1 y 10.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El código completo y una corrida de ejemplo.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué es <code>randint</code>? ¿De dónde salió ese nombre?”</dd>
+      <dt>Respuesta esperada</dt><dd>Es una herramienta (función) que vive <b>adentro</b> de la librería <code>random</code>.</dd>
+      <dt>Revelá cuando</dt><dd>Corrieron el código un par de veces y vieron que el número cambia.</dd>
+      <dt>Ojo</dt><dd><code>random.randint(1, 10)</code> incluye el 10. No hace falta aclararlo hoy salvo que alguien pregunte por qué salió justo el límite.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="El dibujo · qué hace cada parte">
+  <div class="stack mid-all">
+    <pre class="lg"><span class="cd-k">import</span> random</pre>
+    <div class="arrow-d rv">↓</div>
+    <p class="quote rv" style="text-align:center;color:var(--accent)">incorporamos la librería</p>
+    <pre class="lg rv" style="margin-top:14px">random.<span class="cd-fn">randint</span>()</pre>
+    <div class="arrow-d rv">↓</div>
+    <p class="quote rv" style="text-align:center;color:var(--accent)">accedemos a una herramienta de esa librería</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El mismo código de la lámina anterior, pero descompuesto en dos ideas separadas.</dd>
+      <dt>Decí</dt><dd>“<code>import</code> abre la caja de herramientas. El punto (<code>random.randint</code>) es la mano metiéndose adentro y sacando una herramienta puntual.”</dd>
+      <dt>Idea clave</dt><dd>El patrón <code>libreria.herramienta()</code> se repite siempre: <code>math.sqrt()</code>, <code>datetime.date()</code>, y lo vamos a ver con <code>tkinter</code> también.</dd>
+      <dt>Revelá cuando</dt><dd>De a un paso. No apures esta lámina, es la que arma el modelo mental de toda la clase.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="2" data-t="Otra forma de importar">
+  <div class="stack">
+    <span class="tag">◇ Una variante</span>
+    <h2>También existe <span class="mono hl">from ... import ...</span></h2>
+    <div class="cols c2" style="margin-top:8px">
+      <div class="stack gap-s">
+        <p class="lbl">Como lo vimos</p>
+        <pre class="sm"><span class="cd-k">import</span> random
+numero = random.<span class="cd-fn">randint</span>(<span class="cd-n">1</span>,<span class="cd-n">10</span>)</pre>
+      </div>
+      <div class="stack gap-s rv">
+        <p class="lbl">Importando solo una pieza</p>
+        <pre class="sm"><span class="cd-k">from</span> random <span class="cd-k">import</span> randint
+numero = <span class="cd-fn">randint</span>(<span class="cd-n">1</span>,<span class="cd-n">10</span>)</pre>
+      </div>
+    </div>
+    <div class="answer rv"><p class="lbl">La diferencia</p><p>En la segunda forma, traemos <b>solo</b> <span class="mono">randint</span> y ya no hace falta escribir <span class="mono">random.</span> adelante.</p></div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Las dos formas, una al lado de la otra.</dd>
+      <dt>Decí</dt><dd>“No son formas ‘mejor y peor’: son dos estilos. Van a encontrar las dos en documentación y en código de otras personas.”</dd>
+      <dt>Preguntá</dt><dd>“¿Cuál les parece más clara si el archivo usa cinco herramientas distintas de la misma librería?” (Discusión abierta: <code>import random</code> dice de dónde viene cada cosa; <code>from...import</code> es más corto.)</dd>
+      <dt>Ojo</dt><dd>No hace falta que memoricen ninguna regla de estilo hoy. Alcanza con que reconozcan las dos formas cuando las vean.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="2" data-t="Mini desafío · ¿qué forma es?">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Mini desafío · 3 minutos</span>
+    <h2>Miren este código: ¿qué forma de <span class="mono">import</span> usa?</h2>
+    <div class="cols c2u" style="margin-top:4px;align-items:start">
+      <pre><span class="cd-k">from</span> random <span class="cd-k">import</span> randint
+
+vida = <span class="cd-n">100</span>
+danio = <span class="cd-fn">randint</span>(<span class="cd-n">5</span>, <span class="cd-n">20</span>)
+vida = vida - danio
+<span class="cd-fn">print</span>(vida)</pre>
+      <div class="stack gap-s">
+        <div class="card"><p style="font-size:21px;color:var(--ink)">1. ¿Cuál de las dos formas usa?<br>2. Reescribilo con la otra forma.<br>3. ¿Qué hace este programa?</p></div>
+        <div class="answer rv">
+          <p class="lbl">Respuesta</p>
+          <p>Usa <span class="mono">from...import</span>. Con la otra forma sería <span class="mono">import random</span> y <span class="mono">random.randint(5,20)</span>.<br>El programa le resta a la vida un daño al azar entre 5 y 20.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Código real, ya con pinta de Arena de Combate. No es casualidad.</dd>
+      <dt>Preguntá</dt><dd>Dales los tres minutos completos antes de revelar.</dd>
+      <dt>Revelá cuando</dt><dd>La mayoría contestó las tres preguntas.</dd>
+      <dt>Idea clave</dt><dd>Ya están leyendo código que combina una librería con lógica propia (variables, resta). Esto es exactamente lo que vamos a hacer con el TP en el bloque 4.</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 3 · APRENDER A INVESTIGAR ══════════ -->
+
+<section class="slide" data-b="3" data-t="¿Qué hacemos con lo que no conocemos?">
+  <div class="stack mid-all">
+    <p class="ask" style="text-align:left;max-width:30ch">¿Qué hacemos si nos encontramos con una función que <span class="hl">nunca usamos</span>?</p>
+    <p class="lbl rv" style="margin-top:22px">Pensalo 30 segundos antes de seguir</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Solo la pregunta. Dales el silencio de verdad.</dd>
+      <dt>Preguntá</dt><dd>Tal cual está escrita. Puede ser <code>time.sleep()</code>, <code>str.strip()</code>, cualquier cosa que no vieron todavía.</dd>
+      <dt>Respuesta esperada</dt><dd>“La buscamos”, “preguntamos”, “probamos”. Todas apuntan a lo mismo: no nos quedamos paralizados.</dd>
+      <dt>Revelá cuando</dt><dd>Alguien lo diga con sus palabras. La próxima lámina lo pone en una sola palabra.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="La respuesta">
+  <div class="stack mid-all">
+    <p class="huge" style="text-align:center;color:var(--accent)">Investigamos.</p>
+    <p class="lead rv" style="text-align:center;margin-top:24px;max-width:52ch">Un programador no memoriza todas las librerías que existen. <b>Aprende a investigarlas</b> cuando las necesita.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La palabra sola, después la frase completa.</dd>
+      <dt>Decí</dt><dd>“Ni yo me sé todas las funciones de Python de memoria. Lo que sé es cómo buscar la que necesito, en dos o tres minutos.”</dd>
+      <dt>Idea clave</dt><dd>Esta es LA idea de la clase. Volvé a esta frase más adelante si hace falta anclar algo.</dd>
+      <dt>Ojo</dt><dd>No lo digas como una excusa para no explicar (“busquen ustedes y ya”). Es una habilidad que se enseña con una metodología concreta — viene en la próxima lámina.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="Una metodología para investigar">
+  <div class="stack">
+    <h2>Los pasos para aprender una librería nueva</h2>
+    <div class="cols c2" style="margin-top:8px">
+      <div class="stack gap-s">
+        <div class="stepbox big"><i>1</i>¿Qué quiero hacer?</div>
+        <div class="stepbox rv"><i>2</i>¿Qué herramienta necesito?</div>
+        <div class="stepbox rv"><i>3</i>¿Qué librería puede ayudarme?</div>
+        <div class="stepbox rv"><i>4</i>¿Cómo se importa?</div>
+        <div class="stepbox rv"><i>5</i>¿Qué funciones o clases tiene?</div>
+      </div>
+      <div class="stack gap-s">
+        <div class="stepbox rv"><i>6</i>¿Qué parámetros necesitan?</div>
+        <div class="stepbox rv"><i>7</i>¿Qué devuelven?</div>
+        <div class="stepbox rv"><i>8</i>Pruebo un ejemplo pequeño.</div>
+        <div class="stepbox big rv"><i>9</i>Lo incorporo a mi proyecto.</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Los nueve pasos, revelados de a poco. No hace falta leerlos todos en voz alta uno por uno: señalá los que más importan.</dd>
+      <dt>Decí</dt><dd>“Esto no es una receta para hoy solamente. Es la misma secuencia que van a usar en Bases de Datos, en Redes, en cualquier materia con una herramienta nueva.”</dd>
+      <dt>Idea clave</dt><dd>Los pasos 6 y 7 (parámetros y qué devuelve) son el corazón técnico: sin eso, no se puede usar ninguna función a ciegas.</dd>
+      <dt>Actividad express</dt><dd>Pediles que anoten estos pasos en la carpeta — los vamos a aplicar en la próxima lámina con un ejemplo en vivo.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="La aplicamos en vivo">
+  <div class="stack">
+    <span class="tag">🔴 En vivo</span>
+    <h2>Caso real: quiero que el programa <span class="hl">espere</span> un segundo</h2>
+    <div class="cols c2u" style="margin-top:6px;align-items:start">
+      <div class="stack gap-s">
+        <div class="qcard"><b>1 · Qué quiero</b>Pausar el programa un momento.</div>
+        <div class="qcard rv"><b>2 · Qué busco</b>“python esperar unos segundos”</div>
+        <div class="qcard rv"><b>3 · Librería</b><span class="mono">time</span></div>
+        <div class="qcard rv"><b>4 · Herramienta</b><span class="mono">time.sleep(segundos)</span></div>
+      </div>
+      <pre class="rv"><span class="cd-k">import</span> time
+
+<span class="cd-fn">print</span>(<span class="cd-s">"Antes..."</span>)
+time.<span class="cd-fn">sleep</span>(<span class="cd-n">2</span>)
+<span class="cd-fn">print</span>(<span class="cd-s">"...después"</span>)</pre>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Un ejemplo distinto de <code>random</code>, para mostrar que la metodología se repite siempre igual.</dd>
+      <dt>Recomendado</dt><dd>Si podés, escribí y ejecutá este código en vivo, delante del curso, mostrando la pausa real de dos segundos.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué le pasaría al programa si en vez de <code>time.sleep(2)</code> pongo <code>time.sleep(0.5)</code>?”</dd>
+      <dt>Idea clave</dt><dd>No hacía falta “saber” que <code>time.sleep()</code> existía. Hacía falta saber <b>buscarla</b>.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="¿Qué es la documentación?">
+  <div class="stack">
+    <span class="tag">📖 La herramienta del programador</span>
+    <h2>La documentación</h2>
+    <div class="card acc" style="margin-top:6px"><p style="font-size:23px;color:var(--ink)">Es el <b>texto oficial</b> que explica qué hace una librería, qué funciones tiene, qué necesitan para funcionar y qué devuelven.</p></div>
+    <p class="lead rv" style="margin-top:8px">No es un libro para leer entero. Es una herramienta para <b>consultar</b> cuando la necesitás — como un diccionario.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La definición y la comparación con el diccionario.</dd>
+      <dt>Decí</dt><dd>“Nadie lee la documentación de Python de punta a punta. Se busca la parte que necesitás en ese momento.”</dd>
+      <dt>Preguntá</dt><dd>“¿Alguna vez buscaron algo en Google y llegaron a una página con recuadros de código? Eso ya es documentación.”</dd>
+      <dt>Idea clave</dt><dd>El objetivo de hoy no es leer documentación avanzada, es <b>perderle el miedo</b>. Documentación = ayuda escrita por quien construyó la herramienta.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="3" data-t="Leer una firma de función">
+  <div class="stack">
+    <h2>Aprender a leer un ejemplo</h2>
+    <div class="cols c2u" style="margin-top:6px;align-items:center">
+      <div class="docbox">
+        <p class="fn">random.randint(a, b)</p>
+        <dl>
+          <dt>Parámetros</dt><dd><span class="mono">a</span> y <span class="mono">b</span>: los límites, de menor a mayor.</dd>
+          <dt>Devuelve</dt><dd>Un número entero al azar, <span class="mono">a ≤ n ≤ b</span> (incluye los dos límites).</dd>
+        </dl>
+      </div>
+      <div class="stack gap-s rv">
+        <div class="qcard"><b>El nombre</b>qué herramienta es.</div>
+        <div class="qcard"><b>Los paréntesis</b>qué datos le tengo que dar.</div>
+        <div class="qcard"><b>“Devuelve”</b>qué me entrega de vuelta con <span class="mono">return</span>.</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Una firma de documentación real, simplificada, y las tres partes que hay que identificar siempre.</dd>
+      <dt>Decí</dt><dd>“Esto es exactamente lo mismo que hacíamos con nuestros propios métodos en la clase 2: parámetros que entran, algo que <code>return</code> hace salir.”</dd>
+      <dt>Preguntá</dt><dd>“Si <code>randint</code> no dijera ‘devuelve un entero’, ¿cómo se darían cuenta igual?” (Probándolo con <code>print()</code>.)</dd>
+      <dt>Idea clave</dt><dd>Leer documentación es la misma habilidad que ya tienen para leer la firma de un método propio — no es una skill nueva desde cero.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="3" data-t="Mini desafío · leé y predecí">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Mini desafío · 4 minutos</span>
+    <h2>Con esta ficha, ¿qué va a pasar?</h2>
+    <div class="cols c2u" style="margin-top:4px;align-items:start">
+      <div class="docbox">
+        <p class="fn">random.choice(lista)</p>
+        <dl>
+          <dt>Parámetros</dt><dd><span class="mono">lista</span>: una lista de elementos.</dd>
+          <dt>Devuelve</dt><dd>Un elemento cualquiera de esa lista, elegido al azar.</dd>
+        </dl>
+      </div>
+      <div class="stack gap-s">
+        <pre class="sm">enemigos = [<span class="cd-s">"Orco"</span>, <span class="cd-s">"Dragón"</span>, <span class="cd-s">"Goblin"</span>]
+elegido = random.<span class="cd-fn">choice</span>(enemigos)
+<span class="cd-fn">print</span>(elegido)</pre>
+        <div class="answer rv"><p class="lbl">Respuesta</p><p>Imprime uno de los tres nombres, al azar. Podría ser "Orco", "Dragón" o "Goblin" — distinto cada vez que se ejecuta.</p></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Nunca explicamos <code>random.choice</code> antes de esta lámina — a propósito. Tienen que deducirlo solo con la ficha de documentación.</dd>
+      <dt>Preguntá</dt><dd>“Sin correr el código: ¿qué va a imprimir?”</dd>
+      <dt>Revelá cuando</dt><dd>Contestaron. Si alguien lo prueba en la compu, mejor todavía.</dd>
+      <dt>Idea clave</dt><dd>Acaban de aprender una función que nunca vieron, solo leyendo su documentación. Esto es literalmente la habilidad que buscamos con toda la clase.</dd>
+      <dt>Guardate esto</dt><dd><code>random.choice()</code> reaparece en el bloque 4 para elegir un enemigo al azar en Arena de Combate.</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 4 · LABORATORIO CON RANDOM ══════════ -->
+
+<section class="slide" data-b="4" data-t="Manos a la obra">
+  <div class="stack">
+    <span class="tag">🧪 Laboratorio · 5 minutos</span>
+    <h2>Probemos <span class="mono hl">random</span> nosotros</h2>
+    <pre><span class="cd-k">import</span> random
+
+numero = random.<span class="cd-fn">randint</span>(<span class="cd-n">1</span>, <span class="cd-n">100</span>)
+<span class="cd-fn">print</span>(numero)</pre>
+    <p class="lead rv">Ábranlo en su compu y córranlo varias veces.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Código para que todos lo tipeen y corran, no solo miren.</dd>
+      <dt>Decí</dt><dd>“Corranlo cinco veces seguidas. Miren qué números van saliendo.”</dd>
+      <dt>Revelá cuando</dt><dd>La mayoría ya lo corrió al menos una vez.</dd>
+      <dt>Ojo</dt><dd>Dales el tiempo real, no lo apures — este es el momento donde dejan de mirar y empiezan a tocar.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="4" data-t="Preguntas para investigar solos">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Para investigar · en la compu</span>
+    <div class="stack gap-s" style="margin-top:6px">
+      <p class="ask sm">¿Qué pasa si cambiamos los límites, por ejemplo <span class="mono">random.randint(500, 1000)</span>?</p>
+      <p class="ask sm rv">¿<span class="mono">randint()</span> puede devolver el mismo número dos veces seguidas?</p>
+      <p class="ask sm rv">¿Qué pasa si el primer número es <b>mayor</b> que el segundo? Probalo y mirá el error.</p>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Tres preguntas para que prueben en su propia compu, de a una.</dd>
+      <dt>Respuesta esperada</dt><dd>Cambiar los límites cambia el rango. Sí puede repetirse (es al azar, no es una baraja). Con el primer número mayor, Python tira un <code>ValueError</code>.</dd>
+      <dt>Idea clave</dt><dd>El error de la tercera pregunta es documentación en la práctica: leer un mensaje de error también es investigar.</dd>
+      <dt>Revelá cuando</dt><dd>Probaron las tres, aunque no lleguen a la conclusión exacta — la charlamos entre todos.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="Lo conectamos con Arena de Combate">
+  <div class="stack">
+    <span class="tag">⚔️ Ahora sí: nuestro TP</span>
+    <h2>Daño al azar, no siempre el mismo</h2>
+    <div class="cols c2u" style="margin-top:6px;align-items:start">
+      <div class="stack gap-s">
+        <p class="lbl">Como lo tenían hasta ahora</p>
+        <pre class="sm"><span class="cd-k">def</span> <span class="cd-fn">atacar</span>(<span class="cd-k">self</span>, objetivo):
+    danio = <span class="cd-n">20</span>
+    objetivo.recibir_danio(danio)</pre>
+      </div>
+      <div class="stack gap-s rv">
+        <p class="lbl">Con random</p>
+        <pre class="sm"><span class="cd-k">import</span> random
+
+<span class="cd-k">def</span> <span class="cd-fn">atacar</span>(<span class="cd-k">self</span>, objetivo):
+    danio = random.<span class="cd-fn">randint</span>(<span class="cd-n">10</span>, <span class="cd-n">30</span>)
+    objetivo.recibir_danio(danio)</pre>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El antes y el después, con el método <code>atacar</code> que ya construyeron en el TP.</dd>
+      <dt>Decí</dt><dd>“Fíjense: no tocamos nada de la clase Personaje ni de la herencia. Solo agregamos una línea con una herramienta nueva adentro de un método que ya existía.”</dd>
+      <dt>Preguntá</dt><dd>“¿Por qué un ataque con daño fijo se siente menos interesante que uno al azar?”</dd>
+      <dt>Idea clave</dt><dd>Una librería no reemplaza la POO: se combina con ella. El método <code>atacar</code> sigue siendo un método de la clase, ahora con una herramienta nueva adentro.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="4" data-t="Más ideas para el juego">
+  <div class="stack">
+    <h2>¿Dónde más podríamos usar <span class="mono hl">random</span>?</h2>
+    <div class="pills" style="margin-top:10px">
+      <span class="pill big">🎯 daño variable</span><span class="pill big">👹 enemigo al azar</span><span class="pill big">🥇 quién empieza la pelea</span>
+      <span class="pill big">💥 golpe crítico con suerte</span><span class="pill big">🎁 objeto que dropea el enemigo</span>
+    </div>
+    <div class="cols c2u rv" style="margin-top:10px;align-items:start">
+      <pre class="sm">enemigos = [<span class="cd-s">"Orco"</span>, <span class="cd-s">"Dragón"</span>, <span class="cd-s">"Goblin"</span>]
+rival = random.<span class="cd-fn">choice</span>(enemigos)</pre>
+      <pre class="sm">empieza = random.<span class="cd-fn">choice</span>([<span class="cd-s">"jugador"</span>, <span class="cd-s">"enemigo"</span>])</pre>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Ideas para disparar la imaginación antes del desafío que viene.</dd>
+      <dt>Decí</dt><dd>“Todas estas ideas usan la misma herramienta que ya aprendieron: <code>randint</code> o <code>choice</code>. Cambia el problema, no la forma de resolverlo.”</dd>
+      <dt>Idea clave</dt><dd>Esto es exactamente lo que van a elegir en la actividad del cierre: una mejora chica, con una herramienta que investigan solos.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="4" data-t="Mini desafío · agregalo a tu código">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Mini desafío · 5 minutos</span>
+    <h2>Agregá daño al azar a tu Arena de Combate</h2>
+    <div class="cols c2u" style="margin-top:4px;align-items:start">
+      <div class="card"><p style="font-size:21px;color:var(--ink)">Abrí tu proyecto del TP. Buscá el método <span class="mono">atacar</span> (o como lo hayas llamado) y hacé que el daño sea al azar, en vez de un número fijo.</p></div>
+      <div class="answer rv">
+        <p class="lbl">Pista</p>
+        <p>1. <span class="mono">import random</span> arriba de todo.<br>2. Adentro del método, reemplazá el número fijo por <span class="mono">random.randint(min, max)</span>.<br>3. Probá varias veces: el daño tiene que cambiar.</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El desafío con su propio código real del TP, no un ejemplo genérico.</dd>
+      <dt>Preguntá</dt><dd>Mientras trabajan: “¿en qué rango de daño tiene sentido para tu personaje?”</dd>
+      <dt>Error típico</dt><dd>Poner el <code>import random</code> adentro del método en vez de arriba del archivo. Funciona igual, pero no es la convención — aclaralo si aparece.</dd>
+      <dt>Revelá cuando</dt><dd>La mayoría lo probó y vio números distintos en cada ataque.</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 5 · EL GRAN DESAFÍO: TKINTER ══════════ -->
+
+<section class="slide" data-b="5" data-t="Consola → Tkinter → Pygame">
+  <div class="stack mid-all">
+    <p class="lbl">Arena de Combate</p>
+    <div class="hchain rv" style="margin-top:18px">
+      <div class="hbox acc">CONSOLA<small>lo que ya tenemos</small></div>
+      <div class="harr">→</div>
+      <div class="hbox">TKINTER<small>hoy</small></div>
+      <div class="harr">→</div>
+      <div class="hbox">PYGAME<small>más adelante</small></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El mapa completo del camino del proyecto, de acá hasta fin de cuatrimestre.</dd>
+      <dt>Decí</dt><dd>“Este es el recorrido completo de Arena de Combate. Hoy damos el segundo paso.”</dd>
+      <dt>Idea clave</dt><dd>Es una evolución, no tres proyectos distintos. El primer bloque ya lo tienen resuelto.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="No empezamos otro juego">
+  <div class="stack mid-all">
+    <p class="statement" style="text-align:center;max-width:20ch">NO vamos a empezar otro videojuego.</p>
+    <p class="quote rv" style="text-align:center;max-width:26ch;margin-top:20px;color:var(--accent)">Vamos a hacer evolucionar <b>el mismo</b> proyecto.</p>
+    <p class="lead rv" style="text-align:center;margin-top:22px;max-width:48ch">Las clases <span class="mono">Personaje</span>, <span class="mono">Jugador</span>, <span class="mono">Enemigo</span> y <span class="mono">Arma</span> que ya construyeron siguen valiendo exactamente igual.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La aclaración más importante del bloque, para bajar la ansiedad de “empezar de cero”.</dd>
+      <dt>Decí</dt><dd>“Nada de lo que programaron en el TP se tira. Le vamos a poner una cara nueva por afuera.”</dd>
+      <dt>Preguntá</dt><dd>“¿Alguien se imagina cómo sería jugar Arena de Combate con botones en vez de escribir números en la consola?”</dd>
+      <dt>Idea clave</dt><dd>Esta es la transición central de toda la clase 3: de POO “a secas” a POO + interfaz.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="Tkinter · la primera ventana">
+  <div class="stack">
+    <span class="tag">🖼️ Nueva librería: tkinter</span>
+    <h2>Tres líneas, una ventana</h2>
+    <div class="cols c2u" style="margin-top:6px;align-items:center">
+      <pre><span class="cd-k">import</span> tkinter <span class="cd-k">as</span> tk
+
+ventana = tk.<span class="cd-fn">Tk</span>()
+ventana.<span class="cd-fn">mainloop</span>()</pre>
+      <div class="win rv">
+        <div class="tb"><span class="dots"><i></i><i></i><i></i></span>tk</div>
+        <div class="body" style="padding:60px 20px"><p class="dim mono" style="font-size:14px">ventana vacía</p></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El código mínimo y el resultado: una ventana vacía, pero real y funcional.</dd>
+      <dt>Recomendado</dt><dd>Corré este código en vivo. El efecto de “aparece una ventana de verdad” vale más que cualquier explicación.</dd>
+      <dt>Decí</dt><dd>“<code>tkinter</code> viene instalada con Python — no hay que instalar nada nuevo.”</dd>
+      <dt>Idea clave</dt><dd><code>as tk</code> es un alias: le ponemos un apodo corto a la librería para no escribir <code>tkinter.Tk()</code> cada vez. Es la misma librería, solo un nombre más corto.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="¿Qué hace cada línea?">
+  <div class="stack">
+    <h2>Leyendo el código de la ventana</h2>
+    <div class="stack gap-s" style="margin-top:8px">
+      <div class="qcard"><b><span class="mono">import tkinter as tk</span></b>Incorporamos la librería gráfica, con el apodo <span class="mono">tk</span>.</div>
+      <div class="qcard rv"><b><span class="mono">ventana = tk.Tk()</span></b>Creamos el objeto ventana. Sí — es un objeto, como los que ya vienen construyendo.</div>
+      <div class="qcard rv"><b><span class="mono">ventana.mainloop()</span></b>Le decimos “quedate abierta, esperando que el usuario haga algo” (un clic, escribir, etc.).</div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El código de la lámina anterior, ahora explicado línea por línea.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué pasa si sacamos la línea de <code>mainloop()</code>?” (Se abre y se cierra de inmediato — no queda esperando.)</dd>
+      <dt>Idea clave</dt><dd><code>tk.Tk()</code> es lo mismo que cuando escribían <code>Jugador("Aria", 100)</code>: estamos creando un objeto de una clase que ya existe, pero esta vez la clase la trae la librería, no nosotros.</dd>
+      <dt>Ojo</dt><dd>No expliques qué es un “bucle de eventos” con ese nombre técnico. Alcanza con “se queda esperando algo del usuario”.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="5" data-t="La construimos de a poco">
+  <div class="stack">
+    <h2>Vamos sumando, un elemento a la vez</h2>
+    <div class="row" style="margin-top:6px;gap:10px">
+      <span class="step">1 ventana</span><span class="step off rv">2 título</span><span class="step off rv">3 tamaño</span>
+      <span class="step off rv">4 texto</span><span class="step off rv">5 botón</span><span class="step off rv">6 entrada de datos</span><span class="step off rv">7 evento / clic</span>
+    </div>
+    <pre class="rv" style="margin-top:6px"><span class="cd-k">import</span> tkinter <span class="cd-k">as</span> tk
+
+ventana = tk.<span class="cd-fn">Tk</span>()
+ventana.<span class="cd-fn">title</span>(<span class="cd-s">"Arena de Combate"</span>)
+ventana.<span class="cd-fn">geometry</span>(<span class="cd-s">"320x220"</span>)
+
+etiqueta = tk.<span class="cd-fn">Label</span>(ventana, text=<span class="cd-s">"Nombre del jugador"</span>)
+etiqueta.<span class="cd-fn">pack</span>()
+
+ventana.<span class="cd-fn">mainloop</span>()</pre>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Los chips marcan qué vamos agregando; el código ya muestra título, tamaño y un texto.</dd>
+      <dt>Decí</dt><dd>“No hace falta memorizar cada método. <code>title()</code>, <code>geometry()</code>, <code>Label()</code> son herramientas más de <code>tkinter</code> — se investigan igual que <code>randint</code>.”</dd>
+      <dt>Idea clave</dt><dd><code>pack()</code> es lo que hace que el elemento aparezca en la ventana. Sin eso, existe el objeto pero no se ve.</dd>
+      <dt>Ojo</dt><dd>No entres en <code>grid()</code> ni <code>place()</code> como alternativas a <code>pack()</code> hoy — es más de lo que hace falta.</dd>
+      <dt>Recomendado</dt><dd>Si el tiempo da, agregá estas líneas en vivo, una por una, y mostrá cómo la ventana cambia con cada una.</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 6 · PRIMERA INTERFAZ Y CONEXIÓN CON POO ══════════ -->
+
+<section class="slide" data-b="6" data-t="Primera mini interfaz">
+  <div class="stack">
+    <span class="tag">🎮 Primera interfaz de Arena de Combate</span>
+    <h2>Simple, pero funcional</h2>
+    <div class="cols c2u" style="margin-top:6px;align-items:center">
+      <div class="win">
+        <div class="tb"><span class="dots"><i></i><i></i><i></i></span>Arena de Combate</div>
+        <div class="body">
+          <h3>⚔️ ARENA DE COMBATE</h3>
+          <p class="flabel">Nombre del jugador</p>
+          <input class="fake" disabled placeholder="Aria">
+          <button class="fake">JUGAR</button>
+        </div>
+      </div>
+      <div class="stack gap-s rv">
+        <div class="qcard"><b>Un texto</b>título de la app.</div>
+        <div class="qcard"><b>Una entrada</b>para escribir el nombre.</div>
+        <div class="qcard"><b>Un botón</b>para empezar.</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El mockup de la interfaz que vamos a construir, con las tres piezas que la componen.</dd>
+      <dt>Decí</dt><dd>“No metemos diez widgets de golpe. Con estos tres alcanza para una primera versión funcional.”</dd>
+      <dt>Idea clave</dt><dd>Cada caja del dibujo es un widget de <code>tkinter</code>: <code>Label</code>, <code>Entry</code> y <code>Button</code>.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="6" data-t="El código de la interfaz">
+  <div class="stack">
+    <h2>Los tres widgets, en código</h2>
+    <pre><span class="cd-k">import</span> tkinter <span class="cd-k">as</span> tk
+
+ventana = tk.<span class="cd-fn">Tk</span>()
+ventana.<span class="cd-fn">title</span>(<span class="cd-s">"Arena de Combate"</span>)
+
+tk.<span class="cd-fn">Label</span>(ventana, text=<span class="cd-s">"Nombre del jugador"</span>).<span class="cd-fn">pack</span>()
+entrada = tk.<span class="cd-fn">Entry</span>(ventana)
+entrada.<span class="cd-fn">pack</span>()
+
+boton = tk.<span class="cd-fn">Button</span>(ventana, text=<span class="cd-s">"JUGAR"</span>)
+boton.<span class="cd-fn">pack</span>()
+
+ventana.<span class="cd-fn">mainloop</span>()</pre>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El código completo de la ventana de la lámina anterior.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué tienen en común las tres líneas de <code>Label</code>, <code>Entry</code> y <code>Button</code>?” (Todas crean un objeto y después lo empaquetan con <code>pack()</code>.)</dd>
+      <dt>Idea clave</dt><dd>El patrón se repite: <code>widget = tk.Algo(ventana, ...)</code> seguido de <code>widget.pack()</code>. Una vez que lo entienden, pueden sumar cualquier widget nuevo investigando su documentación.</dd>
+      <dt>Recomendado</dt><dd>Escribilo en vivo y que lo repliquen en su compu. El botón todavía no hace nada — eso viene en el bloque siguiente.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="6" data-t="Tkinter NO reemplaza POO">
+  <div class="stack mid-all">
+    <p class="statement" style="text-align:center;max-width:22ch">Tkinter es una herramienta para la interfaz.</p>
+    <p class="quote rv" style="text-align:center;max-width:26ch;margin-top:20px;color:var(--accent)">Nuestros objetos <b>siguen existiendo</b> exactamente igual.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La aclaración conceptual central del bloque.</dd>
+      <dt>Decí</dt><dd>“Tkinter dibuja botones. No sabe nada de vida, ataque ni experiencia. Eso lo siguen sabiendo nuestras clases, como siempre.”</dd>
+      <dt>Preguntá</dt><dd>“¿La clase Jugador tiene que cambiar en algo para que exista una ventana?” (No, sigue exactamente igual.)</dd>
+      <dt>Idea clave</dt><dd>Separar “qué hace el objeto” (POO) de “cómo se ve en pantalla” (Tkinter) es una idea que van a reencontrar toda la carrera.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="6" data-t="La interfaz interactúa con el objeto">
+  <div class="stack">
+    <h2>El botón llama a un método que ya existe</h2>
+    <div class="cols c2u" style="margin-top:6px;align-items:center">
+      <pre><span class="cd-k">class</span> <span class="cd-fn">Jugador</span>:
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(<span class="cd-k">self</span>, nombre, vida):
+        <span class="cd-k">self</span>.nombre = nombre
+        <span class="cd-k">self</span>.vida = vida
+
+    <span class="cd-k">def</span> <span class="cd-fn">atacar</span>(<span class="cd-k">self</span>, objetivo):
+        <span class="cd-c"># lo que ya construyeron en el TP</span>
+        ...
+
+
+aria = <span class="cd-fn">Jugador</span>(<span class="cd-s">"Aria"</span>, <span class="cd-n">100</span>)
+
+<span class="cd-k">def</span> <span class="cd-fn">al_hacer_clic</span>():
+    aria.<span class="cd-fn">atacar</span>(orco)
+
+boton = tk.<span class="cd-fn">Button</span>(ventana, text=<span class="cd-s">"ATACAR"</span>, command=al_hacer_clic)</pre>
+      <div class="stack gap-s rv">
+        <div class="qcard"><b>TKINTER</b>dibuja el botón y detecta el clic.</div>
+        <div class="qcard"><b>NUESTRO CÓDIGO</b><span class="mono">al_hacer_clic()</span> conecta el clic con el objeto.</div>
+        <div class="qcard"><b>JUGADOR</b>sigue siendo el mismo objeto, con sus atributos y métodos de siempre.</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El puente completo: un botón de Tkinter que, al hacer clic, ejecuta un método de una clase propia.</dd>
+      <dt>Decí</dt><dd>“<code>command=al_hacer_clic</code> es la única línea nueva de verdad. Le dice al botón: cuando te toquen, ejecutá esta función.”</dd>
+      <dt>Preguntá</dt><dd>“¿De dónde sale <code>atacar()</code>? ¿Lo escribimos hoy?” (No — es el método que ya construyeron en el TP semanas atrás.)</dd>
+      <dt>Idea clave</dt><dd>Esta es la lámina bisagra de toda la clase: POO + librería + interfaz, las tres cosas trabajando juntas en cuatro líneas.</dd>
+      <dt>Ojo</dt><dd>No expliques <code>command=</code> como “parámetro con nombre” en profundidad si no lo vieron formalmente. Alcanza con “así le decimos qué función ejecutar”.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="6" data-t="Antes y después del combate">
+  <div class="stack">
+    <h2>La misma lógica, otra cara</h2>
+    <div class="cols c2" style="margin-top:8px;align-items:start">
+      <div class="stack gap-s">
+        <p class="lbl">Antes · consola</p>
+        <div class="term">Aria tiene 100 de vida.
+1. Atacar
+2. Usar poción
+3. Salir
+<span class="dimt">&gt; </span></div>
+      </div>
+      <div class="stack gap-s rv">
+        <p class="lbl">Después · Tkinter</p>
+        <div class="win">
+          <div class="tb"><span class="dots"><i></i><i></i><i></i></span>Arena de Combate</div>
+          <div class="body" style="gap:12px;padding:20px 26px">
+            <div class="row" style="gap:26px;justify-content:center">
+              <div class="stack gap-s center" style="gap:6px"><span style="font-size:22px">⚔ ARIA</span><span class="hpwrap">Vida: 100<span class="hpbar"><i style="width:100%"></i></span></span></div>
+              <div class="stack gap-s center" style="gap:6px"><span style="font-size:22px">👹 ORCO</span><span class="hpwrap">Vida: 62<span class="hpbar"><i class="low" style="width:62%"></i></span></span></div>
+            </div>
+            <div class="row" style="justify-content:center;gap:10px"><button class="fake">ATACAR</button><button class="fake" style="background:var(--ink-3)">POCIÓN</button></div>
+            <p class="log">El Orco recibió 18 de daño.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La transformación visual completa: mismo combate, otra piel.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué cambió realmente en la lógica del juego? ¿Y qué cambió en cómo se ve?”</dd>
+      <dt>Respuesta esperada</dt><dd>La lógica (vida, daño, turnos) no cambió nada. Lo que cambió es cómo el jugador la ve y la toca.</dd>
+      <dt>Idea clave</dt><dd>18 de daño en el mensaje viene del <code>random.randint()</code> del bloque 4 — todo lo de la clase se está juntando acá.</dd>
+      <dt>Ojo</dt><dd>Aclará que esto todavía no lo van a construir completo hoy — es la meta hacia la que van, no la tarea de hoy.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="6" data-t="Mini desafío · conectá el botón">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Mini desafío · 5 minutos</span>
+    <h2>Completá la conexión</h2>
+    <div class="cols c2u" style="margin-top:4px;align-items:start">
+      <pre class="sm">aria = <span class="cd-fn">Jugador</span>(<span class="cd-s">"Aria"</span>, <span class="cd-n">100</span>)
+
+<span class="cd-k">def</span> <span class="cd-fn">al_hacer_clic</span>():
+    <span class="cd-c"># completar</span>
+    ...
+
+boton = tk.<span class="cd-fn">Button</span>(ventana, text=<span class="cd-s">"ATACAR"</span>,
+                   command=al_hacer_clic)</pre>
+      <div class="stack gap-s">
+        <div class="card"><p style="font-size:20px;color:var(--ink)">¿Qué línea falta adentro de <span class="mono">al_hacer_clic()</span> para que, al tocar el botón, Aria ataque a un objeto llamado <span class="mono">orco</span>?</p></div>
+        <div class="answer rv"><p class="lbl">Respuesta</p><p><span class="mono">aria.atacar(orco)</span> — la misma línea que ya usaban en la versión de consola, ahora disparada por un clic en vez de un <span class="mono">input()</span>.</p></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Código incompleto a propósito, con un hueco de una sola línea.</dd>
+      <dt>Preguntá</dt><dd>“¿Qué línea ya escribieron en el TP que hace exactamente esto?”</dd>
+      <dt>Revelá cuando</dt><dd>Lo intentaron. La respuesta es corta pero la idea de fondo (reusar un método de siempre) es lo importante.</dd>
+      <dt>Idea clave</dt><dd>Cambia el disparador (clic en vez de <code>input()</code>). No cambia el método que se ejecuta.</dd>
+    </dl>
+  </aside>
+</section>
+
+<!-- ══════════ BLOQUE 7 · HACIA PYGAME, DESAFÍO Y CIERRE ══════════ -->
+
+<section class="slide" data-b="7" data-t="El camino completo">
+  <div class="stack mid-all">
+    <div class="hchain rv" style="flex-direction:column;gap:4px">
+      <div class="hbox">PYTHON + POO</div>
+      <div class="arrow-d" style="font-size:24px">↓</div>
+      <div class="hbox">LIBRERÍAS</div>
+      <div class="arrow-d" style="font-size:24px">↓</div>
+      <div class="hbox acc">TKINTER<small>hoy</small></div>
+      <div class="arrow-d" style="font-size:24px">↓</div>
+      <div class="hbox">PYGAME</div>
+      <div class="arrow-d" style="font-size:24px">↓</div>
+      <div class="hbox">PROYECTOS MÁS COMPLETOS</div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El mapa completo de la carrera, con hoy marcado en el medio.</dd>
+      <dt>Decí</dt><dd>“Todo lo de hoy es un escalón. El siguiente es Pygame — otra librería, mismo método para aprenderla.”</dd>
+      <dt>Idea clave</dt><dd>El camino no termina en Pygame: termina en “proyectos más complejos”, que es a donde apunta toda la carrera.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="7" data-t="Lo que va a permitir Pygame">
+  <div class="stack">
+    <span class="tag">👀 Un adelanto, sin entrar en detalle</span>
+    <h2>Más adelante, con Pygame</h2>
+    <div class="pills" style="margin-top:10px">
+      <span class="pill big">🖼️ imágenes</span><span class="pill big">🏃 movimiento</span><span class="pill big">⌨️ teclado</span>
+      <span class="pill big">🔊 sonidos</span><span class="pill big">💥 colisiones</span><span class="pill big">🎬 escenas</span><span class="pill big">🏆 puntuación</span><span class="pill big">🎞️ animaciones</span>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Una lista de lo que viene, sin abrir ningún concepto todavía.</dd>
+      <dt>Decí</dt><dd>“No vamos a tocar nada de esto hoy. Es para que se entusiasmen con adónde va a llegar Arena de Combate.”</dd>
+      <dt>Ojo</dt><dd>Resistí la tentación de explicar Pygame en detalle — es contenido de una clase futura. Esta lámina es un gancho, no una clase.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide act" data-b="7" data-t="Desafío · investigá una mejora">
+  <div class="actbar"></div>
+  <div class="stack">
+    <span class="tag">Desafío final · individual o en parejas</span>
+    <h2>Agreguen una funcionalidad nueva a su videojuego</h2>
+    <div class="stack gap-s" style="margin-top:6px">
+      <div class="qcard"><b>1</b>Elijan una mejora chica.</div>
+      <div class="qcard rv"><b>2</b>Investiguen qué herramienta necesitan.</div>
+      <div class="qcard rv"><b>3</b>Identifiquen la librería.</div>
+      <div class="qcard rv"><b>4</b>Busquen documentación o un ejemplo.</div>
+      <div class="qcard rv"><b>5</b>Pruébenla.</div>
+      <div class="qcard rv"><b>6</b>Expliquen qué descubrieron.</div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Los seis pasos del desafío, que son literalmente la metodología del bloque 3 aplicada.</dd>
+      <dt>Decí</dt><dd>“No espero que todos hagan lo mismo. Espero que todos pasen por este proceso: problema, investigación, prueba, solución.”</dd>
+      <dt>Idea clave</dt><dd>El objetivo no es el resultado técnico — es practicar el proceso completo, una vez, guiados.</dd>
+      <dt>Ojo</dt><dd>No resuelvas el desafío por ellos. Si alguien se traba, redirigilo a los pasos, no a la respuesta.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="7" data-t="Ideas, por si hace falta un empujón">
+  <div class="stack">
+    <h2>Algunas ideas posibles</h2>
+    <div class="pills" style="margin-top:10px">
+      <span class="pill big">🎲 daño al azar</span><span class="pill big">👹 enemigo al azar</span><span class="pill big">📅 mostrar la fecha de la partida</span>
+      <span class="pill big">🖼️ una ventana simple</span><span class="pill big">🔘 un widget nuevo de Tkinter</span><span class="pill big">⏱️ un cronómetro de turno</span>
+    </div>
+    <p class="dim rv" style="margin-top:10px;font-size:19px">Elegir una alcanza. No hace falta resolverlas todas.</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Un banco de ideas para quien se quede en blanco, no una lista obligatoria.</dd>
+      <dt>Decí</dt><dd>“Si ya se les ocurrió otra cosa distinta a esta lista, mejor: úsenla.”</dd>
+      <dt>Tiempo sugerido</dt><dd>15-20 minutos si lo hacen en clase, o queda como tarea para la próxima si el tiempo no alcanza.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="7" data-t="Tarea">
+  <div class="stack">
+    <span class="tag">📝 Para la próxima</span>
+    <h2>Tres cosas para traer resueltas</h2>
+    <div class="stack gap-s" style="margin-top:6px">
+      <div class="qcard"><b>1</b>El desafío de la lámina anterior, terminado: qué mejora eligieron y cómo la resolvieron.</div>
+      <div class="qcard rv"><b>2</b>Su Arena de Combate con daño al azar ya funcionando (bloque 4).</div>
+      <div class="qcard rv"><b>3</b>La ventana mínima de Tkinter corriendo en su compu, con título y un botón.</div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>La tarea concreta, en tres puntos verificables.</dd>
+      <dt>Decí</dt><dd>“Nada de esto es difícil por separado. Es la misma clase de hoy, pero terminada en casa con calma.”</dd>
+      <dt>Próxima clase</dt><dd>Adelantales que vamos a construir el combate completo con botones — Atacar, Poción, barra de vida — juntando lo del bloque 6.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="7" data-t="Reflexión final">
+  <div class="stack">
+    <h2>Antes de irnos</h2>
+    <div class="cols c2" style="margin-top:8px">
+      <div class="stack gap-s">
+        <p class="ask sm">¿Qué es una librería?</p>
+        <p class="ask sm rv">¿Cómo la incorporamos a nuestro código?</p>
+        <p class="ask sm rv">¿Qué hacemos cuando no sabemos usar algo?</p>
+      </div>
+      <div class="stack gap-s">
+        <p class="ask sm rv">¿Tenemos que memorizar todas sus funciones?</p>
+        <p class="ask sm rv">¿Qué cambia y qué permanece en nuestra POO?</p>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>Preguntas de repaso, una por una, en voz alta al curso.</dd>
+      <dt>Respuesta esperada</dt><dd>Código ya escrito por otros; con <code>import</code>; investigamos; no, investigamos cuando hace falta; cambia la interfaz, permanecen las clases y sus métodos.</dd>
+      <dt>Revelá cuando</dt><dd>Después de cada respuesta del curso, no antes.</dd>
+      <dt>Idea clave</dt><dd>Si contestan estas cinco sin ayuda, la clase cumplió su objetivo — más allá de si recuerdan la sintaxis exacta de cada línea.</dd>
+    </dl>
+  </aside>
+</section>
+
+<section class="slide" data-b="7" data-t="La frase que nos llevamos">
+  <div class="stack mid-all">
+    <p class="huge" style="text-align:center;color:var(--accent);max-width:22ch">Las herramientas cambian.</p>
+    <p class="quote rv" style="text-align:center;max-width:24ch;margin-top:20px">La capacidad de aprender a utilizarlas <b>permanece</b>.</p>
+    <p class="lbl rv" style="margin-top:30px">Nos vemos la próxima 👋</p>
+  </div>
+  <aside class="notes">
+    <dl class="notes">
+      <dt>En pantalla</dt><dd>El cierre conceptual de toda la clase.</dd>
+      <dt>Decí</dt><dd>“No necesitan saber todo para programar. Necesitan saber pensar, investigar, probar y aprender a usar lo que necesiten.”</dd>
+      <dt>Revelá cuando</dt><dd>Dejá un silencio después de la primera frase antes de mostrar la segunda.</dd>
+      <dt>Idea clave</dt><dd>Esta frase es la continuación directa de “¿qué objetos hay acá?”, el cierre de la clase 2. Las preguntas que se hacen no cambian; las herramientas para responderlas, sí.</dd>
+    </dl>
+  </aside>
+</section>
+
+  </div>
+</div>
+
+<div class="bar">
+  <span class="blockname mono" id="barBlock">Bloque 1</span>
+  <div class="seg" id="seg"></div>
+  <span class="clock" id="clock">00:00</span>
+  <button id="btnNotes" aria-pressed="false" title="Notas del profesor (N)">Notas · N</button>
+  <button id="btnOv" title="Índice de diapositivas (O)">Índice · O</button>
+  <button id="btnLock" aria-pressed="false" title="Bloquear el avance por clic — para señalar con el mouse sin pasar de lámina (L)">👆</button>
+  <button id="btnFs" title="Pantalla completa (F)">⛶</button>
+  <span class="hint">← → avanzar · <span class="kbd">N</span> notas · <span class="kbd">O</span> índice · <span class="kbd">L</span> bloquear clic</span>
+  <span class="count" id="count">1 / 44</span>
+</div>
+
+<div class="notes-drawer" id="drawer" aria-live="polite">
+  <div class="nd-head"><b id="ndTitle">Notas del profesor</b><span id="ndPos"></span></div>
+  <div id="ndBody"></div>
+</div>
+
+<div class="overview" id="overview">
+  <div class="ov-head"><h2>Recorrido de la clase</h2><span class="hint mono">Clic para saltar · Esc para cerrar</span><span class="ov-legend">◇ = opcional, se puede saltear si vas corto</span></div>
+  <div class="ov-grid" id="ovGrid"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var stage = document.getElementById('stage');
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var BLOCKS = [
+    {n:'Por qué existen las librerías',        v:'var(--blue)'},
+    {n:'Incorporamos una herramienta: import', v:'var(--flame)'},
+    {n:'Aprender a investigar',                v:'var(--teal)'},
+    {n:'Laboratorio con random',               v:'var(--violet)'},
+    {n:'El gran desafío: Tkinter',             v:'var(--rose)'},
+    {n:'Primera interfaz y conexión con POO',  v:'var(--blue)'},
+    {n:'Hacia Pygame, desafío y cierre',       v:'var(--good)'}
+  ];
+  var i = 0, step = 0, total = slides.length;
+
+  function save(k,v){ try{ localStorage.setItem('poo3:'+k, v); }catch(e){} }
+  function load(k){ try{ return localStorage.getItem('poo3:'+k); }catch(e){ return null; } }
+
+  var vp = document.querySelector('.viewport');
+  function fit(){
+    var r = vp.getBoundingClientRect();
+    var s = Math.min(r.width / 1280, r.height / 720) * 0.965;
+    stage.style.transform = 'scale(' + Math.max(s, 0.1) + ')';
+  }
+  addEventListener('resize', fit);
+  vp.addEventListener('transitionend', fit);
+
+  var counts = BLOCKS.map(function(){ return 0; });
+  slides.forEach(function(s){ counts[+s.dataset.b - 1]++; });
+  var seg = document.getElementById('seg');
+  counts.forEach(function(c, k){
+    var b = document.createElement('div');
+    b.className = 'b';
+    b.style.setProperty('--w', c);
+    b.style.setProperty('--c', BLOCKS[k].v);
+    b.title = 'Bloque ' + (k+1) + ' · ' + BLOCKS[k].n;
+    b.innerHTML = '<i></i>';
+    b.addEventListener('click', function(){
+      for (var j = 0; j < slides.length; j++){ if (+slides[j].dataset.b === k+1){ go(j); break; } }
+    });
+    seg.appendChild(b);
+  });
+  var segBars = Array.prototype.slice.call(seg.children);
+
+  var ovGrid = document.getElementById('ovGrid'), lastB = 0;
+  slides.forEach(function(s, k){
+    var b = +s.dataset.b;
+    if (b !== lastB){
+      var h = document.createElement('div');
+      h.className = 'ov-b';
+      h.style.setProperty('--c', BLOCKS[b-1].v);
+      h.textContent = 'Bloque ' + b + ' · ' + BLOCKS[b-1].n;
+      ovGrid.appendChild(h);
+      lastB = b;
+    }
+    var it = document.createElement('button');
+    it.className = 'ov-i';
+    it.style.setProperty('--c', BLOCKS[b-1].v);
+    it.innerHTML = '<span>' + String(k+1).padStart(2,'0') +
+      (s.dataset.opt ? ' <span class="oflag">◇ opcional</span>' : '') + '</span><b></b>';
+    it.querySelector('b').textContent = s.dataset.t;
+    if (s.dataset.opt) it.classList.add('opt');
+    it.addEventListener('click', function(){ go(k); toggleOv(false); });
+    ovGrid.appendChild(it);
+  });
+  var ovItems = Array.prototype.slice.call(ovGrid.querySelectorAll('.ov-i'));
+  var overview = document.getElementById('overview');
+  function toggleOv(on){
+    var want = (on === undefined) ? !overview.classList.contains('on') : on;
+    overview.classList.toggle('on', want);
+    if (want){ ovItems.forEach(function(el,k){ el.classList.toggle('cur', k === i); });
+      if (ovItems[i]) ovItems[i].scrollIntoView({block:'center', behavior:'auto'}); }
+  }
+
+  var drawer = document.getElementById('drawer');
+  function renderNotes(){
+    var src = slides[i].querySelector('aside.notes');
+    document.getElementById('ndTitle').textContent = slides[i].dataset.t;
+    document.getElementById('ndPos').textContent = 'Bloque ' + slides[i].dataset.b + ' · ' + (i+1) + ' de ' + total;
+    document.getElementById('ndBody').innerHTML = src ? src.innerHTML : '<p class="dim">Sin notas.</p>';
+    drawer.style.setProperty('--accent-n', BLOCKS[+slides[i].dataset.b - 1].v);
+  }
+  function toggleNotes(on){
+    var want = (on === undefined) ? !document.body.classList.contains('notes-open') : on;
+    document.body.classList.toggle('notes-open', want);
+    document.getElementById('btnNotes').setAttribute('aria-pressed', want ? 'true' : 'false');
+    save('notes', want ? '1' : '0');
+    fit();
+  }
+
+  var t0 = null, clock = document.getElementById('clock');
+  setInterval(function(){
+    if (t0 === null) return;
+    var s = Math.floor((Date.now() - t0) / 1000);
+    clock.textContent = String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+  }, 1000);
+  clock.title = 'Tiempo de clase · clic para reiniciar';
+  clock.style.cursor = 'pointer';
+  clock.addEventListener('click', function(){ t0 = Date.now(); clock.textContent = '00:00'; });
+
+  function revealsOf(k){ return slides[k].querySelectorAll('.rv'); }
+
+  function render(){
+    slides.forEach(function(s, k){ s.classList.toggle('active', k === i); });
+    var rv = revealsOf(i);
+    for (var k = 0; k < rv.length; k++) rv[k].classList.toggle('on', k < step);
+
+    var b = +slides[i].dataset.b;
+    document.getElementById('ebNum').textContent = String(i+1).padStart(2,'0');
+    document.getElementById('ebName').textContent = BLOCKS[b-1].n;
+    document.getElementById('plBlock').textContent = 'Bloque ' + b;
+    document.getElementById('plNum').textContent = i+1;
+    document.getElementById('plTot').textContent = total;
+    document.getElementById('barBlock').textContent = 'Bloque ' + b + ' · ' + BLOCKS[b-1].n;
+    document.getElementById('count').textContent = (i+1) + ' / ' + total;
+    document.getElementById('ebOpt').hidden = slides[i].dataset.opt !== '1';
+    stage.style.setProperty('--accent', BLOCKS[b-1].v);
+
+    for (var q = 0; q < BLOCKS.length; q++){
+      var done = 0;
+      for (var j = 0; j < slides.length; j++){
+        if (+slides[j].dataset.b === q+1 && j <= i) done++;
+      }
+      segBars[q].firstChild.style.setProperty('--p', Math.min(done / counts[q], 1));
+    }
+    renderNotes();
+    if (overview.classList.contains('on')) ovItems.forEach(function(el,k){ el.classList.toggle('cur', k === i); });
+  }
+
+  function go(n){ i = Math.max(0, Math.min(total-1, n)); step = 0; render(); }
+
+  function next(){
+    if (t0 === null) t0 = Date.now();
+    if (step < revealsOf(i).length){ step++; render(); return; }
+    if (i < total - 1) go(i + 1);
+  }
+  function prev(){
+    if (step > 0){ step--; render(); return; }
+    if (i > 0){ i--; step = revealsOf(i).length; render(); }
+  }
+
+  addEventListener('keydown', function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var k = e.key;
+    if (k === 'ArrowRight' || k === ' ' || k === 'PageDown' || k === 'Enter'){ e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'PageUp' || k === 'Backspace'){ e.preventDefault(); prev(); }
+    else if (k === 'ArrowDown'){ e.preventDefault(); go(i+1); }
+    else if (k === 'ArrowUp'){ e.preventDefault(); go(i-1); }
+    else if (k === 'Home'){ e.preventDefault(); go(0); }
+    else if (k === 'End'){ e.preventDefault(); go(total-1); }
+    else if (k === 'n' || k === 'N'){ toggleNotes(); }
+    else if (k === 'o' || k === 'O'){ toggleOv(); }
+    else if (k === 'f' || k === 'F'){ fs(); }
+    else if (k === 'l' || k === 'L'){ setLock(clickNav); }
+    else if (k === 'Escape'){ if (overview.classList.contains('on')) toggleOv(false); else toggleNotes(false); }
+  });
+
+  var clickNav = load('clicknav') !== '0';
+  var refocusAt = 0, swipeAt = 0;
+  addEventListener('focus', function(){ refocusAt = Date.now(); });
+  function setLock(locked){
+    clickNav = !locked;
+    save('clicknav', clickNav ? '1' : '0');
+    var b = document.getElementById('btnLock');
+    b.setAttribute('aria-pressed', locked ? 'true' : 'false');
+    b.textContent = locked ? '🔒' : '👆';
+    b.title = locked
+      ? 'El clic NO avanza: podés señalar con el mouse. Usá ← → (L para desbloquear)'
+      : 'Bloquear el avance por clic — para señalar con el mouse sin pasar de lámina (L)';
+  }
+  vp.addEventListener('click', function(e){
+    if (!clickNav) return;
+    if (Date.now() - refocusAt < 700) return;
+    if (Date.now() - swipeAt < 500) return;
+    if (e.target.closest('a, button')) return;
+    var r = vp.getBoundingClientRect();
+    if (e.clientX - r.left < r.width * 0.22) prev(); else next();
+  });
+
+  var tx = 0, ty = 0;
+  addEventListener('touchstart', function(e){ tx = e.changedTouches[0].clientX; ty = e.changedTouches[0].clientY; }, {passive:true});
+  addEventListener('touchend', function(e){
+    var dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)){ swipeAt = Date.now(); dx < 0 ? next() : prev(); }
+  }, {passive:true});
+
+  function fs(){
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+  }
+  document.getElementById('btnNotes').addEventListener('click', function(){ toggleNotes(); });
+  document.getElementById('btnOv').addEventListener('click', function(){ toggleOv(); });
+  document.getElementById('btnFs').addEventListener('click', fs);
+  document.getElementById('btnLock').addEventListener('click', function(){ setLock(clickNav); });
+  overview.addEventListener('click', function(e){ if (e.target === overview) toggleOv(false); });
+
+  if (load('notes') === '1') toggleNotes(true);
+  setLock(!clickNav);
+  render();
+  fit();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+})();
+</script>
