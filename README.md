@@ -132,6 +132,24 @@ Para regenerar el PDF después de editar el HTML: abrirlo y usar el botón *Impr
 
 ---
 
+## 🎮 Arena de Combate, en código
+
+La carpeta [`arena-de-combate/`](arena-de-combate/) tiene el **mismo juego
+resuelto tres veces**, para mostrar en clase cómo crece un proyecto:
+
+| Archivo | Qué es |
+|---------|--------|
+| `juego_consola.py` | La resolución modelo del TP: POO pura, menú por consola |
+| `juego_tkinter.py` | El mismo juego con ventana, botones y `random` (clase 3) |
+| `juego_pygame.py` | El mismo juego como videojuego: mapa, sprites, sonido, jefe final |
+
+Las clases (`Personaje`, `Jugador`, `Enemigo`, `Arma`, `Pocion`) y sus relaciones
+son las mismas en los tres archivos: lo único que crece es lo que hay alrededor.
+El detalle de cada versión, con la comparación entre las tres, está en
+[`arena-de-combate/README.md`](arena-de-combate/README.md).
+
+---
+
 ## Uso sin internet
 
 Descargá el `.html` de la clase y abrilo con doble clic. Funciona igual; lo único
@@ -147,6 +165,7 @@ que cambia es la tipografía, que se carga desde internet.
 | `tp-arena-de-combate.html` | Trabajo práctico integrador (guía interactiva) |
 | `apunte-tp-arena-de-combate.html` | Apunte imprimible del TP |
 | `apunte-tp-arena-de-combate.pdf` | El mismo apunte, ya en PDF (37 páginas) |
+| `arena-de-combate/` | El TP resuelto en tres versiones: consola, Tkinter y Pygame |
 
 Cada presentación es un único archivo HTML, sin dependencias más allá de las
 tipografías de Google Fonts.

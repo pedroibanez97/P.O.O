@@ -7,3 +7,7 @@
 # ...menos el apunte del TP, que es propio y se comparte por link:
 !apunte-tp-arena-de-combate.pdf
 .DS_Store
+
+# Entorno de Python para correr los juegos (no se sube al repo)
+.venv/
+__pycache__/
