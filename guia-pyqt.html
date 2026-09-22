@@ -1,0 +1,1346 @@
+<meta charset="utf-8">
+<title>Guía de exploración · PyQt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* ============================================================
+   GUÍA DE EXPLORACIÓN · PyQt
+   Hereda los tokens de la presentación (clase-3.html)
+   ============================================================ */
+:root{
+  --paper:#e7eaef; --sheet:#fbfcfd; --sheet-2:#f1f4f8;
+  --ink:#111a26; --ink-2:#546275; --ink-3:#6c7889;
+  --line:#ccd4e0; --line-soft:#e2e8f0;
+  --blue:#1548c8; --flame:#bf400e; --teal:#0a7566; --violet:#5d34c9; --rose:#bd1f62;
+  --good:#0f7d55; --bad:#b7361b;
+  --chip:rgba(21,72,200,.08);
+  --shadow:0 1px 2px rgba(17,26,38,.06), 0 24px 70px -30px rgba(17,26,38,.4);
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Instrument Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --cd-k:#8b2bb9; --cd-s:#b0450f; --cd-n:#1548c8; --cd-c:#7b8794; --cd-fn:#0a6a86;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#080d14; --sheet:#111924; --sheet-2:#18212e;
+    --ink:#e9eef6; --ink-2:#9aa9bd; --ink-3:#7e8da1;
+    --line:#2a3543; --line-soft:#222c39;
+    --blue:#7ba4ff; --flame:#ff8a5c; --teal:#3fcfb5; --violet:#b49bff; --rose:#ff7aae;
+    --good:#4fd08a; --bad:#ff7f66;
+    --chip:rgba(123,164,255,.12);
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 24px 60px -24px rgba(0,0,0,.85);
+    --cd-k:#d99bf0; --cd-s:#ffab7d; --cd-n:#8fb4ff; --cd-c:#7e8da1; --cd-fn:#67d6e8;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#080d14; --sheet:#111924; --sheet-2:#18212e;
+  --ink:#e9eef6; --ink-2:#9aa9bd; --ink-3:#7e8da1;
+  --line:#2a3543; --line-soft:#222c39;
+  --blue:#7ba4ff; --flame:#ff8a5c; --teal:#3fcfb5; --violet:#b49bff; --rose:#ff7aae;
+  --good:#4fd08a; --bad:#ff7f66;
+  --chip:rgba(123,164,255,.12);
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 24px 60px -24px rgba(0,0,0,.85);
+  --cd-k:#d99bf0; --cd-s:#ffab7d; --cd-n:#8fb4ff; --cd-c:#7e8da1; --cd-fn:#67d6e8;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+  font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:3px}
+
+.doc{max-width:1000px;margin:0 auto;background:var(--sheet);border-left:1px solid var(--line);
+  border-right:1px solid var(--line);box-shadow:var(--shadow);padding:0 clamp(20px,6vw,86px) 90px}
+
+h1,h2,h3,h4{margin:0;font-family:var(--display);letter-spacing:-.025em;line-height:1.05;text-wrap:balance}
+h1{font-size:clamp(38px,6.4vw,62px);font-weight:800}
+h2{font-size:clamp(27px,3.6vw,36px);font-weight:700;letter-spacing:-.03em}
+h3{font-size:clamp(20px,2.4vw,25px);font-weight:600;letter-spacing:-.018em;line-height:1.15}
+h4{font-size:18px;font-weight:600;letter-spacing:-.01em}
+p{margin:0}
+strong{font-weight:600;color:var(--ink)}
+em{font-style:italic}
+a{color:var(--blue)}
+code{font-family:var(--mono);font-size:.88em;background:var(--sheet-2);border:1px solid var(--line-soft);
+  border-radius:5px;padding:1px 5px;color:var(--ink);white-space:nowrap}
+.eyebrow{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink-3)}
+.lead{font-size:20px;line-height:1.55;color:var(--ink-2)}
+.dim{color:var(--ink-2)}
+.hl{color:var(--accent,var(--blue))}
+
+/* ---------- portada ---------- */
+.cover{padding:clamp(46px,7vw,80px) 0 34px;border-bottom:2px solid var(--ink);
+  display:flex;flex-direction:column;gap:22px}
+.cover-top{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line-soft);padding-bottom:14px}
+.cover h1{max-width:15ch}
+.cover .lead{max-width:56ch}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.badge{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:6px 12px;border:1px solid var(--line);background:var(--sheet-2);color:var(--ink-2)}
+.printbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:6px}
+button.print{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:10px 18px;border:1px solid var(--ink);background:var(--ink);color:var(--sheet);cursor:pointer}
+button.print:hover{background:transparent;color:var(--ink)}
+.printbar span{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+
+/* ---------- secciones ---------- */
+section.s{padding-top:56px;display:flex;flex-direction:column;gap:22px}
+.s-head{display:flex;gap:20px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:16px}
+.s-num{flex:none;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent,var(--blue));
+  border:1.5px solid var(--accent,var(--blue));width:38px;height:38px;display:grid;place-items:center;margin-top:4px}
+.s-head .t{display:flex;flex-direction:column;gap:6px}
+.s[data-a="blue"]{--accent:var(--blue)}
+.s[data-a="flame"]{--accent:var(--flame)}
+.s[data-a="teal"]{--accent:var(--teal)}
+.s[data-a="violet"]{--accent:var(--violet)}
+.s[data-a="rose"]{--accent:var(--rose)}
+.body-col{max-width:70ch;display:flex;flex-direction:column;gap:16px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:stretch}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:stretch}
+@media (max-width:760px){.grid2,.grid3{grid-template-columns:1fr}}
+
+/* ---------- cajas ---------- */
+.box{border:1px solid var(--line);background:var(--sheet-2);padding:18px 20px;
+  display:flex;flex-direction:column;gap:9px}
+.box .lbl{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3)}
+.box p{font-size:16px;line-height:1.6;color:var(--ink-2)}
+.box.key{border-color:color-mix(in srgb,var(--accent,var(--blue)) 45%,transparent);
+  background:color-mix(in srgb,var(--accent,var(--blue)) 6%,var(--sheet-2))}
+.box.key .lbl{color:var(--accent,var(--blue))}
+.box.key p{color:var(--ink)}
+.box h4{margin-bottom:2px}
+
+/* pregunta de clase */
+.ask{position:relative;padding-left:44px;min-height:30px;font-family:var(--display);font-weight:600;
+  font-size:21px;line-height:1.3;letter-spacing:-.015em;max-width:40ch}
+.ask::before{content:"?";position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;
+  background:var(--accent,var(--blue));color:var(--sheet);font-family:var(--display);font-weight:800;
+  font-size:18px;display:grid;place-items:center}
+
+/* ---------- código ---------- */
+pre{margin:0;background:var(--sheet-2);border:1px solid var(--line-soft);padding:16px 18px;
+  overflow-x:auto;font-family:var(--mono);font-size:14.5px;line-height:1.7;color:var(--ink);
+  white-space:pre;tab-size:2}
+pre.sm{font-size:13.5px}
+.cd-k{color:var(--cd-k);font-weight:700}
+.cd-s{color:var(--cd-s)}
+.cd-n{color:var(--cd-n)}
+.cd-c{color:var(--cd-c);font-style:italic}
+.cd-fn{color:var(--cd-fn);font-weight:700}
+figure{margin:0;display:flex;flex-direction:column;gap:8px}
+figcaption{font-size:14.5px;color:var(--ink-2);line-height:1.5}
+figcaption b{color:var(--ink)}
+
+/* ---------- pills ---------- */
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{font-family:var(--mono);font-size:14.5px;padding:6px 12px;border:1px solid var(--line-soft);
+  background:var(--sheet-2)}
+
+/* ---------- tablas ---------- */
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--line-soft);vertical-align:top;line-height:1.5}
+thead th{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);border-bottom:1.5px solid var(--line)}
+tbody td:first-child{font-weight:600;color:var(--ink);width:20%}
+.tw{overflow-x:auto}
+
+/* ---------- pasos numerados ---------- */
+.steps{display:flex;flex-direction:column;gap:0;border:1px solid var(--line)}
+.steps>div{display:flex;gap:14px;align-items:flex-start;padding:12px 16px}
+.steps>div+div{border-top:1px solid var(--line-soft)}
+.steps .k{flex:none;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--accent,var(--blue));width:78px;padding-top:2px}
+.steps .v{font-size:15px;color:var(--ink-2);line-height:1.5}
+.steps .v b{color:var(--ink);font-weight:600}
+.steps .v code{white-space:normal}
+
+/* ---------- diagrama vertical (flechas) ---------- */
+.ladder{display:flex;flex-direction:column;align-items:center;gap:0}
+.ladder .rung{width:100%;max-width:340px}
+.ladder .arw{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 0;color:var(--ink-3)}
+.ladder .arw i{display:block;width:1.5px;height:14px;background:var(--line)}
+.ladder .arw span{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase}
+.ladder .arw b{color:var(--ink-3);font-size:13px;line-height:1}
+.fbox{border:2px solid var(--line);background:var(--sheet-2);padding:13px 20px;font-family:var(--mono);
+  font-weight:700;font-size:14.5px;text-align:center;letter-spacing:.02em;color:var(--ink-2)}
+.fbox.acc{border-color:var(--accent,var(--blue));background:color-mix(in srgb,var(--accent,var(--blue)) 9%,var(--sheet-2));
+  color:var(--accent,var(--blue))}
+
+/* ---------- checklist ---------- */
+.checklist{border:1px solid var(--line);display:flex;flex-direction:column}
+.checklist div{display:flex;gap:12px;align-items:baseline;padding:10px 16px;font-size:15.5px;color:var(--ink-2)}
+.checklist div+div{border-top:1px solid var(--line-soft)}
+.checklist .bx{flex:none;font-family:var(--mono);font-size:16px;color:var(--ink-3);line-height:1}
+
+/* ---------- recordar ---------- */
+.remember{border:2px solid var(--ink);padding:0;display:flex;flex-direction:column}
+.remember .rh{background:var(--ink);color:var(--sheet);padding:14px 22px;font-family:var(--display);
+  font-weight:700;font-size:20px;letter-spacing:-.02em}
+.remember ol{margin:0;padding:20px 20px 20px 40px;display:flex;flex-direction:column;gap:12px;
+  font-size:16px;line-height:1.5;color:var(--ink-2)}
+.remember ol b{color:var(--ink);font-weight:600}
+.remember li::marker{font-family:var(--mono);font-weight:700;color:var(--blue);font-size:14px}
+
+/* ---------- índice ---------- */
+.toc{border:1px solid var(--line);display:flex;flex-direction:column}
+.toc .th{background:var(--ink);color:var(--sheet);padding:12px 20px;font-family:var(--display);
+  font-weight:700;font-size:19px;letter-spacing:-.02em}
+.toc ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column}
+.toc li{display:grid;grid-template-columns:42px 1fr;gap:14px;padding:10px 20px;align-items:baseline}
+.toc li+li{border-top:1px solid var(--line-soft)}
+.toc .k{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--c,var(--blue));letter-spacing:.06em}
+.toc .n{font-family:var(--display);font-weight:600;font-size:17px;letter-spacing:-.015em;line-height:1.2}
+@media (max-width:520px){.toc li{grid-template-columns:1fr;gap:2px}}
+
+/* ---------- cierre ---------- */
+.closing{margin-top:60px;border-top:2px solid var(--ink);padding-top:30px;display:flex;
+  flex-direction:column;gap:16px}
+.quote{font-family:var(--display);font-weight:700;font-size:clamp(24px,3.4vw,34px);line-height:1.15;
+  letter-spacing:-.03em;max-width:24ch}
+.colofon{font-family:var(--mono);font-size:12px;color:var(--ink-3);letter-spacing:.04em;
+  display:flex;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line-soft);padding-top:16px}
+
+/* ---------- impresión ---------- */
+@media print{
+  :root:root:root{color-scheme:light;--paper:#fff;--sheet:#fff;--sheet-2:#f6f8fb;--ink:#101820;--ink-2:#3f4a59;--ink-3:#69737f;
+    --line:#c3ccd8;--line-soft:#dfe5ed;--shadow:none;
+    --blue:#0f3aa8;--flame:#a2360c;--teal:#0a6355;--violet:#4d2ab0;--rose:#a11a53;
+    --good:#0b6845;--bad:#9c2d16;
+    --cd-k:#7a239f;--cd-s:#9a3b0d;--cd-n:#0f3aa8;--cd-c:#6b7684;--cd-fn:#085a72}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#fff;color:var(--ink);font-size:10pt;line-height:1.45}
+  .doc{max-width:none;box-shadow:none;border:none;padding:0}
+  .printbar{display:none}
+  @page{size:A4;margin:14mm 14mm}
+  h1{font-size:28pt} h2{font-size:16.5pt} h3{font-size:12.5pt} h4{font-size:10.5pt}
+  .lead{font-size:11pt;line-height:1.45}
+  .quote{font-size:18pt}
+  .ask{font-size:12pt}
+  .box p,figcaption,table,.steps .v,.checklist div{font-size:9.4pt}
+  section.s{padding-top:13px;gap:11px;break-inside:auto}
+  .stack{gap:9px} .grid2{gap:11px} .grid3{gap:9px}
+  .box{padding:11px 13px;gap:6px}
+  .remember ol{padding:13px 15px 13px 32px;gap:8px}
+  .cover{padding-bottom:16px;gap:12px}
+  .s-head{break-after:avoid}
+  h1,h2,h3,h4{break-after:avoid}
+  pre,figure,.box,.steps,.ladder,.checklist,.remember,table,.toc{break-inside:avoid}
+  .cover{break-after:page;padding-top:0}
+  pre{font-size:8.4pt;padding:10px 12px;line-height:1.5}
+  a{color:inherit;text-decoration:none}
+  .steps>div,.checklist div{padding:8px 12px}
+  .toc{break-inside:avoid} .toc li{padding:7px 14px} .toc .n{font-size:10.5pt}
+  .fbox{font-size:9.5pt;padding:9px 14px}
+  .closing{margin-top:22px;padding-top:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ============================================================
+   EXTRAS DE LA GUÍA DE LABORATORIO
+   ============================================================ */
+
+/* cajas de actividad: PROBÁ · INVESTIGÁ · ¿Y SI...? */
+.lab{border:1px solid var(--line);border-left:4px solid var(--c,var(--blue));background:var(--sheet-2);
+  padding:16px 20px;display:flex;flex-direction:column;gap:9px}
+.lab .lbl{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--c,var(--blue));display:flex;align-items:center;gap:8px}
+.lab p{font-size:16px;line-height:1.6;color:var(--ink-2);margin:0}
+.lab p b,.lab li b{color:var(--ink);font-weight:600}
+.lab ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;
+  font-size:16px;line-height:1.55;color:var(--ink-2)}
+.lab code{white-space:normal}
+.lab.try{--c:var(--teal)}
+.lab.find{--c:var(--violet)}
+.lab.whatif{--c:var(--flame)}
+.lab.warn{--c:var(--bad)}
+
+/* preguntas para pensar */
+.qs{display:flex;flex-direction:column;gap:8px;border:1px dashed var(--line);padding:16px 20px;
+  background:transparent}
+.qs .lbl{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3)}
+.qs ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:7px;
+  font-size:16px;line-height:1.5;color:var(--ink-2)}
+.qs ul li::marker{color:var(--accent,var(--blue))}
+
+/* bloque de desafío */
+.chal{border:2px solid var(--accent,var(--blue));display:flex;flex-direction:column}
+.chal .ch{background:var(--accent,var(--blue));color:var(--sheet);padding:12px 20px;
+  font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.chal .cb{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.chal .cb p{font-size:16px;line-height:1.6;color:var(--ink-2)}
+.chal .cb p b{color:var(--ink);font-weight:600}
+.chal .cb ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;
+  font-size:16px;line-height:1.5;color:var(--ink-2)}
+
+/* maqueta / wireframe en texto */
+pre.mock{background:transparent;border:1px dashed var(--line);color:var(--ink-2);
+  font-size:13.5px;line-height:1.5;text-align:center}
+
+/* tarjetas de opciones del mini proyecto */
+.opt{border:1px solid var(--line);background:var(--sheet-2);padding:16px 18px;
+  display:flex;flex-direction:column;gap:8px}
+.opt .k{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent,var(--blue))}
+.opt h4{font-size:17px}
+.opt p{font-size:15px;line-height:1.5;color:var(--ink-2)}
+.opt .pills .pill{font-size:12.5px;padding:4px 9px}
+
+/* bloque nuevo / apareado */
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line)}
+.pair>div{padding:14px 18px;display:flex;flex-direction:column;gap:8px}
+.pair>div+div{border-left:1px solid var(--line-soft)}
+.pair .lbl{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3)}
+.pair p{font-size:15px;line-height:1.5;color:var(--ink-2)}
+@media (max-width:760px){.pair{grid-template-columns:1fr}.pair>div+div{border-left:none;border-top:1px solid var(--line-soft)}}
+
+@media print{
+  .lab,.qs,.chal,.opt,.pair,pre.mock{break-inside:avoid}
+  .lab{padding:11px 14px;gap:6px}
+  .lab p,.lab ul,.qs ul,.chal .cb p,.chal .cb ul,.opt p{font-size:9.4pt}
+  .chal .cb{padding:12px 14px;gap:10px}
+  pre.mock{font-size:8pt}
+}
+</style>
+
+<div class="doc">
+
+<!-- ==================== PORTADA ==================== -->
+<header class="cover">
+  <div class="cover-top">
+    <span class="eyebrow">Técnico Universitario en Programación</span>
+    <span class="eyebrow">Guía de exploración &middot; para hacer con la compu abierta</span>
+  </div>
+  <h1>Explorar PyQt</h1>
+  <p class="lead">Esta guía <strong>no te enseña PyQt</strong>. Te enseña a empezar a usarlo, a
+  experimentar y a averiguar lo que todavía no sabés. Vas a escribir código antes de entenderlo
+  del todo — y está bien: así se aprende una librería nueva.</p>
+  <div class="badges">
+    <span class="badge">PyQt6</span>
+    <span class="badge">pip install</span>
+    <span class="badge">Widgets</span>
+    <span class="badge">Eventos</span>
+    <span class="badge">Layouts</span>
+    <span class="badge">PyQt + POO</span>
+    <span class="badge">Investigación</span>
+  </div>
+  <div class="printbar">
+    <button class="print" type="button" onclick="window.print()">Imprimir / Guardar PDF</button>
+    <span>o usá Cmd&nbsp;+&nbsp;P (Mac) &middot; Ctrl&nbsp;+&nbsp;P (Windows) → Guardar como PDF</span>
+  </div>
+</header>
+
+<!-- ==================== CÓMO SE USA + ÍNDICE ==================== -->
+<section class="s" data-a="blue" id="indice" style="padding-top:40px">
+
+  <div class="remember">
+    <div class="rh">Cómo se trabaja esta guía</div>
+    <ol>
+      <li><b>Observá</b> el ejemplo. No hace falta entender cada línea antes de ejecutarlo.</li>
+      <li><b>Probalo</b> tal cual está. Que funcione primero.</li>
+      <li><b>Modificalo</b>. Cambiá valores, rompelo a propósito, mirá qué pasa.</li>
+      <li><b>Investigá</b> lo que la guía no te dice. Es parte de la actividad, no una falla tuya.</li>
+      <li><b>Resolvé</b> el desafío con lo que averiguaste.</li>
+      <li><b>Creá</b> algo propio al final.</li>
+    </ol>
+  </div>
+
+  <div class="lab key" style="--c:var(--blue);border-left-width:4px">
+    <span class="lbl">La idea central de toda la guía</span>
+    <p style="font-family:var(--display);font-weight:600;font-size:21px;line-height:1.3;color:var(--ink)">
+      Un programador no memoriza una librería.<br>Aprende a investigarla y utilizarla.</p>
+  </div>
+
+  <div class="toc">
+    <div class="th">El recorrido</div>
+    <ol>
+      <li style="--c:var(--blue)"><span class="k">01</span><span class="n">Antes de empezar</span></li>
+      <li style="--c:var(--flame)"><span class="k">02</span><span class="n">Instalación</span></li>
+      <li style="--c:var(--teal)"><span class="k">03</span><span class="n">Primer experimento: la ventana</span></li>
+      <li style="--c:var(--violet)"><span class="k">04</span><span class="n">Conociendo los widgets</span></li>
+      <li style="--c:var(--rose)"><span class="k">05</span><span class="n">El primer evento</span></li>
+      <li style="--c:var(--blue)"><span class="k">06</span><span class="n">Experimento: formulario</span></li>
+      <li style="--c:var(--flame)"><span class="k">07</span><span class="n">Layouts</span></li>
+      <li style="--c:var(--teal)"><span class="k">08</span><span class="n">PyQt + POO</span></li>
+      <li style="--c:var(--violet)"><span class="k">09</span><span class="n">Desafío guiado: «Mi primera aplicación»</span></li>
+      <li style="--c:var(--rose)"><span class="k">10</span><span class="n">Misión de investigación 🔎</span></li>
+      <li style="--c:var(--blue)"><span class="k">11</span><span class="n">Mini proyecto (elegís vos)</span></li>
+      <li style="--c:var(--flame)"><span class="k">12</span><span class="n">Desafíos «¿Y si...?»</span></li>
+      <li style="--c:var(--teal)"><span class="k">13</span><span class="n">Relación con Arena de Combate</span></li>
+      <li style="--c:var(--violet)"><span class="k">14</span><span class="n">Desafío final</span></li>
+      <li style="--c:var(--rose)"><span class="k">15</span><span class="n">Checklist</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ==================== 1 · ANTES DE EMPEZAR ==================== -->
+<section class="s" data-a="blue" id="s1">
+  <div class="s-head"><span class="s-num">01</span><div class="t"><h2>Antes de empezar</h2>
+    <p class="dim" style="font-size:16px">Qué es PyQt y por qué existen varias herramientas gráficas</p></div></div>
+
+  <div class="box key">
+    <span class="lbl">Qué es</span>
+    <p><strong>PyQt</strong> es una librería que nos permite crear <strong>aplicaciones de escritorio
+    con interfaz gráfica</strong> desde Python: ventanas, botones, formularios, tablas, menús.
+    Por dentro usa <strong>Qt</strong>, un framework escrito en C++ con el que están hechos programas
+    que seguramente usaste. PyQt es el puente que nos deja manejarlo desde Python.</p>
+  </div>
+
+  <div class="grid3">
+    <div class="box"><span class="lbl">Sirve para</span><p>Aplicaciones con ventanas: un gestor, un panel de control, un reproductor, una herramienta interna, un formulario de carga.</p></div>
+    <div class="box"><span class="lbl">Se ve</span><p>Como un programa del sistema operativo. No parece un ejercicio de cátedra: parece software.</p></div>
+    <div class="box"><span class="lbl">No sirve para</span><p>Un videojuego con movimiento fluido, física y sprites. Para eso ya conocemos Pygame.</p></div>
+  </div>
+
+  <h3>Cuatro herramientas, cuatro necesidades</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Herramienta</th><th>Qué construye</th><th>Cuándo la elegís</th></tr></thead>
+    <tbody>
+      <tr><td>Consola</td><td>texto que entra y sale</td><td>Cuando lo importante es la lógica y nadie más va a usarlo.</td></tr>
+      <tr><td>Tkinter</td><td>ventanas simples</td><td>Viene con Python, no se instala nada. Ideal para algo chico y rápido.</td></tr>
+      <tr><td>PyQt</td><td>aplicaciones de escritorio</td><td>Cuando querés algo más completo, prolijo y que crezca.</td></tr>
+      <tr><td>Pygame</td><td>videojuegos</td><td>Cuando hay movimiento, colisiones, sonido y un bucle de juego.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="lab" style="--c:var(--blue)">
+    <span class="lbl">Lo importante</span>
+    <p>No hay una herramienta «mejor». Hay <b>herramientas distintas para necesidades distintas</b>.
+    Parte de programar es elegir con cuál resolver el problema que tenés enfrente.</p>
+  </div>
+</section>
+
+<!-- ==================== 2 · INSTALACIÓN ==================== -->
+<section class="s" data-a="flame" id="s2">
+  <div class="s-head"><span class="s-num">02</span><div class="t"><h2>Instalación</h2>
+    <p class="dim" style="font-size:16px">PyQt no viene con Python: hay que traerlo</p></div></div>
+
+  <figure>
+    <pre>pip install PyQt6</pre>
+    <figcaption>En la terminal, <b>no</b> dentro de Python. Si <code>pip</code> no funciona, probá
+    <code>pip3 install PyQt6</code> o <code>python -m pip install PyQt6</code>.</figcaption>
+  </figure>
+
+  <div class="pair">
+    <div><span class="lbl">Instalar</span><p>Descarga el código de la librería y lo guarda en tu Python, una sola vez por computadora (o por entorno virtual).</p></div>
+    <div><span class="lbl">Importar</span><p>Trae ese código a <b>este</b> programa, cada vez que lo ejecutás. Sin instalar, el <code>import</code> falla.</p></div>
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Probá &middot; que la instalación funcionó</span>
+    <p>Creá un archivo, escribí esta única línea y ejecutalo. Si no aparece ningún error, ya está:</p>
+    <pre class="sm"><span class="cd-k">import</span> PyQt6
+<span class="cd-fn">print</span>(<span class="cd-s">"PyQt6 instalado"</span>)</pre>
+  </div>
+
+  <div class="lab warn">
+    <span class="lbl">Ojo &middot; PyQt5 vs PyQt6</span>
+    <p>Existen las dos versiones y en internet vas a encontrar ejemplos de ambas.
+    <b>Esta guía usa PyQt6 de principio a fin.</b> Si copiás un ejemplo que dice
+    <code>PyQt5</code> y no anda, no está roto: está escrito para otra versión.
+    En la sección 10 vas a encontrar cómo traducirlo.</p>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Para pensar</span>
+    <ul>
+      <li>¿Qué otras librerías instalaron con <code>pip</code> hasta ahora? ¿Cuáles no hizo falta instalar?</li>
+      <li>Si borrás la carpeta del proyecto, ¿PyQt6 se desinstala? ¿Por qué?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 3 · PRIMER EXPERIMENTO ==================== -->
+<section class="s" data-a="teal" id="s3">
+  <div class="s-head"><span class="s-num">03</span><div class="t"><h2>Primer experimento: la ventana</h2>
+    <p class="dim" style="font-size:16px">Escribilo, ejecutalo, y recién después entendelo</p></div></div>
+
+  <p class="lead">Este es el programa PyQt más chico que hace algo visible. Copialo en un archivo
+  <code>ventana.py</code> y ejecutalo.</p>
+
+  <figure>
+    <pre><span class="cd-k">import</span> sys
+<span class="cd-k">from</span> PyQt6.QtWidgets <span class="cd-k">import</span> QApplication, QWidget
+
+app = <span class="cd-fn">QApplication</span>(sys.argv)
+
+ventana = <span class="cd-fn">QWidget</span>()
+ventana.<span class="cd-fn">setWindowTitle</span>(<span class="cd-s">"Mi primera aplicación"</span>)
+ventana.<span class="cd-fn">resize</span>(<span class="cd-n">500</span>, <span class="cd-n">300</span>)
+
+ventana.<span class="cd-fn">show</span>()
+
+sys.<span class="cd-fn">exit</span>(app.<span class="cd-fn">exec</span>())</pre>
+    <figcaption>Nueve líneas. Tenés una ventana de verdad, con su barra de título, su botón de cerrar
+    y se puede redimensionar. Todo eso ya estaba hecho: nosotros solo lo pedimos.</figcaption>
+  </figure>
+
+  <h3>Lo mínimo para entenderlo</h3>
+  <div class="steps">
+    <div><span class="k">QApplication</span><span class="v">La <b>aplicación</b> en sí. Es quien se queda escuchando lo que hace el usuario. Se crea <b>una sola</b> por programa y va siempre primero.</span></div>
+    <div><span class="k">QWidget</span><span class="v">Un <b>elemento de interfaz</b>. Si no está adentro de nada, aparece como ventana. Todo lo que veas en PyQt es, en el fondo, un widget.</span></div>
+    <div><span class="k">show()</span><span class="v">Pide que se <b>muestre</b>. Crear un widget no lo hace visible.</span></div>
+    <div><span class="k">exec()</span><span class="v">Arranca el <b>bucle de eventos</b>: el programa se queda vivo esperando clics y teclas hasta que cerrás la ventana.</span></div>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Respondé antes de seguir (probando, no adivinando)</span>
+    <ul>
+      <li>¿Qué hace <code>QApplication</code>? ¿Por qué creés que necesita <code>sys.argv</code>?</li>
+      <li>¿Qué representa <code>QWidget</code>?</li>
+      <li>¿Qué hace <code>resize()</code>? ¿Y qué pasa si después agrandás la ventana con el mouse?</li>
+      <li>¿Qué hace <code>show()</code>?</li>
+      <li><b>¿Qué pasaría si eliminamos <code>show()</code>?</b> ¿El programa da error, o hace otra cosa?</li>
+    </ul>
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Probá &middot; rompelo a propósito</span>
+    <ul>
+      <li>Borrá la línea <code>ventana.show()</code> y ejecutá. ¿Qué ves? ¿El programa terminó?</li>
+      <li>Borrá la última línea (<code>sys.exit(app.exec())</code>). ¿Cuánto dura la ventana?</li>
+      <li>Cambiá <code>resize(500, 300)</code> por <code>resize(200, 800)</code>. ¿Qué número es cuál?</li>
+      <li>Poné tu nombre en el título.</li>
+    </ul>
+  </div>
+
+  <div class="lab whatif">
+    <span class="lbl">¿Y si...?</span>
+    <p>¿Y si creás <b>dos</b> ventanas en el mismo programa? Probá: creá <code>ventana2</code>,
+    dale otro título y llamá a <code>show()</code> en las dos. ¿Funciona? ¿Y si al cerrar una
+    se cierra la otra?</p>
+  </div>
+</section>
+
+<!-- ==================== 4 · WIDGETS ==================== -->
+<section class="s" data-a="violet" id="s4">
+  <div class="s-head"><span class="s-num">04</span><div class="t"><h2>Conociendo los widgets</h2>
+    <p class="dim" style="font-size:16px">Las piezas con las que se arma una interfaz</p></div></div>
+
+  <div class="box key">
+    <span class="lbl">Widget</span>
+    <p>Cada pieza visible de la interfaz es un <strong>widget</strong>: una etiqueta, un botón, un campo
+    de texto. Todos son <strong>objetos</strong> — los creás, guardás en una variable y les pedís cosas
+    con métodos. Esto ya lo sabés hacer: es exactamente lo mismo que hiciste con
+    <code>Personaje</code> o <code>Arma</code>.</p>
+  </div>
+
+  <h3>El banco de pruebas</h3>
+  <p class="dim">Guardá este archivo como <code>banco.py</code>. Cada widget que quieras probar lo pegás
+  en el medio, entre las líneas de guiones.</p>
+
+  <figure>
+    <pre><span class="cd-k">import</span> sys
+<span class="cd-k">from</span> PyQt6.QtWidgets <span class="cd-k">import</span> QApplication, QWidget, QLabel
+
+app = <span class="cd-fn">QApplication</span>(sys.argv)
+ventana = <span class="cd-fn">QWidget</span>()
+ventana.<span class="cd-fn">setWindowTitle</span>(<span class="cd-s">"Banco de pruebas"</span>)
+ventana.<span class="cd-fn">resize</span>(<span class="cd-n">420</span>, <span class="cd-n">320</span>)
+
+<span class="cd-c"># ---------- pegá acá los widgets que pruebes ----------</span>
+etiqueta = <span class="cd-fn">QLabel</span>(<span class="cd-s">"Hola mundo"</span>, ventana)
+etiqueta.<span class="cd-fn">move</span>(<span class="cd-n">20</span>, <span class="cd-n">20</span>)
+<span class="cd-c"># ------------------------------------------------------</span>
+
+ventana.<span class="cd-fn">show</span>()
+sys.<span class="cd-fn">exit</span>(app.<span class="cd-fn">exec</span>())</pre>
+    <figcaption>Dos cosas nuevas: el segundo argumento (<code>ventana</code>) dice <b>adentro de qué</b>
+    vive el widget, y <code>move(x, y)</code> lo ubica a mano en esa posición.
+    Acordate de <code>move()</code>: en la sección 7 vamos a querer sacárnoslo de encima.</figcaption>
+  </figure>
+
+  <div class="lab warn">
+    <span class="lbl">Error clásico</span>
+    <p>Si creás un widget y te olvidás el <code>, ventana</code>, no aparece nada — o se abre en una
+    ventana suelta. No es un bug: el widget no sabe dónde vivir. Y todo widget que uses hay que
+    <b>importarlo</b> arriba, en la línea del <code>from PyQt6.QtWidgets import ...</code>.</p>
+  </div>
+
+  <h3>Seis widgets para empezar</h3>
+
+  <div class="grid2">
+
+    <div class="box">
+      <h4>QLabel &middot; mostrar texto</h4>
+      <p>Muestra un texto (o una imagen) que el usuario lee pero no edita. Es la salida de tu app.</p>
+      <pre class="sm">etiqueta = <span class="cd-fn">QLabel</span>(<span class="cd-s">"Hola mundo"</span>, ventana)</pre>
+      <p><b>Modificá:</b> ¿cómo le cambiarías el texto <i>después</i> de haberlo creado?</p>
+      <p class="dim" style="font-size:14.5px">Pista: casi todos los widgets tienen métodos que empiezan
+      con <code>set</code>. Probá escribir <code>etiqueta.set</code> y mirá qué te sugiere el editor.</p>
+      <p><b>Investigá:</b> ¿cómo se centra el texto de un <code>QLabel</code>?</p>
+    </div>
+
+    <div class="box">
+      <h4>QPushButton &middot; el botón</h4>
+      <p>Lo que el usuario aprieta. Por ahora no hace nada al hacer clic: eso llega en la sección 5.</p>
+      <pre class="sm">boton = <span class="cd-fn">QPushButton</span>(<span class="cd-s">"Saludar"</span>, ventana)
+boton.<span class="cd-fn">move</span>(<span class="cd-n">20</span>, <span class="cd-n">60</span>)</pre>
+      <p><b>Modificá:</b> poné tres botones con textos distintos, uno debajo del otro.</p>
+      <p><b>Investigá:</b> ¿cómo se le cambia el <b>tamaño</b> a un botón?</p>
+    </div>
+
+    <div class="box">
+      <h4>QLineEdit &middot; escribir una línea</h4>
+      <p>Un campo de texto de una sola línea: un nombre, una edad, una búsqueda. Es la entrada de tu app.</p>
+      <pre class="sm"><span class="cd-k">from</span> PyQt6.QtWidgets <span class="cd-k">import</span> QLineEdit
+
+campo = <span class="cd-fn">QLineEdit</span>(ventana)
+campo.<span class="cd-fn">move</span>(<span class="cd-n">20</span>, <span class="cd-n">100</span>)</pre>
+      <p><b>Modificá:</b> hacé que arranque con un texto ya escrito adentro.</p>
+      <p><b>Investigá:</b> ¿cómo se <b>lee</b> lo que el usuario escribió? ¿Y cómo se muestra un texto
+      gris de ayuda que desaparece al escribir (<i>placeholder</i>)?</p>
+    </div>
+
+    <div class="box">
+      <h4>QTextEdit &middot; escribir varias líneas</h4>
+      <p>Como el anterior, pero para textos largos: una descripción, notas, un registro de lo que pasó.</p>
+      <pre class="sm">notas = <span class="cd-fn">QTextEdit</span>(ventana)
+notas.<span class="cd-fn">move</span>(<span class="cd-n">20</span>, <span class="cd-n">140</span>)</pre>
+      <p><b>Modificá:</b> agrandalo con <code>resize()</code> y escribí varias líneas adentro.</p>
+      <p><b>Investigá:</b> para leer su contenido <b>no</b> sirve <code>text()</code>. ¿Cuál es el método?
+      ¿Y cómo se hace para que sea de solo lectura?</p>
+    </div>
+
+    <div class="box">
+      <h4>QCheckBox &middot; sí o no</h4>
+      <p>Una opción que se activa o desactiva. Guarda un estado: <code>True</code> o <code>False</code>.</p>
+      <pre class="sm">acepta = <span class="cd-fn">QCheckBox</span>(<span class="cd-s">"Acepto los términos"</span>, ventana)
+acepta.<span class="cd-fn">move</span>(<span class="cd-n">20</span>, <span class="cd-n">260</span>)</pre>
+      <p><b>Modificá:</b> hacé que arranque ya tildado.</p>
+      <p><b>Investigá:</b> ¿cómo se pregunta desde el código si está tildado o no?</p>
+    </div>
+
+    <div class="box">
+      <h4>QComboBox &middot; elegir de una lista</h4>
+      <p>Una lista desplegable. Sirve cuando las opciones son fijas y no querés que el usuario escriba mal.</p>
+      <pre class="sm">clase = <span class="cd-fn">QComboBox</span>(ventana)
+clase.<span class="cd-fn">addItems</span>([<span class="cd-s">"Guerrero"</span>, <span class="cd-s">"Mago"</span>, <span class="cd-s">"Arquero"</span>])
+clase.<span class="cd-fn">move</span>(<span class="cd-n">20</span>, <span class="cd-n">290</span>)</pre>
+      <p><b>Modificá:</b> agregale una cuarta opción.</p>
+      <p><b>Investigá:</b> ¿cómo se averigua <b>cuál</b> opción eligió el usuario? ¿Y en qué se diferencia
+      de preguntar por el <i>índice</i> de la opción?</p>
+    </div>
+
+  </div>
+
+  <div class="lab find">
+    <span class="lbl">Investigá &middot; el patrón que se repite</span>
+    <p>Mirá los seis widgets juntos. Casi todos los métodos empiezan igual:
+    <code>set...()</code> para <b>cambiar</b> algo, y un método sin <code>set</code> para
+    <b>preguntar</b> algo. <code>setText()</code> / <code>text()</code>.
+    <b>Si entendés ese patrón, no necesitás memorizar la lista de métodos:</b> podés adivinar
+    el nombre y verificarlo en la documentación.</p>
+  </div>
+</section>
+
+<!-- ==================== 5 · PRIMER EVENTO ==================== -->
+<section class="s" data-a="rose" id="s5">
+  <div class="s-head"><span class="s-num">05</span><div class="t"><h2>El primer evento</h2>
+    <p class="dim" style="font-size:16px">El usuario hace algo → nuestro programa responde</p></div></div>
+
+  <div class="box key">
+    <span class="lbl">El cambio de mentalidad</span>
+    <p>En consola <strong>nosotros</strong> decidíamos el orden: primero esto, después aquello, y el
+    programa esperaba con <code>input()</code>. En una interfaz gráfica es al revés:
+    <strong>el usuario decide</strong> qué toca y cuándo. Nuestro trabajo es dejar preparado
+    <strong>qué hacer si pasa cada cosa</strong>.</p>
+  </div>
+
+  <div class="ladder">
+    <div class="fbox rung">EL USUARIO HACE CLIC</div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>evento</span></div>
+    <div class="fbox rung acc">SE EJECUTA NUESTRA FUNCIÓN</div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>respuesta</span></div>
+    <div class="fbox rung">LA INTERFAZ CAMBIA</div>
+  </div>
+
+  <h3>La línea que conecta las dos cosas</h3>
+  <figure>
+    <pre>boton.clicked.<span class="cd-fn">connect</span>(mi_funcion)</pre>
+    <figcaption><code>clicked</code> es <b>algo que puede ocurrir</b>. <code>connect()</code> dice
+    <b>qué función queremos que se ejecute</b> cuando ocurra.</figcaption>
+  </figure>
+
+  <div class="lab warn">
+    <span class="lbl">El error más común de toda la guía</span>
+    <p>Se escribe <code>connect(saludar)</code>, <b>sin paréntesis</b> al final.
+    Con <code>connect(saludar())</code> Python ejecuta la función <i>ahí mismo</i> y le pasa el
+    resultado a <code>connect</code>. No estamos llamando a la función: estamos
+    <b>entregándola</b> para que PyQt la llame más tarde.</p>
+  </div>
+
+  <h3>Una app completa que responde</h3>
+  <figure>
+    <pre><span class="cd-k">import</span> sys
+<span class="cd-k">from</span> PyQt6.QtWidgets <span class="cd-k">import</span> QApplication, QWidget, QLabel, QPushButton
+
+app = <span class="cd-fn">QApplication</span>(sys.argv)
+ventana = <span class="cd-fn">QWidget</span>()
+ventana.<span class="cd-fn">setWindowTitle</span>(<span class="cd-s">"Evento"</span>)
+ventana.<span class="cd-fn">resize</span>(<span class="cd-n">320</span>, <span class="cd-n">160</span>)
+
+etiqueta = <span class="cd-fn">QLabel</span>(<span class="cd-s">"Todavía no me saludaste"</span>, ventana)
+etiqueta.<span class="cd-fn">move</span>(<span class="cd-n">30</span>, <span class="cd-n">40</span>)
+etiqueta.<span class="cd-fn">resize</span>(<span class="cd-n">250</span>, <span class="cd-n">24</span>)
+
+boton = <span class="cd-fn">QPushButton</span>(<span class="cd-s">"Saludar"</span>, ventana)
+boton.<span class="cd-fn">move</span>(<span class="cd-n">30</span>, <span class="cd-n">90</span>)
+
+<span class="cd-k">def</span> <span class="cd-fn">saludar</span>():
+    etiqueta.<span class="cd-fn">setText</span>(<span class="cd-s">"¡Hola!"</span>)
+
+boton.clicked.<span class="cd-fn">connect</span>(saludar)
+
+ventana.<span class="cd-fn">show</span>()
+sys.<span class="cd-fn">exit</span>(app.<span class="cd-fn">exec</span>())</pre>
+    <figcaption>Ejecutalo y hacé clic. Ese es el <b>corazón de toda interfaz gráfica</b>: un evento y
+    una respuesta. Todo lo que viene después son variaciones de esto.</figcaption>
+  </figure>
+
+  <div class="lab try">
+    <span class="lbl">Probá</span>
+    <ul>
+      <li>Hacé clic <b>varias veces</b>. ¿Cambia algo después del primer clic? ¿Por qué?</li>
+      <li>Hacé que el botón cuente los clics: «Me apretaste 3 veces». ¿Dónde guardás el número?</li>
+      <li>Agregá un segundo botón que devuelva la etiqueta a su texto original.</li>
+      <li>Conectá <b>los dos</b> botones a la <b>misma</b> función. ¿Se puede?</li>
+    </ul>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Para pensar</span>
+    <ul>
+      <li>¿En qué momento se ejecuta <code>saludar</code>? ¿Cuando se escribe la línea del
+        <code>connect</code>, o después?</li>
+      <li>La función <code>saludar</code> usa <code>etiqueta</code> sin recibirla como parámetro.
+        ¿Por qué funciona? ¿Te parece una buena idea a medida que el programa crezca?
+        (Guardá esa duda: la sección 8 la resuelve.)</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 6 · FORMULARIO ==================== -->
+<section class="s" data-a="blue" id="s6">
+  <div class="s-head"><span class="s-num">06</span><div class="t"><h2>Experimento: formulario</h2>
+    <p class="dim" style="font-size:16px">Ahora sí: datos que entran, datos que salen</p></div></div>
+
+  <p class="lead">Hasta acá el botón siempre decía lo mismo. Vamos a hacer que la respuesta
+  <strong>dependa de lo que el usuario escribió</strong>.</p>
+
+  <figure>
+    <pre class="mock">------------------------------
+       MI APLICACIÓN
+------------------------------
+
+Nombre: [____________]
+
+Edad:   [____________]
+
+        [ SALUDAR ]
+
+Hola Pedro, tenés 20 años.</pre>
+    <figcaption>Esto es lo que tiene que quedar funcionando. El diseño puede ser feo: por ahora
+    importa que <b>ande</b>.</figcaption>
+  </figure>
+
+  <h3>Lo que tenés que averiguar</h3>
+  <div class="steps">
+    <div><span class="k">Leer</span><span class="v">Cómo obtener el texto que el usuario escribió en un <b><code>QLineEdit</code></b>. Es un método corto, sin <code>set</code>.</span></div>
+    <div><span class="k">Escribir</span><span class="v">Cómo cambiar el texto de un <b><code>QLabel</code></b>. Esto ya lo usaste en la sección 5.</span></div>
+    <div><span class="k">Reaccionar</span><span class="v">Cómo hacer que todo eso ocurra al hacer clic. También lo usaste: <code>.clicked.connect(...)</code>.</span></div>
+  </div>
+
+  <div class="lab find">
+    <span class="lbl">Investigá &middot; no te damos el código entero</span>
+    <p>Buscá <b>«PyQt6 QLineEdit get text»</b> o mirá la documentación de <code>QLineEdit</code>.
+    Vas a encontrar la respuesta en menos de un minuto. <b>Eso es parte de la actividad</b>:
+    esta guía no te va a dar todos los métodos, porque el objetivo es que aprendas a encontrarlos.</p>
+  </div>
+
+  <h3>El esqueleto</h3>
+  <figure>
+    <pre><span class="cd-k">def</span> <span class="cd-fn">saludar</span>():
+    nombre = campo_nombre.???        <span class="cd-c"># ← leer el nombre</span>
+    edad = campo_edad.???            <span class="cd-c"># ← leer la edad</span>
+    resultado.<span class="cd-fn">setText</span>(<span class="cd-s">f"Hola {nombre}, tenés {edad} años."</span>)
+
+boton.clicked.<span class="cd-fn">connect</span>(saludar)</pre>
+    <figcaption>Completá los dos <code>???</code>. El resto ya lo sabés escribir.</figcaption>
+  </figure>
+
+  <div class="lab try">
+    <span class="lbl">Probá &middot; después de que funcione</span>
+    <ul>
+      <li>Dejá los campos <b>vacíos</b> y hacé clic. ¿Qué muestra? ¿Está bien que muestre eso?</li>
+      <li>Escribí <code>veinte</code> en la edad. ¿Rompe? ¿Y si además querés calcular
+        <code>edad + 1</code>?</li>
+      <li>¿De qué <b>tipo</b> es lo que devuelve el campo de edad? Comprobalo con
+        <code>type()</code> antes de suponerlo.</li>
+    </ul>
+  </div>
+
+  <div class="lab whatif">
+    <span class="lbl">¿Y si...?</span>
+    <p>¿Y si en vez de saludar, la app calcula el año de nacimiento? ¿Qué línea cambia
+    y qué línea queda igual?</p>
+  </div>
+</section>
+
+<!-- ==================== 7 · LAYOUTS ==================== -->
+<section class="s" data-a="flame" id="s7">
+  <div class="s-head"><span class="s-num">07</span><div class="t"><h2>Layouts</h2>
+    <p class="dim" style="font-size:16px">Ya tenemos varios elementos. ¿Cómo los organizamos?</p></div></div>
+
+  <p class="ask">Agrandá con el mouse la ventana del formulario que acabás de hacer.
+  ¿Qué pasa con los widgets?</p>
+
+  <div class="box key">
+    <span class="lbl">El problema de move()</span>
+    <p>Con <code>move(x, y)</code> vos clavás cada widget en un punto fijo. Si la ventana cambia de
+    tamaño, si el texto es más largo, si lo abrís en otra computadora: <strong>queda todo
+    desacomodado</strong>. Y cada vez que agregás algo en el medio, tenés que recalcular a mano las
+    coordenadas de todo lo que está abajo.</p>
+  </div>
+
+  <div class="box key" style="--accent:var(--flame)">
+    <span class="lbl">La solución</span>
+    <p>Un <strong>layout</strong> es un organizador: vos le decís <strong>en qué orden</strong> van los
+    widgets y él calcula las posiciones y las <strong>recalcula solo</strong> cuando algo cambia.
+    Nunca más coordenadas a mano.</p>
+  </div>
+
+  <h3>Los tres que necesitás hoy</h3>
+  <div class="grid3">
+    <div class="box"><span class="lbl">QVBoxLayout</span><h4>Uno debajo del otro</h4>
+      <pre class="sm">A
+B
+C</pre>
+      <p>La <b>V</b> es de vertical. El más usado.</p></div>
+    <div class="box"><span class="lbl">QHBoxLayout</span><h4>Uno al lado del otro</h4>
+      <pre class="sm">A  B  C</pre>
+      <p>La <b>H</b> es de horizontal. Ideal para una fila de botones.</p></div>
+    <div class="box"><span class="lbl">QGridLayout</span><h4>En filas y columnas</h4>
+      <pre class="sm">A  B
+C  D</pre>
+      <p>Una grilla. Ideal para formularios y calculadoras.</p></div>
+  </div>
+
+  <h3>Vertical: el patrón de tres pasos</h3>
+  <figure>
+    <pre><span class="cd-k">from</span> PyQt6.QtWidgets <span class="cd-k">import</span> QVBoxLayout
+
+layout = <span class="cd-fn">QVBoxLayout</span>()          <span class="cd-c"># 1. creo el organizador</span>
+layout.<span class="cd-fn">addWidget</span>(etiqueta)       <span class="cd-c"># 2. le agrego los widgets, en orden</span>
+layout.<span class="cd-fn">addWidget</span>(campo)
+layout.<span class="cd-fn">addWidget</span>(boton)
+ventana.<span class="cd-fn">setLayout</span>(layout)        <span class="cd-c"># 3. se lo pongo a la ventana</span></pre>
+    <figcaption>Con el layout puesto, <code>move()</code> deja de hacer falta: <b>borralo</b>.
+    Y ya no necesitás pasarle <code>ventana</code> al crear cada widget — el layout se encarga.</figcaption>
+  </figure>
+
+  <h3>Horizontal: un layout adentro de otro</h3>
+  <figure>
+    <pre>fila = <span class="cd-fn">QHBoxLayout</span>()
+fila.<span class="cd-fn">addWidget</span>(<span class="cd-fn">QLabel</span>(<span class="cd-s">"Nombre:"</span>))
+fila.<span class="cd-fn">addWidget</span>(campo_nombre)
+
+layout = <span class="cd-fn">QVBoxLayout</span>()
+layout.<span class="cd-fn">addLayout</span>(fila)            <span class="cd-c"># ← addLayout, no addWidget</span>
+layout.<span class="cd-fn">addWidget</span>(boton)</pre>
+    <figcaption>Los layouts se <b>anidan</b>: una columna que adentro tiene filas. Así se arma
+    cualquier interfaz, por más compleja que parezca.</figcaption>
+  </figure>
+
+  <h3>Grilla: fila y columna</h3>
+  <figure>
+    <pre>grilla = <span class="cd-fn">QGridLayout</span>()
+grilla.<span class="cd-fn">addWidget</span>(<span class="cd-fn">QLabel</span>(<span class="cd-s">"Nombre:"</span>), <span class="cd-n">0</span>, <span class="cd-n">0</span>)   <span class="cd-c"># fila 0, columna 0</span>
+grilla.<span class="cd-fn">addWidget</span>(campo_nombre,      <span class="cd-n">0</span>, <span class="cd-n">1</span>)   <span class="cd-c"># fila 0, columna 1</span>
+grilla.<span class="cd-fn">addWidget</span>(<span class="cd-fn">QLabel</span>(<span class="cd-s">"Edad:"</span>),   <span class="cd-n">1</span>, <span class="cd-n">0</span>)   <span class="cd-c"># fila 1, columna 0</span>
+grilla.<span class="cd-fn">addWidget</span>(campo_edad,        <span class="cd-n">1</span>, <span class="cd-n">1</span>)</pre>
+    <figcaption>Acá <code>addWidget</code> lleva dos números más: fila y columna. Se empieza a contar
+    desde <b>0</b>, como en las listas.</figcaption>
+  </figure>
+
+  <div class="chal" style="--accent:var(--flame)">
+    <div class="ch">Desafío &middot; rehacé el formulario con layouts</div>
+    <div class="cb">
+      <pre class="mock">        Mi aplicación
+
+Nombre: [____________]
+
+Edad:   [____________]
+
+        [ ACEPTAR ]</pre>
+      <ul>
+        <li>Sin un solo <code>move()</code>.</li>
+        <li>Agrandá la ventana con el mouse: ahora <b>todo se acomoda solo</b>.</li>
+        <li>Resolvelo con <code>QGridLayout</code>, o con un <code>QVBoxLayout</code> que contenga
+          dos <code>QHBoxLayout</code>. Las dos son válidas — probá las dos y quedate con la que
+          te resulte más clara.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="lab find">
+    <span class="lbl">Investigá</span>
+    <p>¿Qué hace <code>layout.addStretch()</code>? ¿Y <code>layout.addSpacing(20)</code>?
+    Probalos en distintos lugares de tu layout y mirá qué cambia.</p>
+  </div>
+</section>
+
+<!-- ==================== 8 · PYQT + POO ==================== -->
+<section class="s" data-a="teal" id="s8">
+  <div class="s-head"><span class="s-num">08</span><div class="t"><h2>PyQt + POO</h2>
+    <p class="dim" style="font-size:16px">Acá se junta todo lo que ya sabés</p></div></div>
+
+  <p class="ask">Tu formulario ya tiene variables sueltas, funciones sueltas y widgets sueltos.
+  ¿Qué pasa cuando sean cincuenta?</p>
+
+  <div class="box key">
+    <span class="lbl">La idea</span>
+    <p>Una ventana <strong>es una cosa</strong>: tiene estado (qué escribió el usuario, cuántos clics
+    lleva) y comportamiento (saludar, limpiar, calcular). Eso es exactamente un
+    <strong>objeto</strong>. Entonces la escribimos como una <strong>clase</strong>, igual que
+    <code>Personaje</code> o <code>Jugador</code>.</p>
+  </div>
+
+  <figure>
+    <pre><span class="cd-k">class</span> <span class="cd-fn">Ventana</span>(QWidget):        <span class="cd-c"># HERENCIA: nuestra Ventana ES UN QWidget</span>
+
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(self):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>()       <span class="cd-c"># que QWidget haga lo suyo primero</span>
+        self.<span class="cd-fn">setWindowTitle</span>(<span class="cd-s">"Mi aplicación"</span>)</pre>
+    <figcaption>Mirá bien: <b>no hay nada nuevo</b>. Herencia y <code>super()</code> son los mismos de
+    la clase 2. Lo único distinto es que la clase de la que heredamos no la escribimos nosotros:
+    viene de PyQt.</figcaption>
+  </figure>
+
+  <div class="tw"><table>
+    <thead><tr><th>En PyQt</th><th>Es lo que ya sabías</th></tr></thead>
+    <tbody>
+      <tr><td><code>QWidget</code></td><td>Una clase — hecha por otra persona, pero una clase común y corriente.</td></tr>
+      <tr><td><code>Ventana</code></td><td>Nuestra clase, que <b>hereda</b> de <code>QWidget</code>: ES UN QWidget, más lo nuestro.</td></tr>
+      <tr><td><code>super().__init__()</code></td><td>Lo mismo que en <code>Jugador</code>: dejar que el padre se inicialice antes de agregar lo propio.</td></tr>
+      <tr><td><code>self</code></td><td>La ventana concreta con la que estamos trabajando.</td></tr>
+      <tr><td><code>self.campo_nombre</code></td><td><b>Atributo</b>: el estado del objeto. Por eso lo ven todos los métodos.</td></tr>
+      <tr><td><code>def saludar(self)</code></td><td><b>Método</b>: el comportamiento del objeto.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>El formulario, ahora como objeto</h3>
+  <figure>
+    <pre><span class="cd-k">import</span> sys
+<span class="cd-k">from</span> PyQt6.QtWidgets <span class="cd-k">import</span> (QApplication, QWidget, QLabel,
+                             QLineEdit, QPushButton, QVBoxLayout)
+
+
+<span class="cd-k">class</span> <span class="cd-fn">Ventana</span>(QWidget):
+
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(self):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>()
+        self.<span class="cd-fn">setWindowTitle</span>(<span class="cd-s">"Mi aplicación"</span>)
+        self.<span class="cd-fn">resize</span>(<span class="cd-n">320</span>, <span class="cd-n">200</span>)
+
+        <span class="cd-c"># los widgets son atributos: self.algo</span>
+        self.campo_nombre = <span class="cd-fn">QLineEdit</span>()
+        self.boton = <span class="cd-fn">QPushButton</span>(<span class="cd-s">"Saludar"</span>)
+        self.resultado = <span class="cd-fn">QLabel</span>(<span class="cd-s">""</span>)
+
+        layout = <span class="cd-fn">QVBoxLayout</span>()
+        layout.<span class="cd-fn">addWidget</span>(<span class="cd-fn">QLabel</span>(<span class="cd-s">"Nombre:"</span>))
+        layout.<span class="cd-fn">addWidget</span>(self.campo_nombre)
+        layout.<span class="cd-fn">addWidget</span>(self.boton)
+        layout.<span class="cd-fn">addWidget</span>(self.resultado)
+        self.<span class="cd-fn">setLayout</span>(layout)
+
+        self.boton.clicked.<span class="cd-fn">connect</span>(self.saludar)   <span class="cd-c"># un método, no una función suelta</span>
+
+    <span class="cd-k">def</span> <span class="cd-fn">saludar</span>(self):
+        nombre = self.campo_nombre.<span class="cd-fn">text</span>()
+        self.resultado.<span class="cd-fn">setText</span>(<span class="cd-s">f"¡Hola {nombre}!"</span>)
+
+
+app = <span class="cd-fn">QApplication</span>(sys.argv)
+ventana = <span class="cd-fn">Ventana</span>()
+ventana.<span class="cd-fn">show</span>()
+sys.<span class="cd-fn">exit</span>(app.<span class="cd-fn">exec</span>())</pre>
+    <figcaption>Las últimas cuatro líneas son idénticas a las del primer experimento. Lo único que
+    cambió es que ahora <code>Ventana()</code> es <b>nuestra</b> clase.</figcaption>
+  </figure>
+
+  <div class="pair">
+    <div><span class="lbl">Sin clase</span><p>La función <code>saludar</code> usaba variables globales. Funcionaba... hasta que el programa creciera.</p></div>
+    <div><span class="lbl">Con clase</span><p><code>self.campo_nombre</code> es un atributo: <b>todos</b> los métodos lo ven, sin globales y sin pasarlo por parámetro.</p></div>
+  </div>
+
+  <div class="box key">
+    <span class="lbl">Para recordar</span>
+    <p>PyQt <strong>no reemplaza la POO que aprendimos</strong>. PyQt está hecho de objetos, y nosotros
+    organizamos nuestro programa con clases propias. Es la misma herramienta de siempre, aplicada a
+    algo nuevo.</p>
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Probá</span>
+    <ul>
+      <li>Agregá un método <code>limpiar()</code> que vacíe el campo y el resultado, y un segundo
+        botón que lo llame.</li>
+      <li>Agregá un atributo <code>self.clics = 0</code> y contá cuántas veces saludaron.
+        ¿Dónde lo inicializás? ¿Dónde lo aumentás?</li>
+      <li>Sacale el <code>self.</code> a <code>self.campo_nombre</code> en el <code>__init__</code>
+        (dejalo como variable local) y ejecutá. ¿Qué error da <code>saludar</code>? ¿Por qué?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 9 · DESAFÍO GUIADO ==================== -->
+<section class="s" data-a="violet" id="s9">
+  <div class="s-head"><span class="s-num">09</span><div class="t"><h2>Desafío guiado</h2>
+    <p class="dim" style="font-size:16px">Tu primera aplicación propia, de punta a punta</p></div></div>
+
+  <div class="chal" style="--accent:var(--violet)">
+    <div class="ch">Construí «Mi primera aplicación»</div>
+    <div class="cb">
+      <p>El tema lo elegís vos. Lo que tiene que tener, sí o sí:</p>
+      <div class="checklist">
+        <div><span class="bx">□</span><span>Una ventana con un <b>título</b> puesto por vos.</span></div>
+        <div><span class="bx">□</span><span>Al menos <b>3 widgets</b> distintos.</span></div>
+        <div><span class="bx">□</span><span>Un <b>botón</b>.</span></div>
+        <div><span class="bx">□</span><span>Un <b>campo de texto</b> donde el usuario escriba algo.</span></div>
+        <div><span class="bx">□</span><span>Una <b>interacción</b>: el clic tiene que cambiar algo en pantalla.</span></div>
+        <div><span class="bx">□</span><span>Todo organizado con un <b>layout</b>, sin <code>move()</code>.</span></div>
+        <div><span class="bx">□</span><span>Una <b>clase propia</b> para la ventana.</span></div>
+      </div>
+      <p><b>Todo lo demás es libre:</b> los textos, los tamaños, los nombres de las variables, cómo se
+      distribuyen los widgets, qué hace el botón. No copies el ejemplo de la sección 8 tal cual —
+      partí de él y convertilo en algo tuyo.</p>
+    </div>
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Si no se te ocurre qué hacer</span>
+    <p>Un contador de repeticiones de gimnasio. Un sorteador de nombres. Un generador de
+    contraseñas. Un «¿qué como hoy?». Un calculador de promedio de notas. Cualquier cosa que
+    reciba algo, haga una cuenta y muestre un resultado.</p>
+  </div>
+
+  <div class="lab warn">
+    <span class="lbl">Cuando algo no funcione</span>
+    <ul>
+      <li><b>No aparece la ventana</b> → ¿pusiste <code>show()</code> y <code>app.exec()</code>?</li>
+      <li><b>No aparece un widget</b> → ¿lo agregaste al layout con <code>addWidget()</code>?</li>
+      <li><b>El botón no hace nada</b> → ¿pusiste <code>connect</code> <i>sin</i> paréntesis en la función?</li>
+      <li><b><code>NameError</code></b> dentro de un método → ¿te faltó el <code>self.</code>?</li>
+      <li><b><code>ImportError</code></b> → ¿agregaste ese widget a la línea del <code>import</code>?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 10 · MISIÓN DE INVESTIGACIÓN ==================== -->
+<section class="s" data-a="rose" id="s10">
+  <div class="s-head"><span class="s-num">10</span><div class="t"><h2>Misión de investigación 🔎</h2>
+    <p class="dim" style="font-size:16px">La parte más importante de la guía</p></div></div>
+
+  <p class="lead">Ninguna de estas respuestas está en esta guía. <strong>A propósito.</strong>
+  Nadie sabe PyQt de memoria: se investiga cada vez que hace falta. Elegí al menos
+  <strong>cuatro</strong> y resolvelas <strong>con código que funcione</strong>, no solo leyendo.</p>
+
+  <div class="grid2">
+    <div class="box"><span class="lbl">Misión 01</span><p>¿Cómo cambio el <b>color de fondo</b> de una ventana?</p></div>
+    <div class="box"><span class="lbl">Misión 02</span><p>¿Cómo cambio el <b>tamaño de la fuente</b> de una etiqueta?</p></div>
+    <div class="box"><span class="lbl">Misión 03</span><p>¿Cómo le cambio el <b>tamaño</b> a un botón?</p></div>
+    <div class="box"><span class="lbl">Misión 04</span><p>¿Cómo muestro una <b>imagen</b> en la ventana?</p></div>
+    <div class="box"><span class="lbl">Misión 05</span><p>¿Cómo muestro un <b>mensaje emergente</b>? ¿Qué es <code>QMessageBox</code>?</p></div>
+    <div class="box"><span class="lbl">Misión 06</span><p>¿Cómo evito que la ventana se pueda <b>redimensionar</b>?</p></div>
+    <div class="box"><span class="lbl">Misión 07</span><p>¿Qué hace <code>QSpinBox</code>? ¿En qué es mejor que un <code>QLineEdit</code> para pedir una edad?</p></div>
+    <div class="box"><span class="lbl">Misión 08</span><p>¿Qué <b>otros widgets</b> existen? Encontrá tres que no vimos y contá para qué sirve cada uno.</p></div>
+  </div>
+
+  <h3>Dónde buscar (en este orden)</h3>
+  <div class="steps">
+    <div><span class="k">1 · Editor</span><span class="v">Escribí <code>boton.</code> y mirá la lista que te ofrece. Es <b>la documentación más rápida que tenés</b> y ya está instalada.</span></div>
+    <div><span class="k">2 · Python</span><span class="v"><code>print(dir(boton))</code> lista todo lo que ese objeto puede hacer. <code>help(QPushButton.setText)</code> lo explica.</span></div>
+    <div><span class="k">3 · Docs</span><span class="v">La documentación oficial de Qt (<code>doc.qt.io</code>) o de PyQt6. Está escrita para C++, pero los <b>nombres de los métodos son los mismos</b>: aprendé a leerla igual.</span></div>
+    <div><span class="k">4 · Buscador</span><span class="v">Buscá en inglés y con la versión: <b>«PyQt6 QLabel change font size»</b>. Sumar <code>PyQt6</code> te ahorra la mitad de los problemas.</span></div>
+    <div><span class="k">5 · Probar</span><span class="v">Nunca pegues código que no entendés. Pegalo, ejecutalo, <b>cambiale un valor</b> y mirá qué se mueve. Ahí lo entendiste.</span></div>
+  </div>
+
+  <div class="lab find">
+    <span class="lbl">Traductor &middot; cuando el ejemplo que encontraste es de PyQt5</span>
+    <ul>
+      <li><code>from PyQt5...</code> → <code>from PyQt6...</code></li>
+      <li><code>app.exec_()</code> → <code>app.exec()</code></li>
+      <li><code>Qt.AlignCenter</code> → <code>Qt.AlignmentFlag.AlignCenter</code> — en PyQt6 las
+        opciones fijas van con su nombre completo.</li>
+    </ul>
+    <p>Con esas tres reglas, <b>la mayoría</b> de los ejemplos de PyQt5 funcionan en PyQt6.
+    Saber adaptar un ejemplo viejo es una habilidad que vas a usar toda tu carrera.</p>
+  </div>
+
+  <div class="box key" style="--accent:var(--rose)">
+    <span class="lbl">Lo que realmente estás aprendiendo</span>
+    <p>No PyQt. Estás aprendiendo a <strong>pararte frente a una librería que no conocés</strong>,
+    encontrar lo que necesitás y ponerlo a funcionar. Eso sirve para PyQt, para Django, para una
+    librería que todavía no existe.</p>
+  </div>
+</section>
+
+<!-- ==================== 11 · MINI PROYECTO ==================== -->
+<section class="s" data-a="blue" id="s11">
+  <div class="s-head"><span class="s-num">11</span><div class="t"><h2>Mini proyecto</h2>
+    <p class="dim" style="font-size:16px">Elegí una. Una sola, pero terminada.</p></div></div>
+
+  <p class="lead">Todas se resuelven con lo que ya está en esta guía, más una o dos cosas que vas a
+  tener que investigar. Usá una <strong>clase propia</strong> y <strong>layouts</strong>.</p>
+
+  <div class="grid2">
+
+    <div class="opt" style="--accent:var(--blue)">
+      <span class="k">Opción A</span><h4>🧮 Calculadora</h4>
+      <p>Dos números, las cuatro operaciones, un resultado.</p>
+      <div class="pills"><span class="pill">QGridLayout</span><span class="pill">varios botones</span><span class="pill">float()</span></div>
+      <p class="dim" style="font-size:14px">A investigar: cómo evitar que se rompa al dividir por cero.</p>
+    </div>
+
+    <div class="opt" style="--accent:var(--flame)">
+      <span class="k">Opción B</span><h4>🛡️ Registro de personaje</h4>
+      <p>Nombre, clase, nivel y vida. Un botón muestra la ficha completa.</p>
+      <div class="pills"><span class="pill">QLineEdit</span><span class="pill">QComboBox</span><span class="pill">QLabel</span></div>
+      <p class="dim" style="font-size:14px">Conecta directo con la sección 13.</p>
+    </div>
+
+    <div class="opt" style="--accent:var(--teal)">
+      <span class="k">Opción C</span><h4>🔁 Conversor</h4>
+      <p>Celsius → Fahrenheit, km → millas, pesos → dólares. Elegí uno o hacelos todos con un
+      <code>QComboBox</code>.</p>
+      <div class="pills"><span class="pill">QLineEdit</span><span class="pill">float()</span><span class="pill">f-string</span></div>
+      <p class="dim" style="font-size:14px">A investigar: cómo redondear el resultado a dos decimales.</p>
+    </div>
+
+    <div class="opt" style="--accent:var(--violet)">
+      <span class="k">Opción D</span><h4>✅ Gestor de tareas</h4>
+      <p>Escribís una tarea, apretás «Agregar» y aparece en una lista.</p>
+      <div class="pills"><span class="pill">QListWidget</span><span class="pill">addItem()</span><span class="pill">clear()</span></div>
+      <p class="dim" style="font-size:14px">A investigar: <code>QListWidget</code> no lo vimos. Y después: ¿cómo se borra la tarea seleccionada?</p>
+    </div>
+
+    <div class="opt" style="--accent:var(--rose)">
+      <span class="k">Opción E</span><h4>🎒 Inventario de personaje</h4>
+      <p>Nombre del objeto, cantidad y un botón para agregarlo al inventario.</p>
+      <div class="pills"><span class="pill">QSpinBox</span><span class="pill">QListWidget</span><span class="pill">dict o lista</span></div>
+      <p class="dim" style="font-size:14px">A pensar: ¿dónde guardás el inventario? ¿Alcanza con lo que se ve en pantalla?</p>
+    </div>
+
+    <div class="opt" style="--accent:var(--ink-2)">
+      <span class="k">Opción F</span><h4>💡 La tuya</h4>
+      <p>Si tenés una idea propia del mismo tamaño, hacela. Avisale al profesor qué vas a construir.</p>
+      <div class="pills"><span class="pill">libre</span></div>
+    </div>
+
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Cómo encararlo</span>
+    <p>Empezá por la <b>ventana vacía</b>. Después <b>un</b> widget. Después el layout. Después el
+    botón. Después la lógica. <b>Ejecutá en cada paso</b>: si escribís todo de una y falla, no vas a
+    saber dónde. Es el mismo método que usaste en Arena de Combate.</p>
+  </div>
+</section>
+
+<!-- ==================== 12 · ¿Y SI...? ==================== -->
+<section class="s" data-a="flame" id="s12">
+  <div class="s-head"><span class="s-num">12</span><div class="t"><h2>Desafíos «¿Y si...?»</h2>
+    <p class="dim" style="font-size:16px">Si terminaste antes, seguí por acá</p></div></div>
+
+  <div class="grid2">
+    <div class="lab whatif"><span class="lbl">¿Y si...?</span><p>...agregamos un <b>segundo botón</b> que haga otra cosa?</p></div>
+    <div class="lab whatif"><span class="lbl">¿Y si...?</span><p>...un botón <b>limpia</b> el formulario y lo deja como recién abierto?</p></div>
+    <div class="lab whatif"><span class="lbl">¿Y si...?</span><p>...mostramos un <b>mensaje de error</b> cuando falta un dato, en vez de saludar a nadie?</p></div>
+    <div class="lab whatif"><span class="lbl">¿Y si...?</span><p>...agregamos una <b>imagen</b>: un logo, un avatar, un ícono?</p></div>
+    <div class="lab whatif"><span class="lbl">¿Y si...?</span><p>...le cambiamos los <b>estilos</b>: colores, fuentes, bordes? (Buscá <code>setStyleSheet</code>.)</p></div>
+    <div class="lab whatif"><span class="lbl">¿Y si...?</span><p>...<b>guardamos los datos</b> en un archivo y siguen ahí la próxima vez que abrimos la app?</p></div>
+  </div>
+
+  <div class="chal" style="--accent:var(--flame)">
+    <div class="ch">La pregunta que abre la próxima clase</div>
+    <div class="cb">
+      <p class="ask" style="max-width:none">¿Y si nuestra aplicación tuviera <b>varias pantallas</b>?</p>
+      <p>Un menú de inicio, una pantalla de juego, una de resultados. Todo en un solo archivo de
+      300 líneas empieza a ser un problema: ¿dónde va cada cosa? ¿Cómo pasamos de una pantalla a
+      otra? ¿Qué parte del código se repite?</p>
+      <p><b>No la resuelvas ahora.</b> Si te la hiciste sola, ya llegaste a donde quería llegar esta
+      guía: eso es <b>organización de proyectos y modularización</b>, y es el tema que viene.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 13 · ARENA DE COMBATE ==================== -->
+<section class="s" data-a="teal" id="s13">
+  <div class="s-head"><span class="s-num">13</span><div class="t"><h2>Relación con nuestro proyecto</h2>
+    <p class="dim" style="font-size:16px">Arena de Combate, visto desde acá</p></div></div>
+
+  <p class="lead">Hasta ahora nuestro juego funciona por consola: <code>print()</code> para mostrar,
+  <code>input()</code> para elegir. <strong>¿Qué pasaría si reemplazáramos la consola por una
+  interfaz gráfica?</strong></p>
+
+  <figure>
+    <pre class="mock">               ARENA DE COMBATE
+
+        ┌─────────────────────────┐
+        │       JUGADOR           │
+        │ Vida: ████████░░        │
+        │                         │
+        │ [ Atacar ]              │
+        │ [ Pociones ]            │
+        │ [ Inventario ]          │
+        └─────────────────────────┘</pre>
+    <figcaption>El mismo juego. Los mismos personajes, el mismo daño, las mismas pociones.
+    Lo único distinto es <b>cómo se ve y cómo se juega</b>.</figcaption>
+  </figure>
+
+  <div class="qs">
+    <span class="lbl">Respondé antes de escribir una línea de código</span>
+    <ul>
+      <li>¿Qué partes del juego <b>ya tenemos</b> y no habría que tocar?</li>
+      <li>¿Qué parte tendríamos que <b>cambiar</b>?</li>
+      <li>¿La lógica del personaje <b>debería desaparecer</b>?</li>
+      <li>¿Podríamos <b>mantener nuestras clases</b> y cambiar solamente la interfaz?</li>
+    </ul>
+  </div>
+
+  <div class="pair">
+    <div><span class="lbl">La lógica &middot; se queda</span>
+      <p><code>Personaje</code>, <code>Jugador</code>, <code>Enemigo</code>, <code>Arma</code>,
+      <code>Pocion</code>. Quién tiene cuánta vida, cuánto daño hace un ataque, cuánto cura una
+      poción, si alguien sigue vivo. <b>Nada de esto sabe que existe una pantalla.</b></p></div>
+    <div><span class="lbl">La interfaz &middot; se cambia</span>
+      <p><code>print()</code> → un <code>QLabel</code> que se actualiza.<br>
+      <code>input()</code> → un <code>QPushButton</code> que el usuario aprieta.<br>
+      El <code>while</code> del combate → el bucle de eventos de PyQt.</p></div>
+  </div>
+
+  <div class="box key" style="--accent:var(--teal)">
+    <span class="lbl">El descubrimiento</span>
+    <p><strong>La interfaz y la lógica son dos cosas distintas.</strong> Si tus clases no usan
+    <code>print()</code> ni <code>input()</code> — si <strong>devuelven</strong> resultados en vez de
+    mostrarlos — podés ponerles arriba una consola, un Tkinter, un PyQt o un Pygame
+    <strong>sin tocarlas</strong>. Es exactamente la diferencia entre <code>print()</code> y
+    <code>return</code> que vimos en la clase 2, y recién ahora se ve para qué servía.</p>
+  </div>
+
+  <div class="lab find">
+    <span class="lbl">Investigá &middot; en tu propio código</span>
+    <p>Abrí tu Arena de Combate y buscá los <code>print()</code> que están <b>adentro</b> de los
+    métodos de tus clases. Cada uno de esos es un lugar donde la lógica y la interfaz se
+    mezclaron. ¿Cuántos hay? ¿Cuáles podrías convertir en <code>return</code>?</p>
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Para comparar</span>
+    <p>En la carpeta <code>arena-de-combate/</code> está el mismo juego resuelto tres veces:
+    <code>juego_consola.py</code>, <code>juego_tkinter.py</code> y <code>juego_pygame.py</code>.
+    Abrilos y mirá <b>qué cambia y qué se mantiene igual</b> entre los tres. Entre consola y Tkinter
+    las clases del principio son casi idénticas; en Pygame cambian un poco más (el
+    <code>Personaje</code> además es un <i>sprite</i>), pero las reglas del juego —vida, daño,
+    pociones— siguen siendo las mismas.</p>
+  </div>
+</section>
+
+<!-- ==================== 14 · DESAFÍO FINAL ==================== -->
+<section class="s" data-a="violet" id="s14">
+  <div class="s-head"><span class="s-num">14</span><div class="t"><h2>Desafío final</h2>
+    <p class="dim" style="font-size:16px">Una pantalla de Arena de Combate, en PyQt</p></div></div>
+
+  <div class="chal" style="--accent:var(--violet)">
+    <div class="ch">Una parte del juego, no el juego entero</div>
+    <div class="cb">
+      <p><b>No hace falta convertir todo.</b> Una sola pantalla que funcione vale más que un juego
+      entero a medio hacer.</p>
+      <div class="checklist">
+        <div><span class="bx">□</span><span>Mostrar <b>nombre y vida del jugador</b>.</span></div>
+        <div><span class="bx">□</span><span>Mostrar <b>nombre y vida del enemigo</b>.</span></div>
+        <div><span class="bx">□</span><span>Un botón <b>«Atacar»</b>.</span></div>
+        <div><span class="bx">□</span><span>Un botón <b>«Usar poción»</b>.</span></div>
+        <div><span class="bx">□</span><span>Un <code>QLabel</code> que muestre <b>el resultado</b> de la última acción.</span></div>
+      </div>
+      <p><b>Reutilizá tus clases.</b> Copiá el archivo de tu Arena de Combate al lado del nuevo y
+      hacé <code>from arena import Jugador, Enemigo, Arma</code>. Si no te deja, es porque el
+      archivo original ejecuta el juego al importarlo: eso también es información valiosa sobre
+      cómo está organizado tu proyecto.</p>
+    </div>
+  </div>
+
+  <h3>Por dónde empezar</h3>
+  <div class="steps">
+    <div><span class="k">1</span><span class="v">Ventana vacía con una clase <code>ArenaGUI(QWidget)</code>. Ejecutala.</span></div>
+    <div><span class="k">2</span><span class="v">Creá el <code>Jugador</code> y el <code>Enemigo</code> como <b>atributos</b>: <code>self.jugador = Jugador(...)</code>.</span></div>
+    <div><span class="k">3</span><span class="v">Dos <code>QLabel</code> con los nombres y las vidas. Acomodalos con un layout.</span></div>
+    <div><span class="k">4</span><span class="v">El botón «Atacar» conectado a un método <code>self.atacar()</code>.</span></div>
+    <div><span class="k">5</span><span class="v">Que <code>atacar()</code> llame a tus métodos de siempre y <b>después</b> actualice las etiquetas.</span></div>
+    <div><span class="k">6</span><span class="v">Recién ahí: la poción, el mensaje de resultado, los colores, el fin del combate.</span></div>
+  </div>
+
+  <div class="lab whatif">
+    <span class="lbl">Si te sobra tiempo</span>
+    <ul>
+      <li>¿Y si la vida se muestra como una <b>barra</b> en vez de un número? (Buscá <code>QProgressBar</code>.)</li>
+      <li>¿Y si los botones se <b>deshabilitan</b> cuando el combate termina? (Buscá <code>setEnabled</code>.)</li>
+      <li>¿Y si el historial del combate se va acumulando en un <code>QTextEdit</code>?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 15 · CHECKLIST ==================== -->
+<section class="s" data-a="rose" id="s15">
+  <div class="s-head"><span class="s-num">15</span><div class="t"><h2>Checklist final</h2>
+    <p class="dim" style="font-size:16px">Marcá solo lo que podrías hacer sin mirar la guía</p></div></div>
+
+  <div class="checklist">
+    <div><span class="bx">□</span><span>Sé instalar una librería.</span></div>
+    <div><span class="bx">□</span><span>Sé importarla.</span></div>
+    <div><span class="bx">□</span><span>Sé crear una ventana.</span></div>
+    <div><span class="bx">□</span><span>Sé agregar widgets.</span></div>
+    <div><span class="bx">□</span><span>Sé organizar widgets con layouts.</span></div>
+    <div><span class="bx">□</span><span>Sé reaccionar a un botón.</span></div>
+    <div><span class="bx">□</span><span>Sé obtener información de un campo.</span></div>
+    <div><span class="bx">□</span><span>Sé modificar un widget.</span></div>
+    <div><span class="bx">□</span><span>Entiendo la idea de eventos.</span></div>
+    <div><span class="bx">□</span><span>Puedo buscar información en la documentación.</span></div>
+    <div><span class="bx">□</span><span>Puedo crear una interfaz utilizando una clase propia.</span></div>
+    <div><span class="bx">□</span><span>Entiendo que PyQt puede trabajar junto con la POO.</span></div>
+  </div>
+
+  <div class="remember">
+    <div class="rh">Antes de cerrar la guía</div>
+    <ol>
+      <li><b>Instalar</b> trae la librería a tu computadora; <b>importar</b> la trae a tu programa.</li>
+      <li>Todo lo que se ve es un <b>widget</b>, y todo widget es un <b>objeto</b>.</li>
+      <li>El patrón se repite: <code>set...()</code> para cambiar, sin <code>set</code> para preguntar.</li>
+      <li><b>Evento → respuesta:</b> <code>algo.clicked.connect(mi_funcion)</code>, sin paréntesis.</li>
+      <li>Los <b>layouts</b> acomodan por vos. <code>move()</code> fue solo para arrancar.</li>
+      <li>PyQt <b>no reemplaza la POO</b>: nuestra ventana es una clase que hereda de <code>QWidget</code>.</li>
+      <li>La <b>lógica</b> y la <b>interfaz</b> pueden vivir separadas. Tus clases sobreviven al cambio de pantalla.</li>
+      <li>No sabés todo PyQt — nadie lo sabe. Sabés <b>cómo averiguar lo que te falta</b>.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ==================== CIERRE ==================== -->
+<div class="closing">
+  <p class="quote">Un programador no memoriza una librería.<br>Aprende a investigarla y utilizarla.</p>
+  <p class="lead" style="max-width:48ch">Si terminás pensando «no sé todo PyQt, pero sé cómo empezar
+  a construir con PyQt y cómo averiguar lo que no sé», la actividad cumplió su objetivo.</p>
+  <div class="colofon">
+    <span>Guía de exploración · PyQt6 · Técnico Universitario en Programación</span>
+    <span>Continúa Clase 3 (librerías, Tkinter y Pygame) y Arena de Combate</span>
+  </div>
+</div>
+
+</div>
