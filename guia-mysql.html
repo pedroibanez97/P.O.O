@@ -1,0 +1,1816 @@
+<meta charset="utf-8">
+<title>Guía de laboratorio · Python + MySQL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* ============================================================
+   GUÍA DE LABORATORIO · Python + MySQL
+   Hereda los tokens de la presentación (clase-3.html)
+   ============================================================ */
+:root{
+  --paper:#e7eaef; --sheet:#fbfcfd; --sheet-2:#f1f4f8;
+  --ink:#111a26; --ink-2:#546275; --ink-3:#6c7889;
+  --line:#ccd4e0; --line-soft:#e2e8f0;
+  --blue:#1548c8; --flame:#bf400e; --teal:#0a7566; --violet:#5d34c9; --rose:#bd1f62;
+  --good:#0f7d55; --bad:#b7361b;
+  --chip:rgba(21,72,200,.08);
+  --shadow:0 1px 2px rgba(17,26,38,.06), 0 24px 70px -30px rgba(17,26,38,.4);
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Instrument Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --cd-k:#8b2bb9; --cd-s:#b0450f; --cd-n:#1548c8; --cd-c:#7b8794; --cd-fn:#0a6a86;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#080d14; --sheet:#111924; --sheet-2:#18212e;
+    --ink:#e9eef6; --ink-2:#9aa9bd; --ink-3:#7e8da1;
+    --line:#2a3543; --line-soft:#222c39;
+    --blue:#7ba4ff; --flame:#ff8a5c; --teal:#3fcfb5; --violet:#b49bff; --rose:#ff7aae;
+    --good:#4fd08a; --bad:#ff7f66;
+    --chip:rgba(123,164,255,.12);
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 24px 60px -24px rgba(0,0,0,.85);
+    --cd-k:#d99bf0; --cd-s:#ffab7d; --cd-n:#8fb4ff; --cd-c:#7e8da1; --cd-fn:#67d6e8;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#080d14; --sheet:#111924; --sheet-2:#18212e;
+  --ink:#e9eef6; --ink-2:#9aa9bd; --ink-3:#7e8da1;
+  --line:#2a3543; --line-soft:#222c39;
+  --blue:#7ba4ff; --flame:#ff8a5c; --teal:#3fcfb5; --violet:#b49bff; --rose:#ff7aae;
+  --good:#4fd08a; --bad:#ff7f66;
+  --chip:rgba(123,164,255,.12);
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 24px 60px -24px rgba(0,0,0,.85);
+  --cd-k:#d99bf0; --cd-s:#ffab7d; --cd-n:#8fb4ff; --cd-c:#7e8da1; --cd-fn:#67d6e8;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+  font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:3px}
+
+.doc{max-width:1000px;margin:0 auto;background:var(--sheet);border-left:1px solid var(--line);
+  border-right:1px solid var(--line);box-shadow:var(--shadow);padding:0 clamp(20px,6vw,86px) 90px}
+
+h1,h2,h3,h4{margin:0;font-family:var(--display);letter-spacing:-.025em;line-height:1.05;text-wrap:balance}
+h1{font-size:clamp(38px,6.4vw,62px);font-weight:800}
+h2{font-size:clamp(27px,3.6vw,36px);font-weight:700;letter-spacing:-.03em}
+h3{font-size:clamp(20px,2.4vw,25px);font-weight:600;letter-spacing:-.018em;line-height:1.15}
+h4{font-size:18px;font-weight:600;letter-spacing:-.01em}
+p{margin:0}
+strong{font-weight:600;color:var(--ink)}
+em{font-style:italic}
+a{color:var(--blue)}
+code{font-family:var(--mono);font-size:.88em;background:var(--sheet-2);border:1px solid var(--line-soft);
+  border-radius:5px;padding:1px 5px;color:var(--ink);white-space:nowrap}
+.eyebrow{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink-3)}
+.lead{font-size:20px;line-height:1.55;color:var(--ink-2)}
+.dim{color:var(--ink-2)}
+.hl{color:var(--accent,var(--blue))}
+
+/* ---------- portada ---------- */
+.cover{padding:clamp(46px,7vw,80px) 0 34px;border-bottom:2px solid var(--ink);
+  display:flex;flex-direction:column;gap:22px}
+.cover-top{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line-soft);padding-bottom:14px}
+.cover h1{max-width:15ch}
+.cover .lead{max-width:56ch}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.badge{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:6px 12px;border:1px solid var(--line);background:var(--sheet-2);color:var(--ink-2)}
+.printbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:6px}
+button.print{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:10px 18px;border:1px solid var(--ink);background:var(--ink);color:var(--sheet);cursor:pointer}
+button.print:hover{background:transparent;color:var(--ink)}
+.printbar span{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+
+/* ---------- secciones ---------- */
+section.s{padding-top:56px;display:flex;flex-direction:column;gap:22px}
+.s-head{display:flex;gap:20px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:16px}
+.s-num{flex:none;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent,var(--blue));
+  border:1.5px solid var(--accent,var(--blue));width:38px;height:38px;display:grid;place-items:center;margin-top:4px}
+.s-head .t{display:flex;flex-direction:column;gap:6px}
+.s[data-a="blue"]{--accent:var(--blue)}
+.s[data-a="flame"]{--accent:var(--flame)}
+.s[data-a="teal"]{--accent:var(--teal)}
+.s[data-a="violet"]{--accent:var(--violet)}
+.s[data-a="rose"]{--accent:var(--rose)}
+.body-col{max-width:70ch;display:flex;flex-direction:column;gap:16px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:stretch}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-items:stretch}
+@media (max-width:760px){.grid2,.grid3{grid-template-columns:1fr}}
+
+/* ---------- cajas ---------- */
+.box{border:1px solid var(--line);background:var(--sheet-2);padding:18px 20px;
+  display:flex;flex-direction:column;gap:9px}
+.box .lbl{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3)}
+.box p{font-size:16px;line-height:1.6;color:var(--ink-2)}
+.box.key{border-color:color-mix(in srgb,var(--accent,var(--blue)) 45%,transparent);
+  background:color-mix(in srgb,var(--accent,var(--blue)) 6%,var(--sheet-2))}
+.box.key .lbl{color:var(--accent,var(--blue))}
+.box.key p{color:var(--ink)}
+.box h4{margin-bottom:2px}
+
+/* pregunta de clase */
+.ask{position:relative;padding-left:44px;min-height:30px;font-family:var(--display);font-weight:600;
+  font-size:21px;line-height:1.3;letter-spacing:-.015em;max-width:40ch}
+.ask::before{content:"?";position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;
+  background:var(--accent,var(--blue));color:var(--sheet);font-family:var(--display);font-weight:800;
+  font-size:18px;display:grid;place-items:center}
+
+/* ---------- código ---------- */
+pre{margin:0;background:var(--sheet-2);border:1px solid var(--line-soft);padding:16px 18px;
+  overflow-x:auto;font-family:var(--mono);font-size:14.5px;line-height:1.7;color:var(--ink);
+  white-space:pre;tab-size:2}
+pre.sm{font-size:13.5px}
+.cd-k{color:var(--cd-k);font-weight:700}
+.cd-s{color:var(--cd-s)}
+.cd-n{color:var(--cd-n)}
+.cd-c{color:var(--cd-c);font-style:italic}
+.cd-fn{color:var(--cd-fn);font-weight:700}
+figure{margin:0;display:flex;flex-direction:column;gap:8px}
+figcaption{font-size:14.5px;color:var(--ink-2);line-height:1.5}
+figcaption b{color:var(--ink)}
+
+/* ---------- pills ---------- */
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{font-family:var(--mono);font-size:14.5px;padding:6px 12px;border:1px solid var(--line-soft);
+  background:var(--sheet-2)}
+
+/* ---------- tablas ---------- */
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--line-soft);vertical-align:top;line-height:1.5}
+thead th{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);border-bottom:1.5px solid var(--line)}
+tbody td:first-child{font-weight:600;color:var(--ink);width:20%}
+.tw{overflow-x:auto}
+
+/* ---------- pasos numerados ---------- */
+.steps{display:flex;flex-direction:column;gap:0;border:1px solid var(--line)}
+.steps>div{display:flex;gap:14px;align-items:flex-start;padding:12px 16px}
+.steps>div+div{border-top:1px solid var(--line-soft)}
+.steps .k{flex:none;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--accent,var(--blue));width:78px;padding-top:2px}
+.steps .v{font-size:15px;color:var(--ink-2);line-height:1.5}
+.steps .v b{color:var(--ink);font-weight:600}
+.steps .v code{white-space:normal}
+
+/* ---------- diagrama vertical (flechas) ---------- */
+.ladder{display:flex;flex-direction:column;align-items:center;gap:0}
+.ladder .rung{width:100%;max-width:340px}
+.ladder .arw{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 0;color:var(--ink-3)}
+.ladder .arw i{display:block;width:1.5px;height:14px;background:var(--line)}
+.ladder .arw span{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase}
+.ladder .arw b{color:var(--ink-3);font-size:13px;line-height:1}
+.fbox{border:2px solid var(--line);background:var(--sheet-2);padding:13px 20px;font-family:var(--mono);
+  font-weight:700;font-size:14.5px;text-align:center;letter-spacing:.02em;color:var(--ink-2)}
+.fbox.acc{border-color:var(--accent,var(--blue));background:color-mix(in srgb,var(--accent,var(--blue)) 9%,var(--sheet-2));
+  color:var(--accent,var(--blue))}
+
+/* ---------- checklist ---------- */
+.checklist{border:1px solid var(--line);display:flex;flex-direction:column}
+.checklist div{display:flex;gap:12px;align-items:baseline;padding:10px 16px;font-size:15.5px;color:var(--ink-2)}
+.checklist div+div{border-top:1px solid var(--line-soft)}
+.checklist .bx{flex:none;font-family:var(--mono);font-size:16px;color:var(--ink-3);line-height:1}
+
+/* ---------- recordar ---------- */
+.remember{border:2px solid var(--ink);padding:0;display:flex;flex-direction:column}
+.remember .rh{background:var(--ink);color:var(--sheet);padding:14px 22px;font-family:var(--display);
+  font-weight:700;font-size:20px;letter-spacing:-.02em}
+.remember ol{margin:0;padding:20px 20px 20px 40px;display:flex;flex-direction:column;gap:12px;
+  font-size:16px;line-height:1.5;color:var(--ink-2)}
+.remember ol b{color:var(--ink);font-weight:600}
+.remember li::marker{font-family:var(--mono);font-weight:700;color:var(--blue);font-size:14px}
+
+/* ---------- índice ---------- */
+.toc{border:1px solid var(--line);display:flex;flex-direction:column}
+.toc .th{background:var(--ink);color:var(--sheet);padding:12px 20px;font-family:var(--display);
+  font-weight:700;font-size:19px;letter-spacing:-.02em}
+.toc ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column}
+.toc li{display:grid;grid-template-columns:42px 1fr;gap:14px;padding:10px 20px;align-items:baseline}
+.toc li+li{border-top:1px solid var(--line-soft)}
+.toc .k{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--c,var(--blue));letter-spacing:.06em}
+.toc .n{font-family:var(--display);font-weight:600;font-size:17px;letter-spacing:-.015em;line-height:1.2}
+@media (max-width:520px){.toc li{grid-template-columns:1fr;gap:2px}}
+
+/* ---------- cierre ---------- */
+.closing{margin-top:60px;border-top:2px solid var(--ink);padding-top:30px;display:flex;
+  flex-direction:column;gap:16px}
+.quote{font-family:var(--display);font-weight:700;font-size:clamp(24px,3.4vw,34px);line-height:1.15;
+  letter-spacing:-.03em;max-width:24ch}
+.colofon{font-family:var(--mono);font-size:12px;color:var(--ink-3);letter-spacing:.04em;
+  display:flex;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line-soft);padding-top:16px}
+
+/* ---------- impresión ---------- */
+@media print{
+  :root:root:root{color-scheme:light;--paper:#fff;--sheet:#fff;--sheet-2:#f6f8fb;--ink:#101820;--ink-2:#3f4a59;--ink-3:#69737f;
+    --line:#c3ccd8;--line-soft:#dfe5ed;--shadow:none;
+    --blue:#0f3aa8;--flame:#a2360c;--teal:#0a6355;--violet:#4d2ab0;--rose:#a11a53;
+    --good:#0b6845;--bad:#9c2d16;
+    --cd-k:#7a239f;--cd-s:#9a3b0d;--cd-n:#0f3aa8;--cd-c:#6b7684;--cd-fn:#085a72}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#fff;color:var(--ink);font-size:10pt;line-height:1.45}
+  .doc{max-width:none;box-shadow:none;border:none;padding:0}
+  .printbar{display:none}
+  @page{size:A4;margin:14mm 14mm}
+  h1{font-size:28pt} h2{font-size:16.5pt} h3{font-size:12.5pt} h4{font-size:10.5pt}
+  .lead{font-size:11pt;line-height:1.45}
+  .quote{font-size:18pt}
+  .ask{font-size:12pt}
+  .box p,figcaption,table,.steps .v,.checklist div{font-size:9.4pt}
+  section.s{padding-top:13px;gap:11px;break-inside:auto}
+  .stack{gap:9px} .grid2{gap:11px} .grid3{gap:9px}
+  .box{padding:11px 13px;gap:6px}
+  .remember ol{padding:13px 15px 13px 32px;gap:8px}
+  .cover{padding-bottom:16px;gap:12px}
+  .s-head{break-after:avoid}
+  h1,h2,h3,h4{break-after:avoid}
+  pre,figure,.box,.steps,.ladder,.checklist,.remember,table,.toc{break-inside:avoid}
+  .cover{break-after:page;padding-top:0}
+  pre{font-size:8.4pt;padding:10px 12px;line-height:1.5}
+  a{color:inherit;text-decoration:none}
+  .steps>div,.checklist div{padding:8px 12px}
+  .toc{break-inside:avoid} .toc li{padding:7px 14px} .toc .n{font-size:10.5pt}
+  .fbox{font-size:9.5pt;padding:9px 14px}
+  .closing{margin-top:22px;padding-top:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ============================================================
+   EXTRAS DE LA GUÍA DE LABORATORIO
+   ============================================================ */
+
+/* cajas de actividad: PROBÁ · INVESTIGÁ · ¿Y SI...? */
+.lab{border:1px solid var(--line);border-left:4px solid var(--c,var(--blue));background:var(--sheet-2);
+  padding:16px 20px;display:flex;flex-direction:column;gap:9px}
+.lab .lbl{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--c,var(--blue));display:flex;align-items:center;gap:8px}
+.lab p{font-size:16px;line-height:1.6;color:var(--ink-2);margin:0}
+.lab p b,.lab li b{color:var(--ink);font-weight:600}
+.lab ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;
+  font-size:16px;line-height:1.55;color:var(--ink-2)}
+.lab code{white-space:normal}
+.lab.try{--c:var(--teal)}
+.lab.find{--c:var(--violet)}
+.lab.whatif{--c:var(--flame)}
+.lab.warn{--c:var(--bad)}
+
+/* preguntas para pensar */
+.qs{display:flex;flex-direction:column;gap:8px;border:1px dashed var(--line);padding:16px 20px;
+  background:transparent}
+.qs .lbl{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3)}
+.qs ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:7px;
+  font-size:16px;line-height:1.5;color:var(--ink-2)}
+.qs ul li::marker{color:var(--accent,var(--blue))}
+
+/* bloque de desafío */
+.chal{border:2px solid var(--accent,var(--blue));display:flex;flex-direction:column}
+.chal .ch{background:var(--accent,var(--blue));color:var(--sheet);padding:12px 20px;
+  font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.chal .cb{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.chal .cb p{font-size:16px;line-height:1.6;color:var(--ink-2)}
+.chal .cb p b{color:var(--ink);font-weight:600}
+.chal .cb ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;
+  font-size:16px;line-height:1.5;color:var(--ink-2)}
+
+/* maqueta / wireframe en texto */
+pre.mock{background:transparent;border:1px dashed var(--line);color:var(--ink-2);
+  font-size:13.5px;line-height:1.5;text-align:center}
+
+/* tarjetas de opciones del mini proyecto */
+.opt{border:1px solid var(--line);background:var(--sheet-2);padding:16px 18px;
+  display:flex;flex-direction:column;gap:8px}
+.opt .k{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent,var(--blue))}
+.opt h4{font-size:17px}
+.opt p{font-size:15px;line-height:1.5;color:var(--ink-2)}
+.opt .pills .pill{font-size:12.5px;padding:4px 9px}
+
+/* bloque nuevo / apareado */
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line)}
+.pair>div{padding:14px 18px;display:flex;flex-direction:column;gap:8px}
+.pair>div+div{border-left:1px solid var(--line-soft)}
+.pair .lbl{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3)}
+.pair p{font-size:15px;line-height:1.5;color:var(--ink-2)}
+@media (max-width:760px){.pair{grid-template-columns:1fr}.pair>div+div{border-left:none;border-top:1px solid var(--line-soft)}}
+
+@media print{
+  .lab,.qs,.chal,.opt,.pair,pre.mock{break-inside:avoid}
+  .lab{padding:11px 14px;gap:6px}
+  .lab p,.lab ul,.qs ul,.chal .cb p,.chal .cb ul,.opt p{font-size:9.4pt}
+  .chal .cb{padding:12px 14px;gap:10px}
+  pre.mock{font-size:8pt}
+}
+</style>
+
+<div class="doc">
+
+<!-- ==================== PORTADA ==================== -->
+<header class="cover">
+  <div class="cover-top">
+    <span class="eyebrow">Técnico Universitario en Programación</span>
+    <span class="eyebrow">Guía de laboratorio &middot; para hacer con la compu abierta</span>
+  </div>
+  <h1>Python habla con<br>la base de datos</h1>
+  <p class="lead">Ya sabés escribir SQL. Ya sabés programar con objetos. Lo que falta es
+  <strong>unir las dos cosas</strong>: que tu programa Python consulte, guarde y modifique datos
+  en MySQL — y que todo ese trabajo viva ordenado en <strong>una sola clase</strong> en vez de
+  desparramado por todo el proyecto.</p>
+  <div class="badges">
+    <span class="badge">mysql-connector</span>
+    <span class="badge">Conexión</span>
+    <span class="badge">Cursor</span>
+    <span class="badge">Parámetros</span>
+    <span class="badge">CRUD</span>
+    <span class="badge">Controlador</span>
+    <span class="badge">Variables de entorno</span>
+    <span class="badge">Mini proyecto</span>
+  </div>
+  <div class="printbar">
+    <button class="print" type="button" onclick="window.print()">Imprimir / Guardar PDF</button>
+    <span>o usá Cmd&nbsp;+&nbsp;P (Mac) &middot; Ctrl&nbsp;+&nbsp;P (Windows) → Guardar como PDF</span>
+  </div>
+</header>
+
+<!-- ==================== CÓMO SE USA + ÍNDICE ==================== -->
+<section class="s" data-a="blue" id="indice" style="padding-top:40px">
+
+  <div class="remember">
+    <div class="rh">Cómo se trabaja esta guía</div>
+    <ol>
+      <li><b>Leé</b> la pregunta que abre cada sección y contestala mentalmente antes de seguir.</li>
+      <li><b>Escribí</b> el código a mano. Cada sección deja algo andando en tu computadora.</li>
+      <li><b>Rompelo</b> a propósito: cambiá la contraseña, borrá una coma, apagá MySQL. Mirá el error.</li>
+      <li><b>No copies el archivo final de una</b>. La guía lo construye de a pedazos por un motivo.</li>
+      <li><b>Al terminar</b> tenés un mini proyecto para entregar y seis desafíos para crecerlo.</li>
+    </ol>
+  </div>
+
+  <div class="lab key" style="--c:var(--blue);border-left-width:4px">
+    <span class="lbl">La idea central de toda la guía</span>
+    <p style="font-family:var(--display);font-weight:600;font-size:21px;line-height:1.3;color:var(--ink)">
+      El resto del programa no tiene por qué saber<br>cómo se habla con la base de datos.</p>
+  </div>
+
+  <h3>Lo que ya traés puesto</h3>
+  <div class="grid3">
+    <div class="box"><span class="lbl">De Bases de Datos</span><p>Crear bases y tablas. <code>SELECT</code>, <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>, <code>WHERE</code>. Eso <b>no cambia acá</b>: el SQL sigue siendo el mismo SQL.</p></div>
+    <div class="box"><span class="lbl">De POO</span><p>Clases, atributos, métodos, encapsulamiento. Vamos a usarlo para ordenar el acceso a datos.</p></div>
+    <div class="box"><span class="lbl">De la clase 3</span><p>Instalar librerías con <code>pip</code> e importarlas. Hoy instalamos una más.</p></div>
+  </div>
+
+  <div class="toc">
+    <div class="th">El recorrido</div>
+    <ol>
+      <li style="--c:var(--blue)"><span class="k">01</span><span class="n">El punto de partida: dos mundos separados</span></li>
+      <li style="--c:var(--flame)"><span class="k">02</span><span class="n">El conector: Python + MySQL</span></li>
+      <li style="--c:var(--teal)"><span class="k">03</span><span class="n">La primera conexión</span></li>
+      <li style="--c:var(--violet)"><span class="k">04</span><span class="n">Ejecutar una consulta</span></li>
+      <li style="--c:var(--rose)"><span class="k">05</span><span class="n">Consultas con parámetros</span></li>
+      <li style="--c:var(--blue)"><span class="k">06</span><span class="n">SELECT, INSERT, UPDATE y DELETE</span></li>
+      <li style="--c:var(--flame)"><span class="k">07</span><span class="n">El problema de repetir código</span></li>
+      <li style="--c:var(--teal)"><span class="k">08</span><span class="n">Nuestro primer controlador</span></li>
+      <li style="--c:var(--violet)"><span class="k">09</span><span class="n">Métodos que son acciones</span></li>
+      <li style="--c:var(--rose)"><span class="k">10</span><span class="n">Esto también es POO</span></li>
+      <li style="--c:var(--blue)"><span class="k">11</span><span class="n">Variables de entorno</span></li>
+      <li style="--c:var(--flame)"><span class="k">12</span><span class="n">Mini proyecto: gestor de productos</span></li>
+      <li style="--c:var(--teal)"><span class="k">13</span><span class="n">Desafíos por nivel</span></li>
+      <li style="--c:var(--violet)"><span class="k">14</span><span class="n">¿Y si le ponemos PyQt?</span></li>
+      <li style="--c:var(--rose)"><span class="k">15</span><span class="n">Hacia dónde vamos</span></li>
+      <li style="--c:var(--blue)"><span class="k">16</span><span class="n">Ideas clave y checklist</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ==================== 1 · PUNTO DE PARTIDA ==================== -->
+<section class="s" data-a="blue" id="s1">
+  <div class="s-head"><span class="s-num">01</span><div class="t"><h2>El punto de partida</h2>
+    <p class="dim" style="font-size:16px">Dos mundos que todavía no se hablan</p></div></div>
+
+  <p class="ask">Sabemos escribir SQL. Sabemos programar en Python.<br>¿Cómo hacemos para que
+  <b>Python ejecute una consulta SQL</b> sobre nuestra base?</p>
+
+  <p class="dim">Hasta hoy, esos dos mundos vivieron separados. El SQL lo escribiste en Workbench,
+  en phpMyAdmin o en la consola de MySQL: escribías la consulta a mano y mirabas el resultado en
+  pantalla. Python, mientras tanto, guardaba todo en listas y diccionarios que <b>desaparecían al
+  cerrar el programa</b>.</p>
+
+  <div class="grid2">
+    <figure>
+      <pre class="mock">   Python            MySQL
+
+  listas            tablas
+  objetos           filas
+  variables         columnas
+
+      ?  ←  no se conocen  →  ?</pre>
+      <figcaption><b>El problema:</b> Arena de Combate olvidaba todo al cerrarse. Los datos que
+      importan tienen que sobrevivir al <code>Ctrl + C</code>.</figcaption>
+    </figure>
+    <div class="stack">
+      <div class="box key">
+        <span class="lbl">Lo que buscamos</span>
+        <p>Un <strong>puente</strong>: algo que lleve una consulta escrita en Python hasta MySQL, y
+        traiga el resultado de vuelta convertido en datos que Python entienda.</p>
+      </div>
+      <div class="ladder">
+        <div class="fbox rung">PYTHON</div>
+        <div class="arw"><i></i><b>▼</b><i></i><span>¿con qué?</span></div>
+        <div class="fbox rung acc">MYSQL</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Para pensar antes de seguir</span>
+    <ul>
+      <li>¿Qué pasa hoy con los personajes de Arena de Combate cuando cerrás el programa?</li>
+      <li>Si tu programa tuviera que recordar 500 productos, ¿los guardarías en una lista?</li>
+      <li>¿Qué aplicaciones que usás todos los días <b>se acuerdan</b> de vos? ¿Dónde estará eso guardado?</li>
+    </ul>
+  </div>
+
+  <div class="lab" style="--c:var(--blue)">
+    <span class="lbl">Lo importante</span>
+    <p>Esto se llama <b>persistencia</b>: que los datos sigan existiendo después de que el programa
+    termina. Es la diferencia entre un ejercicio y una aplicación de verdad.</p>
+  </div>
+</section>
+
+<!-- ==================== 2 · EL CONECTOR ==================== -->
+<section class="s" data-a="flame" id="s2">
+  <div class="s-head"><span class="s-num">02</span><div class="t"><h2>El conector</h2>
+    <p class="dim" style="font-size:16px">La librería que hace de puente</p></div></div>
+
+  <div class="box key">
+    <span class="lbl">Qué es un conector</span>
+    <p>Un <strong>conector</strong> (o <em>driver</em>) es una librería que sabe hablar el idioma de
+    un motor de base de datos. Traduce: recibe de Python un texto con una consulta, se lo manda a
+    MySQL por la red, espera la respuesta y te la devuelve como <strong>listas y tuplas de Python</strong>.</p>
+  </div>
+
+  <h3>Se instala igual que cualquier librería</h3>
+  <figure>
+    <pre>pip install mysql-connector-python</pre>
+    <figcaption>Si usás entorno virtual, activalo antes. En algunas computadoras el comando es
+    <code>pip3</code> o <code>python -m pip install mysql-connector-python</code>.</figcaption>
+  </figure>
+
+  <h3>Y se importa casi igual</h3>
+  <figure>
+    <pre><span class="cd-k">import</span> mysql.connector
+<span class="cd-k">from</span> mysql.connector <span class="cd-k">import</span> Error</pre>
+    <figcaption>La segunda línea trae el <b>tipo de error</b> propio de MySQL: lo vamos a necesitar
+    en la sección 3 para poder decir «esto falló, pero no se rompe todo».</figcaption>
+  </figure>
+
+  <h3>Un detalle que confunde a todos</h3>
+  <div class="pair">
+    <div>
+      <span class="lbl">Lo que instalás</span>
+      <pre class="sm">mysql-connector-python</pre>
+      <p>Así se llama el <b>paquete</b> en PyPI, el repositorio de donde <code>pip</code> lo baja.</p>
+    </div>
+    <div>
+      <span class="lbl">Lo que importás</span>
+      <pre class="sm">import mysql.connector</pre>
+      <p>Así se llama el <b>módulo</b> adentro de Python. El punto indica que <code>connector</code>
+      vive dentro de <code>mysql</code>.</p>
+    </div>
+  </div>
+  <p class="dim">No tienen por qué coincidir, y muchas veces no coinciden. Es normal, y es una de
+  las primeras cosas que se buscan en la documentación de cualquier librería nueva.</p>
+
+  <h3>Comparalo con lo que ya conocés</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Librería</th><th>¿Se instala?</th><th>¿Qué te da?</th></tr></thead>
+    <tbody>
+      <tr><td>random</td><td>No, viene con Python</td><td>Números al azar. No sale de tu programa.</td></tr>
+      <tr><td>tkinter</td><td>No, viene con Python</td><td>Ventanas. Habla con tu sistema operativo.</td></tr>
+      <tr><td>pygame</td><td>Sí, con pip</td><td>Un videojuego. Habla con pantalla, teclado y sonido.</td></tr>
+      <tr><td>mysql.connector</td><td>Sí, con pip</td><td>Habla con <b>otro programa</b>: el servidor MySQL.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="lab find">
+    <span class="lbl">Investigá</span>
+    <p>Existen otros conectores para MySQL (<code>PyMySQL</code>, <code>mysqlclient</code>) y conectores
+    para otros motores (<code>psycopg2</code> para PostgreSQL, <code>sqlite3</code> que viene incluido en
+    Python). Buscá uno y contestá: <b>¿el código se parece al nuestro?</b> Vas a descubrir que sí, y eso
+    no es casualidad.</p>
+  </div>
+
+  <div class="lab warn">
+    <span class="lbl">Antes de seguir</span>
+    <p>Necesitás <b>MySQL corriendo</b> en tu computadora (XAMPP, MAMP, Workbench o el servidor solo) y
+    una base creada. Si <code>pip install</code> salió bien pero después nada conecta, el problema casi
+    nunca es Python: es que el servidor está apagado.</p>
+  </div>
+</section>
+
+<!-- ==================== 3 · PRIMERA CONEXIÓN ==================== -->
+<section class="s" data-a="teal" id="s3">
+  <div class="s-head"><span class="s-num">03</span><div class="t"><h2>La primera conexión</h2>
+    <p class="dim" style="font-size:16px">Cuatro datos y un apretón de manos</p></div></div>
+
+  <p class="dim">Todavía <b>no</b> vamos a crear una clase. Primero, la forma más simple que existe:
+  un archivo, siete líneas, y ver si el servidor nos atiende.</p>
+
+  <h3>La base con la que vamos a trabajar</h3>
+  <figure>
+    <pre><span class="cd-k">CREATE DATABASE</span> tienda;
+<span class="cd-k">USE</span> tienda;
+
+<span class="cd-k">CREATE TABLE</span> productos (
+    id     <span class="cd-k">INT</span> <span class="cd-k">AUTO_INCREMENT</span> <span class="cd-k">PRIMARY KEY</span>,
+    nombre <span class="cd-k">VARCHAR</span>(<span class="cd-n">100</span>) <span class="cd-k">NOT NULL</span>,
+    precio <span class="cd-k">DECIMAL</span>(<span class="cd-n">10</span>,<span class="cd-n">2</span>) <span class="cd-k">NOT NULL</span>
+);
+
+<span class="cd-k">INSERT INTO</span> productos (nombre, precio) <span class="cd-k">VALUES</span>
+    (<span class="cd-s">'Remera negra'</span>, <span class="cd-n">25000</span>),
+    (<span class="cd-s">'Buzo gris'</span>,    <span class="cd-n">48000</span>),
+    (<span class="cd-s">'Gorra'</span>,        <span class="cd-n">12000</span>);</pre>
+    <figcaption>Esto ya lo sabés hacer: corrélo en Workbench o en la consola de MySQL. Es el único
+    SQL de toda la guía que no vamos a ejecutar desde Python.</figcaption>
+  </figure>
+
+  <h3>conexion.py</h3>
+  <figure>
+    <pre><span class="cd-k">import</span> mysql.connector
+
+conexion = mysql.connector.<span class="cd-fn">connect</span>(
+    host=<span class="cd-s">"localhost"</span>,
+    port=<span class="cd-n">3306</span>,
+    user=<span class="cd-s">"root"</span>,
+    password=<span class="cd-s">""</span>,
+    database=<span class="cd-s">"tienda"</span>
+)
+
+<span class="cd-fn">print</span>(conexion)
+conexion.<span class="cd-fn">close</span>()</pre>
+    <figcaption>Si todo salió bien vas a ver algo como
+    <code>&lt;mysql.connector.connection_cext.CMySQLConnection object at 0x...&gt;</code>.
+    Feo, pero significa <b>«estás adentro»</b>.</figcaption>
+  </figure>
+
+  <h3>Qué significa cada dato</h3>
+  <div class="steps">
+    <div><span class="k">host</span><span class="v"><b>En qué computadora</b> está el servidor. <code>localhost</code> = esta misma. Mañana puede ser una IP o un dominio.</span></div>
+    <div><span class="k">port</span><span class="v"><b>Por qué puerta</b> entra. MySQL usa <code>3306</code> por defecto; si no lo ponés, se asume ese.</span></div>
+    <div><span class="k">user</span><span class="v"><b>Quién sos</b> para la base de datos. En clase casi siempre <code>root</code>; en un servidor real, nunca.</span></div>
+    <div><span class="k">password</span><span class="v"><b>Tu contraseña</b> de MySQL. En XAMPP suele estar vacía; en Mac o Workbench la pusiste vos al instalar.</span></div>
+    <div><span class="k">database</span><span class="v"><b>Cuál de todas</b> las bases del servidor. Un mismo servidor guarda muchas.</span></div>
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Probá</span>
+    <ul>
+      <li>Ejecutalo tal cual. ¿Imprime el objeto?</li>
+      <li>Cambiá <code>database</code> por una base que no existe. Leé el error completo.</li>
+      <li>Poné mal la contraseña. ¿El mensaje es distinto al anterior?</li>
+      <li>Cambiá el puerto a <code>3307</code>. ¿Qué dice ahora?</li>
+    </ul>
+  </div>
+
+  <p class="ask">¿Y qué pasa si la conexión falla?</p>
+
+  <p class="dim">Con el código de arriba, el programa <b>explota</b>: aparece un
+  <code>Traceback</code> rojo y todo se corta ahí. Para un ejercicio da igual; para una aplicación
+  que alguien va a usar, no. Queremos <b>enterarnos del problema sin morir en el intento</b>.</p>
+
+  <figure>
+    <pre><span class="cd-k">import</span> mysql.connector
+<span class="cd-k">from</span> mysql.connector <span class="cd-k">import</span> Error
+
+<span class="cd-k">try</span>:
+    conexion = mysql.connector.<span class="cd-fn">connect</span>(
+        host=<span class="cd-s">"localhost"</span>,
+        user=<span class="cd-s">"root"</span>,
+        password=<span class="cd-s">""</span>,
+        database=<span class="cd-s">"tienda"</span>
+    )
+    <span class="cd-fn">print</span>(<span class="cd-s">"Conexión exitosa"</span>)
+    conexion.<span class="cd-fn">close</span>()
+
+<span class="cd-k">except</span> Error <span class="cd-k">as</span> e:
+    <span class="cd-fn">print</span>(<span class="cd-s">f"Error de conexión: {e}"</span>)</pre>
+    <figcaption><code>try</code> = «intentá esto». <code>except Error as e</code> = «si MySQL se queja,
+    guardá la queja en <code>e</code> y seguí». El programa <b>no se cae</b>: avisa.</figcaption>
+  </figure>
+
+  <div class="lab warn">
+    <span class="lbl">Error clásico</span>
+    <p><b>Access denied for user 'root'@'localhost'</b> → usuario o contraseña mal.<br>
+    <b>Can't connect to MySQL server</b> → el servidor está apagado o el puerto no es ese.<br>
+    <b>Unknown database 'tienda'</b> → conectaste bien, pero esa base no existe todavía.<br>
+    Leer el error es la mitad del trabajo: cada mensaje te dice exactamente dónde mirar.</p>
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Probá</span>
+    <p>Volvé a romper la contraseña, pero ahora con <code>try</code>. ¿Ves la diferencia? Antes se
+    cortaba el programa; ahora imprime un mensaje y <b>sigue vivo</b>.</p>
+  </div>
+</section>
+
+<!-- ==================== 4 · EJECUTAR UNA CONSULTA ==================== -->
+<section class="s" data-a="violet" id="s4">
+  <div class="s-head"><span class="s-num">04</span><div class="t"><h2>Ejecutar una consulta</h2>
+    <p class="dim" style="font-size:16px">Conectarse no alcanza: hay que preguntar algo</p></div></div>
+
+  <p class="dim">Estar conectado es como tener la llamada establecida: todavía nadie dijo nada.
+  Para hablar necesitamos un <b>cursor</b>.</p>
+
+  <div class="box key">
+    <span class="lbl">Cursor</span>
+    <p>El <strong>cursor</strong> es el objeto que lleva y trae. Vos le pasás la consulta, él la manda
+    a MySQL, y después se queda con el resultado hasta que se lo pedís. Pensalo como
+    <strong>el mozo</strong>: la conexión es estar sentado en el restaurante; el cursor es quien lleva
+    tu pedido a la cocina y vuelve con el plato.</p>
+  </div>
+
+  <figure>
+    <pre>cursor = conexion.<span class="cd-fn">cursor</span>()
+
+cursor.<span class="cd-fn">execute</span>(<span class="cd-s">"SELECT * FROM productos"</span>)
+
+resultados = cursor.<span class="cd-fn">fetchall</span>()
+
+<span class="cd-fn">print</span>(resultados)
+
+cursor.<span class="cd-fn">close</span>()
+conexion.<span class="cd-fn">close</span>()</pre>
+    <figcaption>Tres verbos nuevos y nada más: <b>crear</b> el cursor, <b>ejecutar</b> la consulta,
+    <b>traer</b> el resultado.</figcaption>
+  </figure>
+
+  <h3>El viaje completo</h3>
+  <div class="ladder">
+    <div class="fbox rung">conexión</div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>abre un</span></div>
+    <div class="fbox rung">cursor</div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>execute()</span></div>
+    <div class="fbox rung acc">MYSQL</div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>resultado</span></div>
+    <div class="fbox rung">fetchall()</div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>ya es Python</span></div>
+    <div class="fbox rung">lista de tuplas</div>
+  </div>
+
+  <h3>Qué te devuelve exactamente</h3>
+  <figure>
+    <pre>[(<span class="cd-n">1</span>, <span class="cd-s">'Remera negra'</span>, Decimal(<span class="cd-s">'25000.00'</span>)),
+ (<span class="cd-n">2</span>, <span class="cd-s">'Buzo gris'</span>,    Decimal(<span class="cd-s">'48000.00'</span>)),
+ (<span class="cd-n">3</span>, <span class="cd-s">'Gorra'</span>,        Decimal(<span class="cd-s">'12000.00'</span>))]</pre>
+    <figcaption>Una <b>lista</b> de <b>tuplas</b>. Cada tupla es una fila; cada posición, una columna
+    <b>en el orden del SELECT</b>. Ya es Python puro: podés recorrerla con un <code>for</code> como
+    cualquier lista.</figcaption>
+  </figure>
+
+  <figure>
+    <pre><span class="cd-k">for</span> fila <span class="cd-k">in</span> resultados:
+    <span class="cd-fn">print</span>(fila[<span class="cd-n">1</span>], <span class="cd-s">"-&gt; $"</span>, fila[<span class="cd-n">2</span>])</pre>
+    <figcaption>Ese es el momento exacto en que los datos de MySQL <b>pasan a ser datos tuyos</b>.</figcaption>
+  </figure>
+
+  <h3>fetchall() o fetchone()</h3>
+  <div class="pair">
+    <div>
+      <span class="lbl">fetchall()</span>
+      <pre class="sm">[(1, 'Remera'), (2, 'Buzo')]</pre>
+      <p>Trae <b>todas</b> las filas, siempre en una lista. Si no hay nada, la lista viene vacía:
+      <code>[]</code>.</p>
+    </div>
+    <div>
+      <span class="lbl">fetchone()</span>
+      <pre class="sm">(1, 'Remera')</pre>
+      <p>Trae <b>una sola</b> fila, como tupla suelta. Si no hay nada, devuelve <code>None</code>.
+      Ideal para buscar por <code>id</code>.</p>
+    </div>
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Probá</span>
+    <ul>
+      <li>Cambiá el <code>SELECT *</code> por <code>SELECT nombre, precio</code>. ¿Cambia la forma de las tuplas?</li>
+      <li>Usá <code>fetchone()</code> en lugar de <code>fetchall()</code>. ¿Qué imprime?</li>
+      <li>Pedile una tabla que no existe. ¿Falla en <code>execute()</code> o en <code>fetchall()</code>?</li>
+      <li>Imprimí <code>type(resultados)</code> y <code>len(resultados)</code>.</li>
+    </ul>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Para pensar</span>
+    <ul>
+      <li>Si el orden de las columnas define el orden de la tupla, ¿qué pasa si mañana alguien agrega
+      una columna en el medio de la tabla y vos usabas <code>SELECT *</code>?</li>
+      <li>¿Conviene entonces escribir <code>SELECT *</code> o nombrar las columnas?</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 5 · PARÁMETROS ==================== -->
+<section class="s" data-a="rose" id="s5">
+  <div class="s-head"><span class="s-num">05</span><div class="t"><h2>Consultas con parámetros</h2>
+    <p class="dim" style="font-size:16px">Cuando la consulta depende de lo que escribe el usuario</p></div></div>
+
+  <p class="ask">¿Y si quiero buscar <b>un producto en particular</b>, el que el usuario escriba?</p>
+
+  <p class="dim">La consulta ya no es fija: una parte la pone el programa y otra parte la pone alguien
+  desde afuera. La tentación es armar el texto con un <code>+</code>. No lo hagas.</p>
+
+  <div class="pair">
+    <div>
+      <span class="lbl" style="color:var(--bad)">✗ Así no</span>
+      <pre class="sm">query = <span class="cd-s">"SELECT * FROM productos WHERE nombre = '"</span> + nombre + <span class="cd-s">"'"</span>
+cursor.<span class="cd-fn">execute</span>(query)</pre>
+      <p>Vos estás <b>escribiendo SQL con las manos del usuario</b>.</p>
+    </div>
+    <div>
+      <span class="lbl" style="color:var(--good)">✓ Así sí</span>
+      <pre class="sm">query = <span class="cd-s">"SELECT * FROM productos WHERE nombre = %s"</span>
+cursor.<span class="cd-fn">execute</span>(query, (nombre,))</pre>
+      <p>Vos escribís la consulta y el conector <b>acomoda el dato adentro</b>.</p>
+    </div>
+  </div>
+
+  <div class="box key">
+    <span class="lbl">Cómo funciona</span>
+    <p><code>%s</code> es un <strong>hueco</strong>. No es «poné acá un texto»: es «acá va un dato, y lo
+    vas a tratar <strong>como dato</strong>, pase lo que pase». La tupla del segundo argumento trae los
+    valores que llenan esos huecos, <strong>en orden</strong>.</p>
+  </div>
+
+  <h3>Por qué importa tanto</h3>
+  <p class="dim">Supongamos que el usuario escribe esto en tu buscador:</p>
+  <figure>
+    <pre class="mock">Nombre a buscar:  ' OR '1'='1</pre>
+    <figcaption>Con la versión del <code>+</code>, la consulta que llega a MySQL termina siendo
+    <code>WHERE nombre = '' OR '1'='1'</code>, que es <b>siempre verdadera</b>: devuelve la tabla
+    entera. Y hay textos peores que ese.</figcaption>
+  </figure>
+
+  <div class="lab warn">
+    <span class="lbl">Esto tiene nombre</span>
+    <p>Se llama <b>inyección SQL</b>, y es una de las fallas de seguridad más viejas y más comunes que
+    existen. Lo vas a ver a fondo en otra materia. Por ahora alcanza con la regla:
+    <b>ningún dato que venga de afuera se pega a la consulta con <code>+</code>. Nunca. Va con
+    <code>%s</code>.</b></p>
+  </div>
+
+  <h3>Además, te evita errores tontos</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Si el dato es...</th><th>Con <code>+</code></th><th>Con <code>%s</code></th></tr></thead>
+    <tbody>
+      <tr><td>Remera</td><td>Funciona</td><td>Funciona</td></tr>
+      <tr><td>Camisa D'Orsay</td><td>Rompe: el apóstrofo cierra la comilla</td><td>Funciona</td></tr>
+      <tr><td>Un número</td><td>Rompe: hay que convertirlo a texto a mano</td><td>Funciona</td></tr>
+      <tr><td>Una fecha</td><td>Hay que formatearla vos</td><td>Funciona</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="lab warn">
+    <span class="lbl">La coma que todos olvidan</span>
+    <p><code>(nombre)</code> <b>no es una tupla</b>: es simplemente <code>nombre</code> entre paréntesis.
+    La tupla de un solo elemento se escribe <code>(nombre,)</code>, con coma final. Si te olvidás, el
+    error que aparece no menciona la coma por ningún lado — acordate de este cuadro.</p>
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Probá</span>
+    <ul>
+      <li>Buscá <code>"Gorra"</code> con <code>%s</code> y <code>fetchone()</code>.</li>
+      <li>Buscá algo que no exista. ¿Qué devuelve?</li>
+      <li>Probá dos huecos: <code>WHERE precio &gt; %s AND precio &lt; %s</code> con <code>(10000, 30000)</code>.</li>
+      <li>Sacale la coma a la tupla de un elemento y mirá el error, para reconocerlo la próxima vez.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 6 · CRUD ==================== -->
+<section class="s" data-a="blue" id="s6">
+  <div class="s-head"><span class="s-num">06</span><div class="t"><h2>SELECT, INSERT, UPDATE y DELETE</h2>
+    <p class="dim" style="font-size:16px">El SQL de siempre, ahora disparado desde Python</p></div></div>
+
+  <div class="lab key" style="--c:var(--blue)">
+    <span class="lbl">La buena noticia</span>
+    <p style="font-family:var(--display);font-weight:600;font-size:19px;line-height:1.35;color:var(--ink)">
+    Las consultas ya las sabés.<br>Lo nuevo es solamente <b>cómo ejecutarlas desde Python</b>.</p>
+  </div>
+
+  <h3>SELECT · leer</h3>
+  <figure>
+    <pre>cursor.<span class="cd-fn">execute</span>(<span class="cd-s">"SELECT id, nombre, precio FROM productos"</span>)
+productos = cursor.<span class="cd-fn">fetchall</span>()</pre>
+    <figcaption>Leer <b>no modifica nada</b>. Es la única de las cuatro que no necesita
+    <code>commit()</code>.</figcaption>
+  </figure>
+
+  <h3>INSERT · crear</h3>
+  <figure>
+    <pre>cursor.<span class="cd-fn">execute</span>(
+    <span class="cd-s">"INSERT INTO productos (nombre, precio) VALUES (%s, %s)"</span>,
+    (nombre, precio)
+)
+
+conexion.<span class="cd-fn">commit</span>()</pre>
+    <figcaption>Fijate: <b>no hay fetch</b>. Un INSERT no devuelve filas. Lo que sí hay es
+    <code>commit()</code>.</figcaption>
+  </figure>
+
+  <h3>UPDATE · modificar</h3>
+  <figure>
+    <pre>cursor.<span class="cd-fn">execute</span>(
+    <span class="cd-s">"UPDATE productos SET precio = %s WHERE id = %s"</span>,
+    (precio, id_producto)
+)
+
+conexion.<span class="cd-fn">commit</span>()</pre>
+    <figcaption>El orden de la tupla sigue el orden de los <code>%s</code>: primero el precio nuevo,
+    después el id. Si los das vuelta, MySQL no se queja — hace otra cosa.</figcaption>
+  </figure>
+
+  <h3>DELETE · borrar</h3>
+  <figure>
+    <pre>cursor.<span class="cd-fn">execute</span>(
+    <span class="cd-s">"DELETE FROM productos WHERE id = %s"</span>,
+    (id_producto,)
+)
+
+conexion.<span class="cd-fn">commit</span>()</pre>
+    <figcaption>La coma de la tupla de un elemento, otra vez. Y el <code>WHERE</code>: sin él, borrás
+    <b>toda la tabla</b>.</figcaption>
+  </figure>
+
+  <div class="box key">
+    <span class="lbl">commit()</span>
+    <p><code>commit()</code> significa <strong>«confirmo estos cambios»</strong>. Hasta que no lo
+    llamás, MySQL tiene el cambio anotado en borrador pero no lo guarda de verdad. Si cerrás la
+    conexión sin confirmar, <strong>se pierde todo lo que hiciste</strong> — y esto no da error, que
+    es lo traicionero: tu programa dice «producto agregado» y en la tabla no hay nada.</p>
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Probá (esto hay que verlo una vez)</span>
+    <ul>
+      <li>Hacé un <code>INSERT</code> <b>sin</b> <code>commit()</code>. Mirá la tabla en Workbench: no está.</li>
+      <li>Agregá el <code>commit()</code> y repetí. Ahora sí.</li>
+      <li>Después de un <code>UPDATE</code>, imprimí <code>cursor.rowcount</code>: te dice cuántas filas tocó.</li>
+      <li>Hacé un <code>UPDATE</code> con un <code>WHERE</code> que no matchee nada. ¿Da error o da <code>0</code>?</li>
+    </ul>
+  </div>
+
+  <h3>Las cuatro, de un vistazo</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Operación</th><th>¿Devuelve filas?</th><th>¿fetch?</th><th>¿commit?</th></tr></thead>
+    <tbody>
+      <tr><td>SELECT</td><td>Sí</td><td>Sí</td><td>No</td></tr>
+      <tr><td>INSERT</td><td>No</td><td>No</td><td><b>Sí</b></td></tr>
+      <tr><td>UPDATE</td><td>No</td><td>No</td><td><b>Sí</b></td></tr>
+      <tr><td>DELETE</td><td>No</td><td>No</td><td><b>Sí</b></td></tr>
+    </tbody>
+  </table></div>
+  <p class="dim">Guardá mentalmente esta tabla: en la sección 8 se va a transformar, casi tal cual,
+  en los parámetros de un método.</p>
+</section>
+
+<!-- ==================== 7 · REPETIR CÓDIGO ==================== -->
+<section class="s" data-a="flame" id="s7">
+  <div class="s-head"><span class="s-num">07</span><div class="t"><h2>El problema de repetir código</h2>
+    <p class="dim" style="font-size:16px">Donde aparece la necesidad, antes que la solución</p></div></div>
+
+  <p class="dim">Ya sabés hacer las cuatro operaciones. Escribamos entonces el programa completo,
+  con tres funciones nada más:</p>
+
+  <figure>
+    <pre class="sm"><span class="cd-k">def</span> <span class="cd-fn">ver_productos</span>():
+    conexion = mysql.connector.<span class="cd-fn">connect</span>(host=<span class="cd-s">"localhost"</span>, user=<span class="cd-s">"root"</span>, password=<span class="cd-s">""</span>, database=<span class="cd-s">"tienda"</span>)
+    cursor = conexion.<span class="cd-fn">cursor</span>()
+    cursor.<span class="cd-fn">execute</span>(<span class="cd-s">"SELECT * FROM productos"</span>)
+    datos = cursor.<span class="cd-fn">fetchall</span>()
+    cursor.<span class="cd-fn">close</span>()
+    conexion.<span class="cd-fn">close</span>()
+    <span class="cd-k">return</span> datos
+
+<span class="cd-k">def</span> <span class="cd-fn">agregar_producto</span>(nombre, precio):
+    conexion = mysql.connector.<span class="cd-fn">connect</span>(host=<span class="cd-s">"localhost"</span>, user=<span class="cd-s">"root"</span>, password=<span class="cd-s">""</span>, database=<span class="cd-s">"tienda"</span>)
+    cursor = conexion.<span class="cd-fn">cursor</span>()
+    cursor.<span class="cd-fn">execute</span>(<span class="cd-s">"INSERT INTO productos (nombre, precio) VALUES (%s, %s)"</span>, (nombre, precio))
+    conexion.<span class="cd-fn">commit</span>()
+    cursor.<span class="cd-fn">close</span>()
+    conexion.<span class="cd-fn">close</span>()
+
+<span class="cd-k">def</span> <span class="cd-fn">borrar_producto</span>(id_producto):
+    conexion = mysql.connector.<span class="cd-fn">connect</span>(host=<span class="cd-s">"localhost"</span>, user=<span class="cd-s">"root"</span>, password=<span class="cd-s">""</span>, database=<span class="cd-s">"tienda"</span>)
+    cursor = conexion.<span class="cd-fn">cursor</span>()
+    cursor.<span class="cd-fn">execute</span>(<span class="cd-s">"DELETE FROM productos WHERE id = %s"</span>, (id_producto,))
+    conexion.<span class="cd-fn">commit</span>()
+    cursor.<span class="cd-fn">close</span>()
+    conexion.<span class="cd-fn">close</span>()</pre>
+    <figcaption>Funciona perfecto. Y sin embargo, mirá lo que se repite: <b>en gris mental</b>, todo
+    menos una línea de cada función.</figcaption>
+  </figure>
+
+  <p class="ask">¿Y si el programa tuviera <b>30 consultas</b> en vez de 3?</p>
+
+  <div class="grid3">
+    <div class="box"><span class="lbl">Se repite</span><p>30 veces <code>connect()</code> con los mismos cinco datos. 30 cursores. 30 <code>close()</code>.</p></div>
+    <div class="box"><span class="lbl">Se olvida</span><p>Un <code>commit()</code> que falta en la función 17. Un <code>close()</code> que nunca se llamó. Nadie se da cuenta hasta que falla.</p></div>
+    <div class="box"><span class="lbl">Se rompe</span><p>Te mudás de computadora y cambia la contraseña: hay que tocar <b>30 lugares</b> y no equivocarse en ninguno.</p></div>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Para pensar</span>
+    <ul>
+      <li>¿Qué parte de esas tres funciones es <b>realmente distinta</b> entre una y otra?</li>
+      <li>Si lo único que cambia es la consulta y los datos... ¿por qué repetimos todo lo demás?</li>
+      <li>¿Dónde viste antes esta sensación? (Pista: la clase <code>Personaje</code> nació igual.)</li>
+    </ul>
+  </div>
+
+  <p class="ask">¿No sería mejor tener <b>un solo lugar</b> encargado de hablar con la base de datos?</p>
+
+  <div class="box key">
+    <span class="lbl">La idea</span>
+    <p>Un lugar que sepa <strong>conectarse</strong> y sepa <strong>ejecutar una consulta</strong>.
+    Todo el resto del programa le pide cosas a ese lugar y no vuelve a ver un <code>connect()</code>
+    en su vida.<br>Ese lugar va a ser una clase, y la vamos a llamar
+    <strong>BasededatosControlador</strong>.</p>
+  </div>
+
+  <div class="lab" style="--c:var(--flame)">
+    <span class="lbl">Ojo con el orden</span>
+    <p>Fijate lo que acaba de pasar: <b>primero apareció el problema, después la solución</b>. No
+    empezamos con una clase porque «hay que usar clases». Llegamos a la clase porque el código
+    repetido nos empujó hasta ahí. Así nace casi todo lo que vas a aprender de ahora en adelante.</p>
+  </div>
+</section>
+
+<!-- ==================== 8 · EL CONTROLADOR ==================== -->
+<section class="s" data-a="teal" id="s8">
+  <div class="s-head"><span class="s-num">08</span><div class="t"><h2>Nuestro primer controlador</h2>
+    <p class="dim" style="font-size:16px">Construido de a un pedazo, sin copiar y pegar</p></div></div>
+
+  <p class="dim">Vamos a armarlo en cuatro pasos. Después de cada paso, el archivo <b>tiene que
+  ejecutarse sin errores</b>. Guardalo como <code>base_de_datos.py</code>.</p>
+
+  <h3>Paso 1 · La clase vacía</h3>
+  <figure>
+    <pre><span class="cd-k">class</span> <span class="cd-fn">BasededatosControlador</span>:
+    <span class="cd-k">pass</span></pre>
+    <figcaption>Todavía no hace nada, pero ya existe el <b>lugar</b>. Eso es lo importante: decidir
+    dónde van a vivir las cosas antes de escribirlas.</figcaption>
+  </figure>
+
+  <h3>Paso 2 · Que sepa conectarse</h3>
+  <figure>
+    <pre><span class="cd-k">import</span> mysql.connector
+<span class="cd-k">from</span> mysql.connector <span class="cd-k">import</span> Error
+
+
+<span class="cd-k">class</span> <span class="cd-fn">BasededatosControlador</span>:
+
+    <span class="cd-k">def</span> <span class="cd-fn">connect</span>():
+        <span class="cd-k">try</span>:
+            <span class="cd-k">return</span> mysql.connector.<span class="cd-fn">connect</span>(
+                host=<span class="cd-s">"localhost"</span>,
+                port=<span class="cd-n">3306</span>,
+                database=<span class="cd-s">"tienda"</span>,
+                user=<span class="cd-s">"root"</span>,
+                password=<span class="cd-s">""</span>
+            )
+        <span class="cd-k">except</span> Error <span class="cd-k">as</span> e:
+            <span class="cd-fn">print</span>(<span class="cd-s">f"Error de conexión: {e}"</span>)
+            <span class="cd-k">return</span> <span class="cd-k">None</span></pre>
+    <figcaption>Los cinco datos de la conexión quedaron escritos <b>una sola vez en todo el
+    proyecto</b>. Si mañana cambia la contraseña, se toca acá y nada más.</figcaption>
+  </figure>
+
+  <div class="box key">
+    <span class="lbl">Devuelve la conexión, o devuelve None</span>
+    <p>Este método siempre contesta algo: si pudo conectarse, te da el objeto conexión; si no pudo,
+    avisa por pantalla y devuelve <code>None</code>. Quien lo llame va a poder preguntar
+    <em>«¿me diste una conexión o no?»</em> antes de seguir. Eso es lo que hace el paso 3.</p>
+  </div>
+
+  <div class="lab warn">
+    <span class="lbl">¿Y el self?</span>
+    <p>No hay, y no es un olvido. Hasta ahora, los métodos trabajaban <b>sobre un objeto</b>:
+    <code>goku.atacar()</code> necesitaba saber quién es <code>goku</code>. Acá no hay ningún objeto
+    que guardar: no vamos a crear «varios controladores». Hay <b>uno solo</b> y se usa directamente
+    desde la clase, sin instanciar:</p>
+    <pre class="sm">conexion = BasededatosControlador.<span class="cd-fn">connect</span>()</pre>
+    <p>En Python, la forma prolija de decir «este método no necesita objeto» es ponerle
+    <code>@staticmethod</code> arriba. Funciona sin él, pero con él queda declarado.
+    <b>Poneselo a todos los métodos de esta clase.</b></p>
+    <pre class="sm"><span class="cd-fn">@staticmethod</span>
+<span class="cd-k">def</span> <span class="cd-fn">connect</span>():
+    ...</pre>
+  </div>
+
+  <h3>Paso 3 · Que sepa ejecutar cualquier consulta</h3>
+  <p class="dim">Acá está el truco de toda la guía. Volvé a mirar la tabla del final de la sección 6:
+  las cuatro operaciones se diferencian en tres cosas nada más. <b>Esas tres cosas van a ser los
+  parámetros del método.</b></p>
+
+  <div class="tw"><table>
+    <thead><tr><th>Parámetro</th><th>Qué pregunta</th><th>Para qué sirve</th></tr></thead>
+    <tbody>
+      <tr><td>query</td><td>¿Qué consulta ejecuto?</td><td>El SQL, con sus <code>%s</code> si hace falta.</td></tr>
+      <tr><td>params</td><td>¿Con qué datos?</td><td>La tupla que llena los huecos. Por defecto, ninguno.</td></tr>
+      <tr><td>fetchone</td><td>¿Traigo una fila o todas?</td><td><code>True</code> = una sola. Por defecto, todas.</td></tr>
+      <tr><td>commit</td><td>¿Esto modifica la base?</td><td><code>True</code> en INSERT, UPDATE y DELETE.</td></tr>
+    </tbody>
+  </table></div>
+
+  <figure>
+    <pre>    <span class="cd-fn">@staticmethod</span>
+    <span class="cd-k">def</span> <span class="cd-fn">ejecutar_query</span>(query, params=<span class="cd-k">None</span>, fetchone=<span class="cd-k">False</span>, commit=<span class="cd-k">False</span>):
+        connection = BasededatosControlador.<span class="cd-fn">connect</span>()
+
+        <span class="cd-k">if</span> connection:
+            <span class="cd-k">try</span>:
+                <span class="cd-k">with</span> connection.<span class="cd-fn">cursor</span>() <span class="cd-k">as</span> cursor:
+                    cursor.<span class="cd-fn">execute</span>(query, params)
+
+                    <span class="cd-k">if</span> commit:
+                        connection.<span class="cd-fn">commit</span>()
+                        <span class="cd-k">return</span> <span class="cd-k">True</span>
+
+                    <span class="cd-k">return</span> cursor.<span class="cd-fn">fetchone</span>() <span class="cd-k">if</span> fetchone <span class="cd-k">else</span> cursor.<span class="cd-fn">fetchall</span>()
+
+            <span class="cd-k">except</span> Error <span class="cd-k">as</span> e:
+                <span class="cd-fn">print</span>(<span class="cd-s">f"Error en la consulta: {e}"</span>)
+
+            <span class="cd-k">finally</span>:
+                connection.<span class="cd-fn">close</span>()
+
+        <span class="cd-k">return</span> <span class="cd-k">None</span> <span class="cd-k">if</span> fetchone <span class="cd-k">else</span> []</pre>
+    <figcaption>Son 18 líneas que no vas a volver a escribir nunca más en este proyecto.</figcaption>
+  </figure>
+
+  <h3>Leámoslo línea por línea</h3>
+  <div class="steps">
+    <div><span class="k">connect</span><span class="v">Pide la conexión al otro método. <b>No repite los datos</b>: los pide donde ya están.</span></div>
+    <div><span class="k">if</span><span class="v">«Si me dieron una conexión de verdad». Si <code>connect()</code> devolvió <code>None</code>, no se intenta nada.</span></div>
+    <div><span class="k">with</span><span class="v">Crea el cursor y <b>lo cierra solo</b> al terminar el bloque, salga bien o salga mal. Es el mismo <code>with</code> que usás para abrir archivos.</span></div>
+    <div><span class="k">execute</span><span class="v">La única línea que realmente habla con MySQL. Si <code>params</code> es <code>None</code>, no pasa nada: la consulta no tenía huecos.</span></div>
+    <div><span class="k">commit</span><span class="v">Solo confirma si se lo pidieron, y devuelve <code>True</code> para avisar «salió bien».</span></div>
+    <div><span class="k">return</span><span class="v">Una fila o todas, según lo que hayan pedido. Un <code>if</code> escrito en una línea.</span></div>
+    <div><span class="k">except</span><span class="v">Si MySQL se queja, lo imprime. <b>El programa no se cae</b>: un error en una consulta no apaga la aplicación entera.</span></div>
+    <div><span class="k">finally</span><span class="v">Cierra la conexión <b>siempre</b>: haya funcionado, haya fallado, haya habido un <code>return</code> en el medio. Esto es lo que más se olvida a mano.</span></div>
+    <div><span class="k">último</span><span class="v">Si nada salió bien, devuelve algo coherente igual: <code>None</code> o lista vacía, según lo que esperaban. <b>Nunca devuelve sorpresas.</b></span></div>
+  </div>
+
+  <div class="box key">
+    <span class="lbl">Por qué importa el último return</span>
+    <p>Quien llama a <code>ejecutar_query</code> quiere recorrer el resultado con un <code>for</code>.
+    Si ante un error devolviéramos <code>None</code>, ese <code>for</code> explotaría. Devolver
+    <code>[]</code> significa «no hubo datos» y el <code>for</code> simplemente no da vueltas.
+    <strong>Un buen método falla sin arruinarle el día a quien lo usó.</strong></p>
+  </div>
+
+  <h3>Paso 4 · Mirá lo que quedó</h3>
+  <div class="ladder">
+    <div class="fbox rung">TODO EL PROGRAMA</div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>le pide</span></div>
+    <div class="fbox rung acc">BasededatosControlador</div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>connect() + ejecutar_query()</span></div>
+    <div class="fbox rung">MYSQL</div>
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Probá</span>
+    <p>Al final del archivo, agregá estas dos líneas y ejecutalo:</p>
+    <pre class="sm">productos = BasededatosControlador.<span class="cd-fn">ejecutar_query</span>(<span class="cd-s">"SELECT * FROM productos"</span>)
+<span class="cd-fn">print</span>(productos)</pre>
+    <p>Una línea para pedir. Sin <code>connect</code>, sin cursor, sin <code>close</code>. <b>Ese es
+    todo el punto.</b></p>
+  </div>
+
+  <div class="lab whatif">
+    <span class="lbl">¿Y si...?</span>
+    <p>Apagá el servidor de MySQL y volvé a ejecutar. ¿Qué imprime? ¿Se cae el programa o avisa?
+    ¿En cuál de los dos <code>except</code> entró — el de <code>connect</code> o el de
+    <code>ejecutar_query</code>?</p>
+  </div>
+</section>
+
+<!-- ==================== 9 · MÉTODOS = ACCIONES ==================== -->
+<section class="s" data-a="violet" id="s9">
+  <div class="s-head"><span class="s-num">09</span><div class="t"><h2>Métodos que son acciones</h2>
+    <p class="dim" style="font-size:16px">Del SQL suelto al vocabulario de tu aplicación</p></div></div>
+
+  <p class="dim">Ya podemos ejecutar cualquier consulta desde un solo lugar. Pero todavía hay algo
+  incómodo: el SQL sigue apareciendo <b>desparramado por el programa</b>, cada vez que alguien quiere
+  algo. Démosle nombre a esas cosas que el programa quiere.</p>
+
+  <h3>Traer todo</h3>
+  <figure>
+    <pre>    <span class="cd-fn">@staticmethod</span>
+    <span class="cd-k">def</span> <span class="cd-fn">traer_productos</span>():
+        query = <span class="cd-s">"SELECT id, nombre, precio FROM productos"</span>
+        <span class="cd-k">return</span> BasededatosControlador.<span class="cd-fn">ejecutar_query</span>(query)</pre>
+    <figcaption>Dos líneas. Toda la máquina pesada ya está escrita.</figcaption>
+  </figure>
+
+  <h3>Buscar uno</h3>
+  <figure>
+    <pre>    <span class="cd-fn">@staticmethod</span>
+    <span class="cd-k">def</span> <span class="cd-fn">buscar_producto</span>(nombre):
+        query = <span class="cd-s">"""
+            SELECT id, nombre, precio
+            FROM productos
+            WHERE nombre = %s
+        """</span>
+        <span class="cd-k">return</span> BasededatosControlador.<span class="cd-fn">ejecutar_query</span>(
+            query,
+            (nombre,),
+            fetchone=<span class="cd-k">True</span>
+        )</pre>
+    <figcaption>Las <b>triples comillas</b> permiten escribir el SQL en varias líneas, tal como lo
+    escribirías en Workbench. Para consultas largas se lee muchísimo mejor.</figcaption>
+  </figure>
+
+  <h3>Agregar</h3>
+  <figure>
+    <pre>    <span class="cd-fn">@staticmethod</span>
+    <span class="cd-k">def</span> <span class="cd-fn">agregar_producto</span>(nombre, precio):
+        query = <span class="cd-s">"INSERT INTO productos (nombre, precio) VALUES (%s, %s)"</span>
+        <span class="cd-k">return</span> BasededatosControlador.<span class="cd-fn">ejecutar_query</span>(
+            query,
+            (nombre, precio),
+            commit=<span class="cd-k">True</span>
+        )</pre>
+    <figcaption>Lo único que cambia respecto del anterior es <code>commit=True</code> en vez de
+    <code>fetchone=True</code>. El patrón ya es siempre el mismo.</figcaption>
+  </figure>
+
+  <div class="box key">
+    <span class="lbl">Lo que acaba de pasar</span>
+    <p>El resto del programa <strong>ya no necesita saber cómo se habla con MySQL</strong>. No sabe
+    qué es un cursor, no sabe qué es <code>commit</code>, no conoce la contraseña.
+    <strong>Solo pide lo que necesita</strong>, con palabras de tu aplicación:</p>
+    <pre class="sm">productos = BasededatosControlador.<span class="cd-fn">traer_productos</span>()
+uno       = BasededatosControlador.<span class="cd-fn">buscar_producto</span>(<span class="cd-s">"Gorra"</span>)
+BasededatosControlador.<span class="cd-fn">agregar_producto</span>(<span class="cd-s">"Campera"</span>, <span class="cd-n">90000</span>)</pre>
+  </div>
+
+  <h3>Tres capas, cada una con su trabajo</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Capa</th><th>Sabe</th><th>No sabe</th></tr></thead>
+    <tbody>
+      <tr><td>traer_productos()</td><td>Qué consulta hace falta</td><td>Cómo se ejecuta</td></tr>
+      <tr><td>ejecutar_query()</td><td>Cómo se ejecuta cualquier consulta</td><td>Qué consulta le van a pasar</td></tr>
+      <tr><td>connect()</td><td>Dónde está la base y con qué usuario entrar</td><td>Qué se va a hacer adentro</td></tr>
+    </tbody>
+  </table></div>
+  <p class="dim">Cada una hace una cosa sola y confía en la de abajo. Si mañana cambia la
+  contraseña se toca <code>connect()</code>; si cambia el nombre de una columna se toca
+  <code>traer_productos()</code>. <b>Un cambio, un lugar.</b></p>
+
+  <div class="lab find">
+    <span class="lbl">Fijate en los nombres</span>
+    <p><code>traer_productos</code>, <code>buscar_producto</code>, <code>agregar_producto</code>.
+    No se llaman <code>select1</code>, <code>query_a</code> ni <code>funcion2</code>. Los nombres
+    cuentan <b>qué quiere hacer tu aplicación</b>, no cómo lo hace por dentro. Leer la lista de
+    métodos de esta clase debería ser como leer el índice de lo que tu programa puede hacer.</p>
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Probá</span>
+    <ul>
+      <li>Escribí los tres métodos y llamalos desde el final del archivo.</li>
+      <li>Buscá un producto que no exista. ¿Qué devuelve <code>buscar_producto</code>?</li>
+      <li>Agregá uno y volvé a traer todos. ¿Aparece el nuevo?</li>
+      <li>Mirá la tabla en Workbench para confirmar que se guardó de verdad.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 10 · POO ==================== -->
+<section class="s" data-a="rose" id="s10">
+  <div class="s-head"><span class="s-num">10</span><div class="t"><h2>Esto también es POO</h2>
+    <p class="dim" style="font-size:16px">Un paso atrás para mirar lo que construimos</p></div></div>
+
+  <p class="dim">No lo dijimos en el camino, pero lo que acabás de hacer es exactamente lo que venís
+  practicando desde la clase 1. Contestá estas preguntas sobre tu propia clase:</p>
+
+  <div class="qs">
+    <span class="lbl">Sobre BasededatosControlador</span>
+    <ul>
+      <li>¿Qué <b>es</b>? ¿Un personaje, una cosa del mundo real... o algo distinto?</li>
+      <li>¿Qué <b>métodos</b> tiene? ¿Cuál usa a cuál?</li>
+      <li>¿Cuál es su <b>responsabilidad</b>? ¿Podrías decirla en una sola frase?</li>
+      <li>¿Qué <b>información</b> maneja que el resto del programa no ve?</li>
+      <li>¿Qué pasa si mañana la base se muda a otro servidor? ¿Cuántos archivos tocás?</li>
+    </ul>
+  </div>
+
+  <div class="grid2">
+    <div class="box">
+      <span class="lbl">Personaje</span>
+      <p>Representa <b>una cosa</b>: tiene vida, fuerza, nombre. Creás muchos: <code>goku</code>,
+      <code>freezer</code>. Cada uno guarda sus datos.</p>
+    </div>
+    <div class="box key">
+      <span class="lbl">BasededatosControlador</span>
+      <p>Representa <b>una responsabilidad</b>: hablar con la base. No hay muchos, hay uno. No guarda
+      datos propios: guarda un <b>saber hacer</b>.</p>
+    </div>
+  </div>
+
+  <p class="dim">Las dos son clases perfectamente válidas. Una clase no sirve solamente para modelar
+  sustantivos del mundo real: también sirve para <b>juntar en un lugar todo lo que tiene que ver con
+  un mismo asunto</b>.</p>
+
+  <div class="lab key" style="--c:var(--rose)">
+    <span class="lbl">Encapsulamiento, otra vez</span>
+    <p style="font-family:var(--display);font-weight:600;font-size:20px;line-height:1.3;color:var(--ink)">
+    Encapsular también significa <b>esconder detalles</b><br>que el resto del programa no necesita conocer.</p>
+  </div>
+
+  <p class="dim">Cuando aprendiste encapsulamiento, se trataba de proteger atributos: que nadie le
+  ponga vida negativa a un personaje. Es la misma idea, un escalón más arriba. Acá lo que está
+  escondido es <b>todo un procedimiento</b>: la contraseña, el cursor, el commit, el cierre. Quien
+  usa la clase no necesita saber nada de eso, igual que vos no necesitás saber cómo funciona
+  <code>print()</code> por dentro.</p>
+
+  <div class="box key">
+    <span class="lbl">La palabra que estamos estrenando</span>
+    <p>A una clase así se le suele decir <strong>servicio</strong> o <strong>controlador</strong>:
+    no representa una cosa, <strong>presta un servicio</strong> al resto del programa. Es el primer
+    nombre nuevo de una familia que vas a seguir conociendo más adelante en la carrera. Por ahora,
+    con la idea alcanza: <strong>un lugar, una responsabilidad</strong>.</p>
+  </div>
+
+  <div class="lab whatif">
+    <span class="lbl">¿Y si...?</span>
+    <p>¿Y si mañana la aplicación tuviera que guardar en un archivo de texto en vez de MySQL? Fijate
+    que podrías cambiar <b>todo el interior</b> de <code>ejecutar_query</code> y
+    <code>connect</code>, y el resto del programa <b>seguiría llamando igual</b> a
+    <code>traer_productos()</code> sin enterarse de nada. Eso es lo que hace tan valiosa esta
+    separación.</p>
+  </div>
+</section>
+
+<!-- ==================== 11 · VARIABLES DE ENTORNO ==================== -->
+<section class="s" data-a="blue" id="s11">
+  <div class="s-head"><span class="s-num">11</span><div class="t"><h2>Variables de entorno</h2>
+    <p class="dim" style="font-size:16px">Sacar la contraseña del código</p></div></div>
+
+  <p class="ask">¿Qué tiene de malo esto?</p>
+  <figure>
+    <pre class="sm">password=<span class="cd-s">"123456"</span></pre>
+  </figure>
+
+  <div class="grid3">
+    <div class="box"><span class="lbl">Se publica</span><p>Subís el proyecto a GitHub para entregarlo y tu contraseña queda <b>a la vista de todos</b>. Y queda en el historial aunque después la borres.</p></div>
+    <div class="box"><span class="lbl">No se comparte</span><p>Tu compañero tiene otra contraseña de MySQL. Cada uno tendría que editar el archivo, y alguno lo va a subir cambiado.</p></div>
+    <div class="box"><span class="lbl">No se muda</span><p>En tu compu la base está en <code>localhost</code>. En el servidor, no. Mismo código, distintos datos.</p></div>
+  </div>
+
+  <div class="box key">
+    <span class="lbl">Variable de entorno</span>
+    <p>Es un dato que <strong>no vive en tu programa sino en el ambiente donde el programa corre</strong>:
+    tu computadora, la de tu compañero, el servidor. El código pregunta «¿cuál es la contraseña acá?»
+    y cada lugar responde la suya.</p>
+  </div>
+
+  <figure>
+    <pre><span class="cd-k">import</span> os
+
+usuario  = os.<span class="cd-fn">getenv</span>(<span class="cd-s">"DB_USER"</span>)
+password = os.<span class="cd-fn">getenv</span>(<span class="cd-s">"DB_PASSWORD"</span>)</pre>
+    <figcaption><code>os.getenv("DB_USER")</code> = «traeme el valor que el ambiente guardó con ese
+    nombre». Si no existe, devuelve <code>None</code>.</figcaption>
+  </figure>
+
+  <h3>Con un valor por defecto</h3>
+  <figure>
+    <pre>host = os.<span class="cd-fn">getenv</span>(<span class="cd-s">"DB_HOST"</span>, <span class="cd-s">"localhost"</span>)
+port = <span class="cd-fn">int</span>(os.<span class="cd-fn">getenv</span>(<span class="cd-s">"DB_PORT"</span>, <span class="cd-s">"3306"</span>))</pre>
+    <figcaption>El segundo argumento es el <b>plan B</b>: «si nadie definió <code>DB_HOST</code>,
+    usá <code>localhost</code>». Así el proyecto funciona recién clonado, sin configurar nada.<br>
+    Y ojo con <code>int()</code>: las variables de entorno <b>siempre son texto</b>, y el puerto
+    tiene que ser número.</figcaption>
+  </figure>
+
+  <h3>El archivo .env</h3>
+  <p class="dim">La forma más cómoda de definirlas es un archivo llamado <code>.env</code> (con
+  punto adelante) al lado de tu programa:</p>
+  <figure>
+    <pre>DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=tienda
+DB_USER=root
+DB_PASSWORD=mi_clave_secreta</pre>
+    <figcaption>Sin comillas, sin espacios alrededor del <code>=</code>, una variable por línea.</figcaption>
+  </figure>
+
+  <div class="steps">
+    <div><span class="k">1 · instalar</span><span class="v"><code>pip install python-dotenv</code> — la librería que sabe leer ese archivo.</span></div>
+    <div><span class="k">2 · cargar</span><span class="v">Arriba de todo en tu programa: <code>from dotenv import load_dotenv</code> y después <code>load_dotenv()</code>.</span></div>
+    <div><span class="k">3 · usar</span><span class="v">A partir de ahí, <code>os.getenv("DB_USER")</code> encuentra lo que pusiste en el <code>.env</code>.</span></div>
+    <div><span class="k">4 · ocultar</span><span class="v">Agregá una línea con <code>.env</code> a tu archivo <code>.gitignore</code>. <b>El .env nunca se sube.</b></span></div>
+    <div><span class="k">5 · avisar</span><span class="v">Subí en cambio un <code>.env.example</code> con los nombres y sin los valores, para que el que clone el proyecto sepa qué tiene que completar.</span></div>
+  </div>
+
+  <h3>connect(), versión final</h3>
+  <figure>
+    <pre><span class="cd-k">import</span> os
+<span class="cd-k">import</span> mysql.connector
+<span class="cd-k">from</span> mysql.connector <span class="cd-k">import</span> Error
+<span class="cd-k">from</span> dotenv <span class="cd-k">import</span> load_dotenv
+
+<span class="cd-fn">load_dotenv</span>()
+
+
+<span class="cd-k">class</span> <span class="cd-fn">BasededatosControlador</span>:
+
+    <span class="cd-fn">@staticmethod</span>
+    <span class="cd-k">def</span> <span class="cd-fn">connect</span>():
+        <span class="cd-k">try</span>:
+            <span class="cd-k">return</span> mysql.connector.<span class="cd-fn">connect</span>(
+                host=os.<span class="cd-fn">getenv</span>(<span class="cd-s">'DB_HOST'</span>, <span class="cd-s">'localhost'</span>),
+                port=<span class="cd-fn">int</span>(os.<span class="cd-fn">getenv</span>(<span class="cd-s">'DB_PORT'</span>, <span class="cd-s">'3306'</span>)),
+                database=os.<span class="cd-fn">getenv</span>(<span class="cd-s">'DB_NAME'</span>, <span class="cd-s">'tienda'</span>),
+                user=os.<span class="cd-fn">getenv</span>(<span class="cd-s">'DB_USER'</span>, <span class="cd-s">'root'</span>),
+                password=os.<span class="cd-fn">getenv</span>(<span class="cd-s">'DB_PASSWORD'</span>, <span class="cd-s">''</span>)
+            )
+        <span class="cd-k">except</span> Error <span class="cd-k">as</span> e:
+            <span class="cd-fn">print</span>(<span class="cd-s">f"Error de conexión: {e}"</span>)
+            <span class="cd-k">return</span> <span class="cd-k">None</span></pre>
+    <figcaption>Este código ya se puede mostrar, subir y compartir: <b>no dice ningún secreto</b>.
+    Dice dónde buscarlos.</figcaption>
+  </figure>
+
+  <div class="lab try">
+    <span class="lbl">Probá</span>
+    <ul>
+      <li>Creá el <code>.env</code>, instalá <code>python-dotenv</code> y confirmá que sigue conectando.</li>
+      <li>Cambiá <code>DB_NAME</code> en el <code>.env</code> por una base que no existe. ¿Avisa?</li>
+      <li>Borrá el <code>.env</code> entero. ¿Sigue funcionando? ¿Por qué? (Pista: los valores por defecto.)</li>
+      <li>Imprimí <code>os.getenv("DB_PASSWORD")</code> para ver que lo está leyendo de verdad.</li>
+    </ul>
+  </div>
+
+  <div class="lab whatif">
+    <span class="lbl">Dónde entra esto más adelante</span>
+    <p>Cuando tu aplicación deje tu computadora y se vaya a un servidor, <b>nada del código va a
+    cambiar</b>: solo van a cambiar las variables de entorno de ese lugar. Es la razón por la que se
+    hace así en todos lados. Cómo se sube una aplicación a un servidor es tema de otra guía.</p>
+  </div>
+</section>
+
+<!-- ==================== 12 · MINI PROYECTO ==================== -->
+<section class="s" data-a="flame" id="s12">
+  <div class="s-head"><span class="s-num">12</span><div class="t"><h2>Mini proyecto: gestor de productos</h2>
+    <p class="dim" style="font-size:16px">Una aplicación de consola que recuerda</p></div></div>
+
+  <div class="box key">
+    <span class="lbl">La consigna</span>
+    <p>Una aplicación con un menú de consola que permita <strong>ver, buscar, agregar, modificar y
+    eliminar</strong> productos. Toda la comunicación con MySQL tiene que pasar por
+    <strong>BasededatosControlador</strong>: si en <code>main.py</code> aparece la palabra
+    <code>cursor</code>, algo salió mal.</p>
+  </div>
+
+  <div class="lab warn">
+    <span class="lbl">Sin PyQt por ahora</span>
+    <p>La interfaz es de <b>consola</b>, a propósito. Hoy lo que estamos aprendiendo es la
+    comunicación <b>Python ↔ MySQL</b>, y una ventana de por medio solo agregaría ruido. La ventana
+    viene en la sección 14 — y vas a ver que casi no hay que tocar nada.</p>
+  </div>
+
+  <h3>Dos archivos, dos responsabilidades</h3>
+  <div class="pair">
+    <div>
+      <span class="lbl">base_de_datos.py</span>
+      <p>La clase <code>BasededatosControlador</code>. <b>Sabe</b> de MySQL. <b>No sabe</b> que
+      existe un menú.</p>
+    </div>
+    <div>
+      <span class="lbl">main.py</span>
+      <p>El menú, los <code>input()</code> y los <code>print()</code>. <b>Sabe</b> hablar con el
+      usuario. <b>No sabe</b> nada de MySQL.</p>
+    </div>
+  </div>
+
+  <h3>El menú</h3>
+  <figure>
+    <pre class="mock">===== PRODUCTOS =====
+
+1. Ver productos
+2. Buscar producto
+3. Agregar producto
+4. Modificar producto
+5. Eliminar producto
+6. Salir
+
+Opción: _</pre>
+  </figure>
+
+  <h3>El esqueleto de main.py</h3>
+  <figure>
+    <pre class="sm"><span class="cd-k">from</span> base_de_datos <span class="cd-k">import</span> BasededatosControlador
+
+
+<span class="cd-k">def</span> <span class="cd-fn">mostrar_menu</span>():
+    <span class="cd-fn">print</span>(<span class="cd-s">"\n===== PRODUCTOS ====="</span>)
+    <span class="cd-fn">print</span>(<span class="cd-s">"1. Ver productos"</span>)
+    <span class="cd-fn">print</span>(<span class="cd-s">"2. Buscar producto"</span>)
+    <span class="cd-fn">print</span>(<span class="cd-s">"3. Agregar producto"</span>)
+    <span class="cd-fn">print</span>(<span class="cd-s">"4. Modificar producto"</span>)
+    <span class="cd-fn">print</span>(<span class="cd-s">"5. Eliminar producto"</span>)
+    <span class="cd-fn">print</span>(<span class="cd-s">"6. Salir"</span>)
+
+
+<span class="cd-k">def</span> <span class="cd-fn">ver_productos</span>():
+    productos = BasededatosControlador.<span class="cd-fn">traer_productos</span>()
+
+    <span class="cd-k">if</span> <span class="cd-k">not</span> productos:
+        <span class="cd-fn">print</span>(<span class="cd-s">"No hay productos cargados."</span>)
+        <span class="cd-k">return</span>
+
+    <span class="cd-k">for</span> id_p, nombre, precio <span class="cd-k">in</span> productos:
+        <span class="cd-fn">print</span>(<span class="cd-s">f"[{id_p}] {nombre} — ${precio}"</span>)
+
+
+<span class="cd-k">def</span> <span class="cd-fn">agregar_producto</span>():
+    nombre = <span class="cd-fn">input</span>(<span class="cd-s">"Nombre: "</span>)
+    precio = <span class="cd-fn">input</span>(<span class="cd-s">"Precio: "</span>)
+
+    <span class="cd-k">if</span> BasededatosControlador.<span class="cd-fn">agregar_producto</span>(nombre, precio):
+        <span class="cd-fn">print</span>(<span class="cd-s">"Producto agregado."</span>)
+    <span class="cd-k">else</span>:
+        <span class="cd-fn">print</span>(<span class="cd-s">"No se pudo agregar."</span>)
+
+
+<span class="cd-c"># TODO: buscar_producto(), modificar_producto(), eliminar_producto()</span>
+
+
+<span class="cd-k">while</span> <span class="cd-k">True</span>:
+    <span class="cd-fn">mostrar_menu</span>()
+    opcion = <span class="cd-fn">input</span>(<span class="cd-s">"\nOpción: "</span>)
+
+    <span class="cd-k">if</span> opcion == <span class="cd-s">"1"</span>:
+        <span class="cd-fn">ver_productos</span>()
+    <span class="cd-k">elif</span> opcion == <span class="cd-s">"3"</span>:
+        <span class="cd-fn">agregar_producto</span>()
+    <span class="cd-k">elif</span> opcion == <span class="cd-s">"6"</span>:
+        <span class="cd-fn">print</span>(<span class="cd-s">"Hasta luego."</span>)
+        <span class="cd-k">break</span>
+    <span class="cd-k">else</span>:
+        <span class="cd-fn">print</span>(<span class="cd-s">"Opción inválida."</span>)</pre>
+    <figcaption>Está incompleto a propósito: las opciones 2, 4 y 5 las completás vos con los
+    desafíos de la sección 13. Fijate que <code>main.py</code> <b>no importa
+    <code>mysql.connector</code> por ningún lado</b>.</figcaption>
+  </figure>
+
+  <div class="lab find">
+    <span class="lbl">Un detalle lindo</span>
+    <p><code>for id_p, nombre, precio in productos:</code> desarma cada tupla en tres variables con
+    nombre. Es mucho más legible que <code>fila[0]</code>, <code>fila[1]</code>,
+    <code>fila[2]</code> — y te obliga a saber qué columnas pediste.</p>
+  </div>
+
+  <div class="chal" style="--accent:var(--flame)">
+    <div class="ch">Lo que tiene que cumplir tu entrega</div>
+    <div class="cb">
+      <div class="checklist">
+        <div><span class="bx">□</span><span>Dos archivos: <b>base_de_datos.py</b> y <b>main.py</b>.</span></div>
+        <div><span class="bx">□</span><span>Las <b>5 operaciones</b> del menú funcionando.</span></div>
+        <div><span class="bx">□</span><span>Ni un <code>connect()</code> ni un <code>cursor</code> fuera del controlador.</span></div>
+        <div><span class="bx">□</span><span>Todas las consultas con datos del usuario usan <code>%s</code>.</span></div>
+        <div><span class="bx">□</span><span>INSERT, UPDATE y DELETE con <code>commit=True</code>.</span></div>
+        <div><span class="bx">□</span><span>Los datos de conexión en un <code>.env</code>, no en el código.</span></div>
+        <div><span class="bx">□</span><span>Si la base está apagada, el programa <b>avisa</b> y no explota.</span></div>
+        <div><span class="bx">□</span><span>Si buscás algo que no existe, el programa lo dice con palabras.</span></div>
+      </div>
+      <p><b>Se prueba así:</b> cargá tres productos desde tu programa, cerralo, abrí Workbench y
+      mirá la tabla. Volvé a abrir tu programa. <b>Tienen que seguir ahí.</b> Ese es el momento en
+      que tu aplicación dejó de ser un ejercicio.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 13 · DESAFÍOS ==================== -->
+<section class="s" data-a="teal" id="s13">
+  <div class="s-head"><span class="s-num">13</span><div class="t"><h2>Desafíos por nivel</h2>
+    <p class="dim" style="font-size:16px">De a uno, y probando cada uno antes de seguir</p></div></div>
+
+  <p class="dim">Todos se resuelven agregando un método a <code>BasededatosControlador</code> y
+  llamándolo desde el menú. Ninguno necesita tocar <code>ejecutar_query</code>.</p>
+
+  <div class="chal" style="--accent:var(--teal)">
+    <div class="ch">Nivel 1 &middot; traer_productos()</div>
+    <div class="cb">
+      <p>Devolver <b>todos</b> los productos. Ya está resuelto en la sección 9: escribilo de memoria,
+      sin mirar, y conectalo con la opción <b>1</b> del menú.</p>
+      <p class="dim"><b>Pista:</b> no lleva <code>params</code>, no lleva <code>fetchone</code>, no
+      lleva <code>commit</code>.</p>
+    </div>
+  </div>
+
+  <div class="chal" style="--accent:var(--teal)">
+    <div class="ch">Nivel 2 &middot; buscar_producto(nombre)</div>
+    <div class="cb">
+      <p>Recibe un nombre y devuelve <b>un solo</b> producto. Opción <b>2</b> del menú.</p>
+      <ul>
+        <li>¿Qué devuelve si no lo encuentra? Tu menú tiene que contemplarlo.</li>
+        <li><b>Mejora:</b> hacelo con <code>LIKE</code> para que «reme» encuentre «Remera».
+        Investigá cómo se arma el <code>%</code> del <code>LIKE</code> junto con el <code>%s</code>
+        del parámetro — no es tan obvio como parece.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="chal" style="--accent:var(--teal)">
+    <div class="ch">Nivel 3 &middot; agregar_producto(nombre, precio)</div>
+    <div class="cb">
+      <p>Inserta un producto nuevo. Opción <b>3</b> del menú.</p>
+      <ul>
+        <li>Acordate del <code>commit=True</code>.</li>
+        <li>¿Qué pasa si el usuario escribe <code>"caro"</code> en el precio? Probalo y decidí qué
+        hacer.</li>
+        <li>Validá antes de guardar: nombre no vacío, precio mayor que cero.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="chal" style="--accent:var(--teal)">
+    <div class="ch">Nivel 4 &middot; actualizar_producto(id, nombre, precio)</div>
+    <div class="cb">
+      <p>Modifica un producto existente. Opción <b>4</b> del menú.</p>
+      <ul>
+        <li>Mostrale primero la lista al usuario para que sepa qué <code>id</code> elegir.</li>
+        <li>Cuidado con el <b>orden de la tupla</b>: los <code>%s</code> del <code>SET</code> van
+        antes que el del <code>WHERE</code>.</li>
+        <li>Si el <code>id</code> no existe, no da error pero no cambia nada. ¿Cómo te enterás?
+        Investigá <code>cursor.rowcount</code>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="chal" style="--accent:var(--teal)">
+    <div class="ch">Nivel 5 &middot; eliminar_producto(id)</div>
+    <div class="cb">
+      <p>Borra un producto. Opción <b>5</b> del menú.</p>
+      <ul>
+        <li>Pedí <b>confirmación</b> antes de borrar. Esto no se puede deshacer.</li>
+        <li>Revisá tres veces que el <code>WHERE</code> esté. Probalo con la base de prueba, nunca
+        con datos que te importen.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="chal" style="--accent:var(--violet)">
+    <div class="ch">Nivel 6 &middot; ¿Y si hay dos tablas?</div>
+    <div class="cb">
+      <p>Agregá una tabla <code>clientes</code> (<code>id</code>, <code>nombre</code>,
+      <code>email</code>) y hacé que el programa maneje las dos.</p>
+      <ul>
+        <li>Escribí <code>traer_clientes()</code>, <code>agregar_cliente()</code>, etcétera.</li>
+        <li><b>La pregunta importante:</b> ¿cuánto código nuevo tuviste que escribir para la segunda
+        tabla? ¿Tocaste <code>connect()</code>? ¿Tocaste <code>ejecutar_query()</code>?</li>
+        <li>Si la respuesta fue «no toqué nada de eso», entendiste de qué se trataba la guía.</li>
+      </ul>
+      <p class="dim"><b>Para pensar, sin resolverlo todavía:</b> si los métodos de productos y los de
+      clientes empiezan a ser muchos, ¿te seguiría cerrando tenerlos en la misma clase? ¿Qué harías?
+      Guardate la respuesta: es la pregunta con la que arranca la próxima etapa.</p>
+    </div>
+  </div>
+
+  <div class="lab whatif">
+    <span class="lbl">¿Y si...? (para los que terminaron)</span>
+    <ul>
+      <li>¿Y si querés los productos <b>ordenados por precio</b>? ¿Dónde va el <code>ORDER BY</code>:
+      en Python o en el SQL? ¿Por qué conviene que sea en el SQL?</li>
+      <li>¿Y si querés saber <b>cuántos productos hay</b> sin traerlos todos?</li>
+      <li>¿Y si un producto tuviera un <code>cliente_id</code>? ¿Podrías traer el nombre del cliente
+      junto con el producto en una sola consulta?</li>
+      <li>¿Y si tu programa tuviera que hacer 500 inserts? Investigá <code>executemany</code>.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 14 · PYQT ==================== -->
+<section class="s" data-a="violet" id="s14">
+  <div class="s-head"><span class="s-num">14</span><div class="t"><h2>¿Y si le ponemos PyQt?</h2>
+    <p class="dim" style="font-size:16px">El puente hacia la aplicación completa</p></div></div>
+
+  <p class="ask">¿Qué pasaría si mañana le ponemos a esto la interfaz que aprendimos con PyQt?</p>
+
+  <div class="ladder">
+    <div class="fbox rung acc">PyQt</div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>el usuario pide</span></div>
+    <div class="fbox rung">lógica Python</div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>traer / guardar</span></div>
+    <div class="fbox rung">BasededatosControlador</div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>SQL</span></div>
+    <div class="fbox rung">MYSQL</div>
+  </div>
+
+  <figure>
+    <pre class="mock">   Buscar producto
+
+Nombre: [ gorra________ ]
+
+        [  BUSCAR  ]
+
+        ↓
+
+   Gorra
+   $12.000</pre>
+    <figcaption>Una pantalla que ya sabrías construir con lo de la guía de PyQt.</figcaption>
+  </figure>
+
+  <h3>¿Cuánto habría que cambiar del controlador?</h3>
+  <div class="box key">
+    <span class="lbl">Nada</span>
+    <p>Donde la consola hacía <code>print()</code>, la ventana va a hacer
+    <code>etiqueta.setText()</code>. Donde había <code>input()</code>, va a haber
+    <code>campo.text()</code>. <strong>La línea del medio es exactamente la misma:</strong></p>
+    <pre class="sm">producto = BasededatosControlador.<span class="cd-fn">buscar_producto</span>(nombre)</pre>
+  </div>
+
+  <div class="pair">
+    <div>
+      <span class="lbl">En consola</span>
+      <pre class="sm">nombre = <span class="cd-fn">input</span>(<span class="cd-s">"Nombre: "</span>)
+p = BasededatosControlador.<span class="cd-fn">buscar_producto</span>(nombre)
+<span class="cd-fn">print</span>(p)</pre>
+    </div>
+    <div>
+      <span class="lbl">En PyQt</span>
+      <pre class="sm">nombre = campo.<span class="cd-fn">text</span>()
+p = BasededatosControlador.<span class="cd-fn">buscar_producto</span>(nombre)
+etiqueta.<span class="cd-fn">setText</span>(<span class="cd-fn">str</span>(p))</pre>
+    </div>
+  </div>
+
+  <div class="lab key" style="--c:var(--violet)">
+    <span class="lbl">La idea que queda</span>
+    <p style="font-family:var(--display);font-weight:600;font-size:20px;line-height:1.3;color:var(--ink)">
+    La interfaz no tiene por qué saber<br>cómo funciona MySQL. Solo pide.</p>
+  </div>
+
+  <p class="dim">Y funciona en los dos sentidos: <b>la base de datos tampoco sabe que existe una
+  ventana</b>. Por eso el mismo controlador sirve para una app de consola, para una de escritorio y
+  para lo que venga después. Escribiste el controlador una vez; la interfaz podés cambiarla tres
+  veces sin tocarlo.</p>
+
+  <div class="lab whatif">
+    <span class="lbl">Si querés adelantarte</span>
+    <p>Agarrá el mini proyecto de la sección 12 y reemplazá <b>solamente</b> <code>main.py</code> por
+    una ventana PyQt con un campo, un botón y una etiqueta. No toques <code>base_de_datos.py</code>.
+    Si lo lográs sin abrir ese archivo ni una vez, acabás de comprobar vos mismo de qué sirve
+    separar responsabilidades.</p>
+  </div>
+</section>
+
+<!-- ==================== 15 · HACIA DÓNDE VAMOS ==================== -->
+<section class="s" data-a="rose" id="s15">
+  <div class="s-head"><span class="s-num">15</span><div class="t"><h2>Hacia dónde vamos</h2>
+    <p class="dim" style="font-size:16px">Las piezas ya están: falta armarlas juntas</p></div></div>
+
+  <div class="ladder">
+    <div class="fbox rung">INTERFAZ<br><span style="font-weight:400">PyQt / Tkinter</span></div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>pide</span></div>
+    <div class="fbox rung">LÓGICA DEL PROGRAMA<br><span style="font-weight:400">tus clases, tus reglas</span></div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>consulta</span></div>
+    <div class="fbox rung acc">SERVICIOS / CONTROLADORES<br><span style="font-weight:400">acceso a datos</span></div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>SQL</span></div>
+    <div class="fbox rung">MYSQL<br><span style="font-weight:400">los datos</span></div>
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr><th>Capa</th><th>Cuándo la aprendiste</th><th>Qué resuelve</th></tr></thead>
+    <tbody>
+      <tr><td>Interfaz</td><td>Clase 3 y guía de PyQt</td><td>Que una persona pueda usar tu programa.</td></tr>
+      <tr><td>Lógica</td><td>Clases 1 y 2, Arena de Combate</td><td>Las reglas: qué puede y qué no puede pasar.</td></tr>
+      <tr><td>Servicios</td><td><b>Esta guía</b></td><td>Traer y guardar datos sin ensuciar el resto.</td></tr>
+      <tr><td>Datos</td><td>Bases de Datos</td><td>Que la información sobreviva al programa.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="lab key" style="--c:var(--rose)">
+    <span class="lbl">Dónde estás parado</span>
+    <p>Hasta ahora aprendimos las piezas <b>por separado</b>. Cada una funcionaba sola y se entendía
+    sola. El próximo paso es aprender a <b>unirlas</b>: una sola aplicación que tenga interfaz,
+    lógica y datos, y que no se convierta en un archivo de 800 líneas imposible de tocar.</p>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Preguntas que todavía no contestamos (y está bien)</span>
+    <ul>
+      <li>¿Dónde vive la regla «un producto no puede tener precio negativo»: en la interfaz, en la
+      lógica o en la base?</li>
+      <li>Si tuviéramos ocho tablas, ¿seguiría siendo una sola clase controladora?</li>
+      <li>¿Cómo hacemos para que una tupla <code>(1, 'Gorra', 12000)</code> vuelva a ser un objeto
+      <code>Producto</code> con atributos y métodos?</li>
+      <li>¿Cómo se prueba que todo esto anda, sin abrir el programa y probar a mano cada vez?</li>
+    </ul>
+  </div>
+  <p class="dim">Cada una de esas preguntas es una clase futura. Tenerlas en la cabeza <b>antes</b>
+  de que te las contesten es exactamente lo que hace que después se entiendan.</p>
+</section>
+
+<!-- ==================== 16 · IDEAS CLAVE ==================== -->
+<section class="s" data-a="blue" id="s16">
+  <div class="s-head"><span class="s-num">16</span><div class="t"><h2>Ideas clave</h2>
+    <p class="dim" style="font-size:16px">Lo que te tenés que llevar</p></div></div>
+
+  <div class="grid3">
+    <figure>
+      <pre class="mock">    ANTES
+
+   Python</pre>
+      <figcaption>Todo en memoria. Al cerrar, se perdía.</figcaption>
+    </figure>
+    <figure>
+      <pre class="mock">    AHORA
+
+   Python
+     ↕
+   MySQL</pre>
+      <figcaption>Los datos sobreviven al programa.</figcaption>
+    </figure>
+    <figure>
+      <pre class="mock">   DESPUÉS
+
+  Interfaz
+     ↓
+   Python
+     ↓
+  Servicios
+     ↓
+   MySQL</pre>
+      <figcaption>Cada capa con su responsabilidad.</figcaption>
+    </figure>
+  </div>
+
+  <div class="remember">
+    <div class="rh">Las siete ideas de esta guía</div>
+    <ol>
+      <li>Una <b>librería</b> amplía lo que tu programa puede hacer; un <b>conector</b> le permite
+      hablar con otro programa: el servidor de base de datos.</li>
+      <li><b>El SQL sigue siendo SQL.</b> Lo que aprendiste en Bases de Datos no cambia: Python se
+      encarga de ejecutarlo y de traer el resultado.</li>
+      <li>Los datos que vienen de afuera van con <code>%s</code>, <b>nunca</b> pegados con
+      <code>+</code>.</li>
+      <li>Leer no necesita <code>commit()</code>. <b>Modificar, sí</b> — y si falta, no hay error:
+      simplemente no se guardó nada.</li>
+      <li>Una <b>clase</b> puede centralizar una responsabilidad, aunque no represente una cosa del
+      mundo real.</li>
+      <li>Los <b>métodos</b> pueden tener el nombre de las acciones de tu aplicación, no el de las
+      consultas que las resuelven.</li>
+      <li><b>La interfaz no necesita conocer la base de datos.</b> Separar responsabilidades es lo
+      que permite que un proyecto crezca sin volverse inmanejable.</li>
+    </ol>
+  </div>
+
+  <h3>Checklist final</h3>
+  <div class="checklist">
+    <div><span class="bx">□</span><span>Sé instalar e importar el conector de MySQL.</span></div>
+    <div><span class="bx">□</span><span>Sé conectarme a una base desde Python y explicar los cinco datos.</span></div>
+    <div><span class="bx">□</span><span>Sé qué es un cursor y para qué sirve.</span></div>
+    <div><span class="bx">□</span><span>Sé ejecutar un <code>SELECT</code> y recorrer el resultado.</span></div>
+    <div><span class="bx">□</span><span>Sé la diferencia entre <code>fetchone()</code> y <code>fetchall()</code>.</span></div>
+    <div><span class="bx">□</span><span>Sé usar parámetros con <code>%s</code> y puedo explicar por qué.</span></div>
+    <div><span class="bx">□</span><span>Sé hacer INSERT, UPDATE y DELETE, y no me olvido del <code>commit()</code>.</span></div>
+    <div><span class="bx">□</span><span>Puedo explicar qué problema resuelve <code>BasededatosControlador</code>.</span></div>
+    <div><span class="bx">□</span><span>Entiendo qué hacen <code>try</code>, <code>except</code> y <code>finally</code> ahí adentro.</span></div>
+    <div><span class="bx">□</span><span>Puedo agregar un método nuevo al controlador sin tocar lo anterior.</span></div>
+    <div><span class="bx">□</span><span>Sé sacar la contraseña del código con variables de entorno.</span></div>
+    <div><span class="bx">□</span><span>Mi mini proyecto anda, y los datos siguen ahí al volver a abrirlo.</span></div>
+    <div><span class="bx">□</span><span>Puedo explicarle a alguien por qué la interfaz no debería conocer la base.</span></div>
+  </div>
+
+  <div class="lab find">
+    <span class="lbl">Una última cosa</span>
+    <p>Si algún casillero quedó vacío, <b>no sigas para adelante: volvé a esa sección</b>. Todo lo
+    que viene después se apoya en esto, y se apoya fuerte.</p>
+  </div>
+</section>
+
+<!-- ==================== CIERRE ==================== -->
+<div class="closing">
+  <p class="quote">Ya no hacemos solamente programas que funcionan.<br>Empezamos a construir
+  programas que pueden crecer.</p>
+  <p class="lead" style="max-width:50ch">Un programa que anda es el primer objetivo. Un programa que
+  se puede modificar seis meses después, sin miedo y sin romper nada, es el oficio.</p>
+  <div class="colofon">
+    <span>Guía de laboratorio · Python + MySQL · Técnico Universitario en Programación</span>
+    <span>Continúa Clase 3, la guía de PyQt y Arena de Combate</span>
+  </div>
+</div>
+
+</div>
