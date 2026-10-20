@@ -1,0 +1,2740 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TP Login con PyQt</title>
+<meta name="description" content="Trabajo práctico: una aplicación de login y registro diseñada en Qt Designer, cargada desde Python con PyQt6 y organizada en clases.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+/* ============================================================
+   TP · LOGIN Y REGISTRO CON PyQt6 + QT DESIGNER
+   Hereda los tokens y componentes de guia-pyqt.html y guia-mysql.html
+   ============================================================ */
+:root{
+  --paper:#e7eaef; --sheet:#fbfcfd; --sheet-2:#f1f4f8;
+  --ink:#111a26; --ink-2:#546275; --ink-3:#6c7889;
+  --line:#ccd4e0; --line-soft:#e2e8f0;
+  --blue:#1548c8; --flame:#bf400e; --teal:#0a7566; --violet:#5d34c9; --rose:#bd1f62;
+  --good:#0f7d55; --bad:#b7361b;
+  --chip:rgba(21,72,200,.08);
+  --shadow:0 1px 2px rgba(17,26,38,.06), 0 24px 70px -30px rgba(17,26,38,.4);
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Instrument Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --cd-k:#8b2bb9; --cd-s:#b0450f; --cd-n:#1548c8; --cd-c:#7b8794; --cd-fn:#0a6a86;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#080d14; --sheet:#111924; --sheet-2:#18212e;
+    --ink:#e9eef6; --ink-2:#9aa9bd; --ink-3:#7e8da1;
+    --line:#2a3543; --line-soft:#222c39;
+    --blue:#7ba4ff; --flame:#ff8a5c; --teal:#3fcfb5; --violet:#b49bff; --rose:#ff7aae;
+    --good:#4fd08a; --bad:#ff7f66;
+    --chip:rgba(123,164,255,.12);
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 24px 60px -24px rgba(0,0,0,.85);
+    --cd-k:#d99bf0; --cd-s:#ffab7d; --cd-n:#8fb4ff; --cd-c:#7e8da1; --cd-fn:#67d6e8;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#080d14; --sheet:#111924; --sheet-2:#18212e;
+  --ink:#e9eef6; --ink-2:#9aa9bd; --ink-3:#7e8da1;
+  --line:#2a3543; --line-soft:#222c39;
+  --blue:#7ba4ff; --flame:#ff8a5c; --teal:#3fcfb5; --violet:#b49bff; --rose:#ff7aae;
+  --good:#4fd08a; --bad:#ff7f66;
+  --chip:rgba(123,164,255,.12);
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 24px 60px -24px rgba(0,0,0,.85);
+  --cd-k:#d99bf0; --cd-s:#ffab7d; --cd-n:#8fb4ff; --cd-c:#7e8da1; --cd-fn:#67d6e8;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+  font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:3px}
+
+.doc{max-width:1000px;margin:0 auto;background:var(--sheet);border-left:1px solid var(--line);
+  border-right:1px solid var(--line);box-shadow:var(--shadow);padding:0 clamp(16px,6vw,86px) 90px}
+
+h1,h2,h3,h4{margin:0;font-family:var(--display);letter-spacing:-.025em;line-height:1.05;text-wrap:balance}
+h1{font-size:clamp(38px,6.4vw,62px);font-weight:800}
+h2{font-size:clamp(27px,3.6vw,36px);font-weight:700;letter-spacing:-.03em}
+h3{font-size:clamp(20px,2.4vw,25px);font-weight:600;letter-spacing:-.018em;line-height:1.15}
+h4{font-size:18px;font-weight:600;letter-spacing:-.01em}
+p{margin:0}
+strong{font-weight:600;color:var(--ink)}
+em{font-style:italic}
+a{color:var(--blue)}
+code{font-family:var(--mono);font-size:.88em;background:var(--sheet-2);border:1px solid var(--line-soft);
+  border-radius:5px;padding:1px 5px;color:var(--ink);white-space:nowrap}
+.eyebrow{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink-3)}
+.lead{font-size:20px;line-height:1.55;color:var(--ink-2)}
+.dim{color:var(--ink-2)}
+.hl{color:var(--accent,var(--blue))}
+
+/* ---------- portada ---------- */
+.cover{padding:clamp(46px,7vw,80px) 0 34px;border-bottom:2px solid var(--ink);
+  display:flex;flex-direction:column;gap:22px}
+.cover-top{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line-soft);padding-bottom:14px}
+.cover h1{max-width:16ch}
+.cover .lead{max-width:58ch}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.badge{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:6px 12px;border:1px solid var(--line);background:var(--sheet-2);color:var(--ink-2)}
+.printbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:6px}
+button.print{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  padding:10px 18px;border:1px solid var(--ink);background:var(--ink);color:var(--sheet);cursor:pointer}
+button.print:hover{background:transparent;color:var(--ink)}
+button.ghost{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:9px 14px;border:1px solid var(--line);background:transparent;color:var(--ink-2);cursor:pointer}
+button.ghost:hover{border-color:var(--ink-2);color:var(--ink)}
+.printbar span{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.motto{border-left:4px solid var(--blue);padding:6px 0 6px 18px;font-family:var(--display);font-weight:600;
+  font-size:clamp(19px,2.6vw,23px);line-height:1.3;letter-spacing:-.015em;max-width:44ch}
+.ficha{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;border:1px solid var(--line)}
+.ficha>div{padding:12px 16px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--line-soft);
+  border-bottom:1px solid var(--line-soft)}
+.ficha .k{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.ficha .v{font-size:15px;line-height:1.45;color:var(--ink)}
+.ficha input{font:inherit;font-size:15px;color:var(--ink);background:var(--sheet);border:none;
+  border-bottom:1px solid var(--line);padding:3px 0;width:100%}
+
+/* ---------- secciones ---------- */
+section.s{padding-top:56px;display:flex;flex-direction:column;gap:22px}
+.s-head{display:flex;gap:20px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:16px}
+.s-num{flex:none;font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent,var(--blue));
+  border:1.5px solid var(--accent,var(--blue));width:38px;height:38px;display:grid;place-items:center;margin-top:4px}
+.s-head .t{display:flex;flex-direction:column;gap:6px}
+.s-head .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.s[data-a="blue"]{--accent:var(--blue)}
+.s[data-a="flame"]{--accent:var(--flame)}
+.s[data-a="teal"]{--accent:var(--teal)}
+.s[data-a="violet"]{--accent:var(--violet)}
+.s[data-a="rose"]{--accent:var(--rose)}
+.stack{display:flex;flex-direction:column;gap:16px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:stretch}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:stretch}
+.codegrid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+@media (max-width:760px){.grid2,.grid3{grid-template-columns:minmax(0,1fr)}}
+
+/* ---------- cajas ---------- */
+.box{border:1px solid var(--line);background:var(--sheet-2);padding:18px 20px;
+  display:flex;flex-direction:column;gap:9px}
+.box .lbl{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3)}
+.box p,.box li{font-size:16px;line-height:1.6;color:var(--ink-2)}
+.box ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.box.key{border-color:color-mix(in srgb,var(--accent,var(--blue)) 45%,transparent);
+  background:color-mix(in srgb,var(--accent,var(--blue)) 6%,var(--sheet-2))}
+.box.key .lbl{color:var(--accent,var(--blue))}
+.box.key p{color:var(--ink)}
+.box h4{margin-bottom:2px}
+.ask{position:relative;padding-left:44px;min-height:30px;font-family:var(--display);font-weight:600;
+  font-size:21px;line-height:1.3;letter-spacing:-.015em;max-width:44ch}
+.ask::before{content:"?";position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;
+  background:var(--accent,var(--blue));color:var(--sheet);font-family:var(--display);font-weight:800;
+  font-size:18px;display:grid;place-items:center}
+
+/* ---------- código ---------- */
+pre{margin:0;background:var(--sheet-2);border:1px solid var(--line-soft);padding:16px 18px;
+  overflow-x:auto;font-family:var(--mono);font-size:14.5px;line-height:1.7;color:var(--ink);
+  white-space:pre;tab-size:4}
+pre.sm{font-size:13.5px}
+pre .file{display:block;margin:-16px -18px 12px;padding:7px 18px;border-bottom:1px solid var(--line-soft);
+  font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--ink-3);background:var(--sheet)}
+pre mark{background:color-mix(in srgb,var(--blue) 14%,transparent);color:inherit;border-radius:3px;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--blue) 14%,transparent)}
+.cd-k{color:var(--cd-k);font-weight:700}
+.cd-s{color:var(--cd-s)}
+.cd-n{color:var(--cd-n)}
+.cd-c{color:var(--cd-c);font-style:italic}
+.cd-fn{color:var(--cd-fn);font-weight:700}
+figure{margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}
+figcaption{font-size:14.5px;color:var(--ink-2);line-height:1.5}
+figcaption b{color:var(--ink)}
+.illus{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--violet)}
+
+/* ---------- tablas ---------- */
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--line-soft);vertical-align:top;line-height:1.5}
+thead th{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);border-bottom:1.5px solid var(--line)}
+tbody td:first-child{font-weight:600;color:var(--ink)}
+td code{white-space:normal}
+.tw{overflow-x:auto}
+td.c{text-align:center}
+td input[type=checkbox]{width:18px;height:18px;accent-color:var(--blue)}
+
+/* ---------- pasos numerados ---------- */
+.steps{display:flex;flex-direction:column;gap:0;border:1px solid var(--line)}
+.steps>div{display:flex;gap:14px;align-items:flex-start;padding:12px 16px}
+.steps>div+div{border-top:1px solid var(--line-soft)}
+.steps .k{flex:none;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--accent,var(--blue));width:92px;padding-top:2px}
+.steps .v{font-size:15px;color:var(--ink-2);line-height:1.55;min-width:0}
+.steps .v b{color:var(--ink);font-weight:600}
+.steps .v code{white-space:normal}
+@media (max-width:560px){.steps>div{flex-direction:column;gap:4px}.steps .k{width:auto}}
+
+/* ---------- diagrama vertical ---------- */
+.ladder{display:flex;flex-direction:column;align-items:center;gap:0}
+.ladder .rung{width:100%;max-width:380px}
+.ladder .arw{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 0;color:var(--ink-3)}
+.ladder .arw i{display:block;width:1.5px;height:14px;background:var(--line)}
+.ladder .arw span{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;text-align:center}
+.ladder .arw b{color:var(--ink-3);font-size:13px;line-height:1}
+.fbox{border:2px solid var(--line);background:var(--sheet-2);padding:13px 20px;font-family:var(--mono);
+  font-weight:700;font-size:14.5px;text-align:center;letter-spacing:.02em;color:var(--ink-2)}
+.fbox small{display:block;font-weight:400;font-size:12px;margin-top:3px;letter-spacing:0}
+.fbox.acc{border-color:var(--accent,var(--blue));background:color-mix(in srgb,var(--accent,var(--blue)) 9%,var(--sheet-2));
+  color:var(--accent,var(--blue))}
+.fbox.future{border-style:dashed}
+
+/* ---------- recordar / índice / cierre ---------- */
+.remember{border:2px solid var(--ink);padding:0;display:flex;flex-direction:column}
+.remember .rh{background:var(--ink);color:var(--sheet);padding:14px 22px;font-family:var(--display);
+  font-weight:700;font-size:20px;letter-spacing:-.02em}
+.remember ol{margin:0;padding:20px 20px 20px 40px;display:flex;flex-direction:column;gap:12px;
+  font-size:16px;line-height:1.5;color:var(--ink-2)}
+.remember ol b{color:var(--ink);font-weight:600}
+.remember li::marker{font-family:var(--mono);font-weight:700;color:var(--blue);font-size:14px}
+.toc{border:1px solid var(--line);display:flex;flex-direction:column}
+.toc .th{background:var(--ink);color:var(--sheet);padding:12px 20px;font-family:var(--display);
+  font-weight:700;font-size:19px;letter-spacing:-.02em;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline}
+.toc .th span{font-family:var(--mono);font-size:12px;font-weight:400;letter-spacing:.04em;opacity:.8}
+.toc ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column}
+.toc li{display:grid;grid-template-columns:42px 1fr auto;gap:14px;padding:9px 20px;align-items:baseline}
+.toc li+li{border-top:1px solid var(--line-soft)}
+.toc .k{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--c,var(--blue));letter-spacing:.06em}
+.toc .n{font-family:var(--display);font-weight:600;font-size:17px;letter-spacing:-.015em;line-height:1.2}
+.toc .n a{color:inherit;text-decoration:none}
+.toc .n a:hover{text-decoration:underline}
+.toc .d{font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+@media (max-width:560px){.toc li{grid-template-columns:34px 1fr}.toc .d{grid-column:2}}
+.closing{margin-top:60px;border-top:2px solid var(--ink);padding-top:30px;display:flex;
+  flex-direction:column;gap:16px}
+.quote{font-family:var(--display);font-weight:700;font-size:clamp(24px,3.4vw,34px);line-height:1.15;
+  letter-spacing:-.03em;max-width:26ch}
+.colofon{font-family:var(--mono);font-size:12px;color:var(--ink-3);letter-spacing:.04em;
+  display:flex;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line-soft);padding-top:16px}
+
+/* ---------- actividades: PROBÁ · INVESTIGÁ · ¿Y SI...? ---------- */
+.lab{border:1px solid var(--line);border-left:4px solid var(--c,var(--blue));background:var(--sheet-2);
+  padding:16px 20px;display:flex;flex-direction:column;gap:9px}
+.lab .lbl{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--c,var(--blue));display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lab p{font-size:16px;line-height:1.6;color:var(--ink-2);margin:0}
+.lab p b,.lab li b{color:var(--ink);font-weight:600}
+.lab ul,.lab ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;
+  font-size:16px;line-height:1.55;color:var(--ink-2)}
+.lab code{white-space:normal}
+.lab.try{--c:var(--teal)}
+.lab.find{--c:var(--violet)}
+.lab.whatif{--c:var(--flame)}
+.lab.warn{--c:var(--bad)}
+.qs{display:flex;flex-direction:column;gap:8px;border:1px dashed var(--line);padding:16px 20px}
+.qs .lbl{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3)}
+.qs ul,.qs ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:7px;
+  font-size:16px;line-height:1.5;color:var(--ink-2)}
+.qs ul li::marker{color:var(--accent,var(--blue))}
+.qs code{white-space:normal}
+.chal{border:2px solid var(--accent,var(--blue));display:flex;flex-direction:column}
+.chal .ch{background:var(--accent,var(--blue));color:var(--sheet);padding:12px 20px;
+  font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.chal .cb{padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.chal .cb p{font-size:16px;line-height:1.6;color:var(--ink-2)}
+.chal .cb p b{color:var(--ink);font-weight:600}
+.chal .cb ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;
+  font-size:16px;line-height:1.5;color:var(--ink-2)}
+pre.mock{background:transparent;border:1px dashed var(--line);color:var(--ink-2);
+  font-size:13.5px;line-height:1.5}
+.pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;border:1px solid var(--line)}
+.pair>div{padding:14px 18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.pair>div+div{border-left:1px solid var(--line-soft)}
+.pair .lbl{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3)}
+.pair p,.pair li{font-size:15px;line-height:1.5;color:var(--ink-2)}
+.pair ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+@media (max-width:760px){.pair{grid-template-columns:minmax(0,1fr)}.pair>div+div{border-left:none;border-top:1px solid var(--line-soft)}}
+.opt{border:1px solid var(--line);background:var(--sheet-2);padding:16px 18px;
+  display:flex;flex-direction:column;gap:8px}
+.opt .k{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent,var(--blue))}
+.opt h4{font-size:17px}
+.opt p{font-size:15px;line-height:1.5;color:var(--ink-2)}
+
+/* ============================================================
+   EXTRAS DE ESTE TP
+   ============================================================ */
+
+/* la dinámica de cada etapa */
+.dyn{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.dyn>div{background:var(--sheet);padding:12px 14px;display:flex;flex-direction:column;gap:4px;border:1px solid var(--line);border-top:3px solid var(--c)}
+.dyn .k{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--c)}
+.dyn p{font-size:14.5px;line-height:1.45;color:var(--ink-2)}
+.st{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--c,var(--ink-3));display:flex;align-items:center;gap:10px;margin-top:8px}
+.st::before{content:"";width:22px;height:3px;background:currentColor;flex:none}
+.st.prob{--c:var(--rose)} .st.idea{--c:var(--blue)} .st.demo{--c:var(--ink-2)}
+
+/* niveles */
+.tag{display:inline-block;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;padding:3px 8px;border:1.5px solid var(--c);color:var(--c);white-space:nowrap;line-height:1.4}
+.tag.req{--c:var(--blue)} .tag.n2{--c:var(--teal)} .tag.opt{--c:var(--flame)}
+
+/* espacios para responder */
+.ansq{font-size:15.5px;line-height:1.5;color:var(--ink);font-weight:500}
+textarea.ans{display:block;width:100%;min-height:62px;resize:vertical;font-family:var(--body);font-size:15px;
+  line-height:28px;color:var(--ink);background-color:var(--sheet);border:1px solid var(--line);padding:2px 12px;
+  background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 27px,var(--line-soft) 27px,var(--line-soft) 28px);
+  background-attachment:local;background-position:0 2px}
+textarea.ans:focus{outline:2px solid var(--blue);outline-offset:1px}
+textarea.ans.tall{min-height:118px}
+.answers{display:flex;flex-direction:column;gap:14px}
+.answers>div{display:flex;flex-direction:column;gap:6px}
+
+/* listas para tildar */
+.cks{border:1px solid var(--line);display:flex;flex-direction:column;background:var(--sheet)}
+.cks label{display:flex;gap:12px;align-items:flex-start;padding:10px 16px;font-size:15.5px;color:var(--ink-2);
+  cursor:pointer;line-height:1.5}
+.cks label+label{border-top:1px solid var(--line-soft)}
+.cks input{flex:none;width:18px;height:18px;margin:3px 0 0;accent-color:var(--good)}
+.cks b{color:var(--ink);font-weight:600}
+.cks code{white-space:normal}
+.gate{border:2px solid var(--good);display:flex;flex-direction:column}
+.gate .gh{background:color-mix(in srgb,var(--good) 11%,var(--sheet));color:var(--good);padding:10px 16px;
+  font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.gate .cks{border:none}
+
+/* pistas plegables */
+details.hint{border:1px solid var(--line);background:var(--sheet)}
+details.hint summary{cursor:pointer;padding:10px 16px;font-family:var(--mono);font-size:12px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+details.hint summary:hover{color:var(--ink)}
+details.hint[open] summary{border-bottom:1px solid var(--line-soft)}
+details.hint .hb{padding:12px 16px;display:flex;flex-direction:column;gap:10px;font-size:15.5px;line-height:1.55;color:var(--ink-2)}
+details.hint .hb code{white-space:normal}
+
+/* maquetas de la app (ilustraciones: colores fijos porque representan la app) */
+.mocks{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:760px){.mocks{grid-template-columns:minmax(0,1fr)}}
+.mw{border:1px solid #c3cad5;border-radius:10px;overflow:hidden;background:#e7eaef;color:#111a26;font-family:var(--body)}
+.mw-bar{display:flex;align-items:center;gap:6px;padding:7px 12px;background:#d5dae2;border-bottom:1px solid #c3cad5}
+.mw-bar i{width:10px;height:10px;border-radius:50%;background:#aab3c0;flex:none}
+.mw-bar span{flex:1;text-align:center;font-family:var(--mono);font-size:11px;color:#3f4a59;padding-right:40px}
+.mw-body{padding:24px 16px;display:grid;place-items:center}
+.mw-card{width:100%;max-width:290px;background:#fbfcfd;border:1px solid #ccd4e0;border-radius:14px;
+  padding:20px 20px 16px;display:flex;flex-direction:column;gap:5px}
+.mw-title{font-family:var(--display);font-weight:800;font-size:21px;letter-spacing:-.02em;line-height:1.1}
+.mw-sub{font-size:12.5px;color:#546275;margin-bottom:4px;line-height:1.35}
+.mw-lbl{font-size:12px;margin-top:4px;line-height:1.3}
+.mw-in{border:1px solid #ccd4e0;border-radius:7px;background:#fff;padding:6px 9px;font-size:12.5px;min-height:30px;line-height:1.4}
+.mw-in.ph{color:#8a96a8}
+.mw-in.focus{border:2px solid #1548c8;padding:5px 8px}
+.mw-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mw-row>div{display:flex;flex-direction:column;gap:5px}
+.mw-chk{display:flex;align-items:center;gap:7px;font-size:12px;margin-top:4px}
+.mw-chk b{width:13px;height:13px;border:1px solid #8a96a8;border-radius:3px;background:#fff;flex:none}
+.mw-btn{background:#1548c8;color:#fff;border-radius:7px;text-align:center;padding:8px;font-weight:600;font-size:13px;margin-top:6px}
+.mw-msg{font-size:12px;font-weight:600;min-height:17px;line-height:1.35}
+.mw-msg.err{color:#b7361b} .mw-msg.ok{color:#0f7d55}
+.mw-link{text-align:center;font-size:12px;color:#1548c8;margin-top:2px}
+.mw.annot .mw-card{max-width:250px;margin-right:26px}
+.mw.annot [data-n]{position:relative}
+.mw.annot [data-n]::after{content:attr(data-n);position:absolute;right:-34px;top:50%;transform:translateY(-50%);
+  width:20px;height:20px;border-radius:50%;background:#5d34c9;color:#fff;font-family:var(--mono);font-size:10.5px;
+  font-weight:700;display:grid;place-items:center}
+.legend{display:flex;flex-direction:column;border:1px solid var(--line);font-size:14px}
+.legend div{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:6px 12px;align-items:baseline}
+.legend div+div{border-top:1px solid var(--line-soft)}
+.legend b{font-family:var(--mono);font-size:11px;color:var(--violet)}
+.legend code{white-space:normal}
+
+/* navegación entre pantallas */
+.navflow{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center}
+.navflow .scr{border:2px solid var(--line);background:var(--sheet-2);padding:16px;text-align:center;display:flex;flex-direction:column;gap:6px}
+.navflow .scr h4{font-size:19px}
+.navflow .scr p{font-size:13.5px;color:var(--ink-2);line-height:1.45}
+.navflow .arrows{display:flex;flex-direction:column;gap:12px;font-family:var(--mono);font-size:11.5px;color:var(--ink-3);text-align:center}
+.navflow .arrows span{display:block;border-bottom:1.5px solid var(--line);padding:0 6px 4px}
+.navflow .arrows b{color:var(--violet)}
+@media (max-width:640px){.navflow{grid-template-columns:1fr}.navflow .arrows{flex-direction:row;justify-content:center}}
+
+/* ilustración conceptual de Qt Designer */
+.dz{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--sheet-2);font-size:12px;line-height:1.45}
+.dz-menu{display:flex;gap:14px;padding:6px 12px;border-bottom:1px solid var(--line-soft);font-family:var(--mono);
+  font-size:11px;color:var(--ink-3);flex-wrap:wrap}
+.dz-tools{display:flex;gap:6px;align-items:center;padding:6px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.dz-tools i{min-width:22px;height:20px;padding:0 4px;border:1px solid var(--line);border-radius:3px;background:var(--sheet);
+  font-style:normal;font-family:var(--mono);font-size:10px;display:grid;place-items:center;color:var(--ink-2)}
+.dz-tools .sep{width:1px;height:18px;background:var(--line);margin:0 4px}
+.dz-main{display:grid;grid-template-columns:150px minmax(0,1fr) 200px;min-height:310px}
+.dz-panel{padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.dz-panel+.dz-panel{border-left:1px solid var(--line)}
+.dz-h{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink-3);margin-bottom:5px}
+.nb{display:inline-grid;place-items:center;width:19px;height:19px;border-radius:50%;background:var(--violet);
+  color:#fff;font-family:var(--mono);font-size:10.5px;font-weight:700;flex:none;letter-spacing:0}
+.dz-cat{font-weight:700;color:var(--ink-2);margin-top:5px;font-size:11.5px}
+.dz-it{padding-left:10px;color:var(--ink-2);font-size:11.5px}
+.dz-form{background-color:var(--sheet);background-image:radial-gradient(var(--line) 1px,transparent 1px);
+  background-size:10px 10px;display:grid;place-items:center;padding:14px}
+.dz-sheet{width:100%;max-width:240px;border:1px dashed #d4554e;padding:10px;display:flex;flex-direction:column;gap:5px;
+  background:color-mix(in srgb,var(--sheet) 85%,transparent)}
+.dz-sheet .w{border:1px solid var(--line);background:var(--sheet-2);padding:3px 7px;font-size:11px;color:var(--ink-2)}
+.dz-sheet .w.btn{text-align:center;font-weight:600}
+.dz-sheet .w.sel{outline:2px solid var(--blue);outline-offset:1px;position:relative}
+.dz-sheet .lb{font-size:11px;color:var(--ink-2)}
+.dz-right{display:grid;grid-template-rows:auto 1fr;padding:0}
+.dz-right>div{padding:8px 10px;min-width:0}
+.dz-right>div+div{border-top:1px solid var(--line)}
+.dz-tree{font-family:var(--mono);font-size:10.5px;color:var(--ink-2);white-space:pre;overflow-x:auto;line-height:1.55}
+.dz-tree b{color:var(--blue)}
+.dz-props{display:flex;flex-direction:column;font-size:11px}
+.dz-props .g{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--ink-3);background:var(--line-soft);padding:2px 6px;margin-top:4px}
+.dz-props .r{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:2px 6px;border-bottom:1px solid var(--line-soft)}
+.dz-props .r span:first-child{color:var(--ink-3)}
+.dz-props .r span:last-child{color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dz-props .r.on{background:color-mix(in srgb,var(--violet) 12%,transparent)}
+@media (max-width:760px){.dz-main{grid-template-columns:1fr}.dz-panel+.dz-panel{border-left:none;border-top:1px solid var(--line)}}
+
+/* puente .ui ↔ .py */
+.bridge{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:center}
+.bridge .side{display:flex;flex-direction:column;gap:6px;min-width:0}
+.bridge .side .lbl{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.bridge .mid{display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--mono);font-size:11px;
+  font-weight:700;color:var(--violet);text-align:center}
+.bridge .mid i{font-style:normal;font-size:20px;line-height:1}
+@media (max-width:760px){.bridge{grid-template-columns:1fr}.bridge .mid{flex-direction:row;justify-content:center}}
+
+/* anatomía de una línea */
+.anat{border:1px solid var(--line);background:var(--sheet-2);padding:20px;display:flex;flex-direction:column;gap:18px}
+.anat-code{font-family:var(--mono);font-size:clamp(13px,2.1vw,19px);font-weight:700;overflow-x:auto;white-space:nowrap;
+  padding:4px 0 10px;color:var(--ink-3)}
+.anat-code span{border-bottom:3px solid var(--c);padding-bottom:4px;color:var(--ink)}
+.anat ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.anat li{border-top:3px solid var(--c);padding-top:8px;font-size:14.5px;line-height:1.5;color:var(--ink-2)}
+.anat li > b:first-child{display:block;font-family:var(--mono);font-size:12.5px;color:var(--c);margin-bottom:2px}
+.c1{--c:var(--blue)} .c2{--c:var(--rose)} .c3{--c:var(--ink-3)} .c4{--c:var(--teal)}
+
+/* el bucle de eventos */
+.loop{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line)}
+.loop>div{padding:12px 14px;display:flex;flex-direction:column;gap:4px;position:relative}
+.loop>div+div{border-left:1px solid var(--line-soft)}
+.loop>div+div::before{content:"→";position:absolute;left:-9px;top:12px;background:var(--sheet);color:var(--ink-3);
+  font-family:var(--mono);font-size:13px;line-height:1;padding:2px 0}
+.loop .k{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent,var(--blue))}
+.loop p{font-size:14px;line-height:1.45;color:var(--ink-2)}
+.loop-back{font-family:var(--mono);font-size:12px;color:var(--ink-3);text-align:center;padding:8px;border:1px solid var(--line);
+  border-top:none;background:var(--sheet-2)}
+@media (max-width:640px){.loop{grid-template-columns:1fr 1fr}.loop>div:nth-child(3){border-left:none}
+  .loop>div:nth-child(n+3){border-top:1px solid var(--line-soft)}.loop>div:nth-child(3)::before{content:none}}
+
+/* tablero de estado */
+.status{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.status>div{border:1px solid var(--line);border-top:4px solid var(--c);padding:14px 16px;display:flex;flex-direction:column;gap:6px;background:var(--sheet-2)}
+.status .s1{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--c)}
+.status h4{font-size:17px}
+.status p{font-size:14.5px;line-height:1.5;color:var(--ink-2)}
+@media (max-width:760px){.status{grid-template-columns:1fr}}
+
+/* árbol de archivos */
+pre.tree{background:var(--sheet);font-size:14px;line-height:1.65}
+pre.tree .cd-c{font-style:normal}
+
+/* traceback */
+pre.tb .bad{color:var(--bad);font-weight:700}
+pre.tb .mine{background:color-mix(in srgb,var(--blue) 12%,transparent)}
+.tbnotes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;counter-reset:n}
+.tbnotes li{display:grid;grid-template-columns:26px 1fr;gap:10px;font-size:15px;line-height:1.5;color:var(--ink-2)}
+.tbnotes li::before{counter-increment:n;content:counter(n);width:22px;height:22px;border-radius:50%;background:var(--bad);
+  color:#fff;font-family:var(--mono);font-size:11px;font-weight:700;display:grid;place-items:center}
+
+/* progreso */
+.progress{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.progress b{color:var(--good)}
+.toc .th .progress,.toc .th .progress b{color:inherit}
+.toc .th .progress b{font-weight:700}
+
+/* ---------- impresión ---------- */
+@media print{
+  :root:root:root{color-scheme:light;--paper:#fff;--sheet:#fff;--sheet-2:#f6f8fb;--ink:#101820;--ink-2:#3f4a59;--ink-3:#69737f;
+    --line:#c3ccd8;--line-soft:#dfe5ed;--shadow:none;
+    --blue:#0f3aa8;--flame:#a2360c;--teal:#0a6355;--violet:#4d2ab0;--rose:#a11a53;
+    --good:#0b6845;--bad:#9c2d16;
+    --cd-k:#7a239f;--cd-s:#9a3b0d;--cd-n:#0f3aa8;--cd-c:#6b7684;--cd-fn:#085a72}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#fff;color:var(--ink);font-size:10pt;line-height:1.45}
+  .doc{max-width:none;box-shadow:none;border:none;padding:0}
+  .printbar,.noprint{display:none!important}
+  @page{size:A4;margin:14mm 14mm 16mm;
+    @bottom-left{content:"TP · Login y registro con PyQt6 + Qt Designer";font-family:"JetBrains Mono",monospace;font-size:7.5pt;color:#69737f}
+    @bottom-right{content:counter(page) " / " counter(pages);font-family:"JetBrains Mono",monospace;font-size:7.5pt;color:#69737f}}
+  @page:first{@bottom-left{content:none} @bottom-right{content:none}}
+  h1{font-size:30pt} h2{font-size:17pt} h3{font-size:12.5pt} h4{font-size:10.5pt}
+  .lead{font-size:11pt;line-height:1.45}
+  .quote{font-size:18pt} .motto{font-size:13pt}
+  .ask{font-size:12pt}
+  .box p,.box li,figcaption,table,.steps .v,.cks label,.lab p,.lab ul,.lab ol,.qs ul,.qs ol,.chal .cb p,.chal .cb ul,
+  .opt p,.pair p,.pair li,.dyn p,.status p,.anat li,.loop p,.tbnotes li,details.hint .hb,.ansq,.legend{font-size:9.3pt}
+  section.s{padding-top:14px;gap:10px}
+  .stack{gap:9px} .grid2{gap:11px} .grid3{gap:9px}
+  .box,.lab,.qs{padding:10px 13px;gap:6px}
+  .remember ol{padding:12px 15px 12px 32px;gap:7px}
+  .cover{padding-bottom:16px;gap:14px;padding-top:0;break-after:page}
+  .s-head{break-after:avoid;padding-bottom:10px}
+  h1,h2,h3,h4,.st,.ansq{break-after:avoid}
+  pre,figure,.box,.ladder,.opt,.pair,.mocks,.mw,.dz,.bridge,.anat,.loop,.status,.navflow,.answers>div,tr,
+  .legend,.dyn,.ficha,.cks label,.steps>div,.lab p,.lab li,.qs li,.remember li{break-inside:avoid}
+  .lab,.qs,.chal,.gate,.cks,.steps,.toc,.remember,details.hint{break-inside:auto}
+  .lab .lbl,.qs .lbl,.gate .gh,.chal .ch,.remember .rh,details.hint summary,.toc .th{break-after:avoid}
+  p,li{orphans:3;widows:3}
+  pre{font-size:8.2pt;padding:9px 11px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+  pre .file{margin:-9px -11px 8px;padding:5px 11px}
+  pre.tree{font-size:8.6pt}
+  a{color:inherit;text-decoration:none}
+  .steps>div,.cks label{padding:6px 11px}
+  .toc li{padding:5px 14px} .toc .n{font-size:10.5pt}
+  .fbox{font-size:9pt;padding:8px 12px}
+  .closing{margin-top:22px;padding-top:16px}
+  textarea.ans{font-size:9.5pt;line-height:22px;min-height:50px;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 21px,#d5dce6 21px,#d5dce6 22px);resize:none;overflow:hidden}
+  textarea.ans.tall{min-height:92px}
+  details.hint summary{padding:6px 12px}
+  details.hint .hb{padding:8px 12px}
+  .mw-body{padding:14px 10px}
+  .dz-main{min-height:0}
+}
+@media print{
+  .grid2,.mocks,.pair{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .grid3,.status{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .pair>div+div{border-left:1px solid var(--line-soft);border-top:none}
+  .dz-main{grid-template-columns:128px minmax(0,1fr) 172px}
+  .dz-panel+.dz-panel{border-left:1px solid var(--line);border-top:none}
+  .bridge{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
+  .bridge .mid{flex-direction:column}
+  .mw-body{padding:14px 10px}
+  p[style*="font-size"]{font-size:9.5pt!important}
+  .closing{break-inside:avoid}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="doc">
+
+<!-- ==================== PORTADA ==================== -->
+<header class="cover">
+  <div class="cover-top">
+    <span class="eyebrow">Técnico Universitario en Programación</span>
+    <span class="eyebrow">Trabajo práctico &middot; PyQt6 + Qt Designer</span>
+  </div>
+  <h1>Login y registro<br>con <span class="hl">Qt Designer</span></h1>
+  <p class="lead">Vas a construir una aplicación de escritorio de verdad: desde una pantalla vacía hasta un
+  login con registro que valida lo que se escribe, avisa con claridad y está ordenado en clases. La pantalla
+  la vas a <strong>dibujar</strong>. El comportamiento lo vas a <strong>programar</strong>. Y la parte que de
+  verdad se aprende acá es <strong>conectar las dos cosas sin que se mezclen</strong>.</p>
+  <p class="motto">Diseñamos visualmente, programamos el comportamiento y conectamos ambas partes con buenas prácticas.</p>
+  <div class="badges">
+    <span class="badge">PyQt6</span>
+    <span class="badge">Qt Designer</span>
+    <span class="badge">Archivos .ui</span>
+    <span class="badge">uic.loadUi()</span>
+    <span class="badge">Señales</span>
+    <span class="badge">Validación</span>
+    <span class="badge">Qt Style Sheets</span>
+    <span class="badge">POO</span>
+    <span class="badge">Git</span>
+  </div>
+  <div class="ficha">
+    <div><span class="k">Modalidad</span><span class="v">Individual o en parejas de hasta dos personas</span></div>
+    <div><span class="k">Antes de empezar</span><span class="v">Guía de exploración de PyQt, clases 1 a 3</span></div>
+    <div><span class="k">Se entrega</span><span class="v">Un repositorio con <code>.ui</code>, código, README y capturas</span></div>
+    <div><span class="k">Duración sugerida</span><span class="v">Tres clases de taller + trabajo en casa</span></div>
+    <div><span class="k">Integrantes</span><input type="text" data-k="ficha-integrantes" aria-label="Integrantes" placeholder="Nombre y apellido"></div>
+    <div><span class="k">Repositorio</span><input type="text" data-k="ficha-repo" aria-label="Link del repositorio" placeholder="https://github.com/…"></div>
+  </div>
+  <div class="printbar">
+    <button class="print" type="button" onclick="window.print()">Imprimir / Guardar PDF</button>
+    <span>o usá Cmd&nbsp;+&nbsp;P (Mac) &middot; Ctrl&nbsp;+&nbsp;P (Windows) → Guardar como PDF &middot;
+      <a href="tp-login-pyqt.pdf">bajar el PDF ya generado</a> (50 páginas, para imprimir en blanco)</span>
+  </div>
+</header>
+
+<!-- ==================== 00 · CÓMO SE TRABAJA ==================== -->
+<section class="s" data-a="blue" id="inicio" style="padding-top:40px">
+  <div class="s-head"><span class="s-num">00</span><div class="t"><h2>Cómo se trabaja este TP</h2>
+    <p class="dim" style="font-size:16px">Leelo una vez: todas las etapas siguen el mismo ritmo</p></div></div>
+
+  <p class="dim">Cada etapa importante avanza en siete pasos. No te salteés los del final: son los que
+  convierten «lo copié y anduvo» en «sé por qué anda».</p>
+
+  <div class="dyn">
+    <div style="--c:var(--rose)"><span class="k">El problema</span><p>Qué queremos resolver y por qué todavía no podemos.</p></div>
+    <div style="--c:var(--blue)"><span class="k">La idea</span><p>El concepto nuevo que hace falta. Pocas palabras.</p></div>
+    <div style="--c:var(--ink-2)"><span class="k">La demostración</span><p>Un ejemplo chico que funciona. Escribilo y ejecutalo.</p></div>
+    <div style="--c:var(--teal)"><span class="k">Probá</span><p>Una modificación que hacés vos. A veces, romperlo a propósito.</p></div>
+    <div style="--c:var(--ink-3)"><span class="k">Pensá</span><p>Preguntas para razonar. Se contestan con argumentos, no con código.</p></div>
+    <div style="--c:var(--violet)"><span class="k">Investigá</span><p>Algo que esta guía no te dice a propósito. Se busca en la documentación.</p></div>
+    <div style="--c:var(--good)"><span class="k">Comprobá</span><p>Condiciones verificables. Si alguna no se cumple, no avances.</p></div>
+  </div>
+
+  <div class="grid3">
+    <div class="box"><span class="tag req">Nivel 1 &middot; obligatorio</span><p>Lo mínimo para aprobar. Todas las etapas lo marcan.</p></div>
+    <div class="box"><span class="tag n2">Nivel 2 &middot; integración</span><p>Lo que convierte dos pantallas sueltas en una aplicación. Esperado para una buena nota.</p></div>
+    <div class="box"><span class="tag opt">Nivel 3 &middot; opcional</span><p>Desafíos «¿y si...?». Con pistas, sin soluciones.</p></div>
+  </div>
+
+  <div class="lab warn">
+    <span class="lbl">Sobre las soluciones</span>
+    <p>Esta guía <b>no</b> te da el código completo de la aplicación. Te da ejemplos chicos que funcionan,
+    esqueletos para completar y pistas plegadas (<b>▸ Pista</b>) para cuando te trabes. Abrí una pista
+    <b>después</b> de intentar, no antes. Las respuestas que escribas en los recuadros quedan guardadas
+    en este navegador, y salen en el PDF si lo imprimís.</p>
+  </div>
+
+  <h3>Lo que ya traés puesto</h3>
+  <div class="grid3">
+    <div class="box"><span class="lbl">De la guía de PyQt</span><p><code>QApplication</code>, widgets,
+      <code>clicked.connect()</code>, layouts y una ventana como clase que hereda de <code>QWidget</code>.</p></div>
+    <div class="box"><span class="lbl">De las clases 1 y 2</span><p><code>__init__</code>, <code>self</code>,
+      herencia, <code>super()</code>, encapsulación y la diferencia entre <b>ES UN</b> y <b>TIENE UN</b>.</p></div>
+    <div class="box"><span class="lbl">De la guía de MySQL</span><p>Una clase que concentra una responsabilidad,
+      el <code>.gitignore</code> y la idea de que <b>la interfaz no tiene por qué conocer los datos</b>.</p></div>
+  </div>
+
+  <h3>Decisiones técnicas de este TP</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Decisión</th><th>Por qué</th></tr></thead>
+    <tbody>
+      <tr><td>PyQt6</td><td>Es la versión que usamos en la guía de exploración: todo lo que ya probaste sigue valiendo.
+        Si encontrás ejemplos de PyQt5, usá el «traductor» de la sección 10 de esa guía.</td></tr>
+      <tr><td>Qt Designer desde <code>PySide6-Essentials</code></td><td>Es la forma más simple que verificamos para tener
+        Designer en Windows y en Mac —incluidas las Mac con chip Apple (M1 a M4)— con un solo <code>pip install</code>.
+        Lo usamos <b>solo para dibujar</b>; el programa usa PyQt6.</td></tr>
+      <tr><td>Cargar el <code>.ui</code> con <code>uic.loadUi()</code></td><td>El diseño queda en el <code>.ui</code>, que
+        podés volver a abrir y cambiar en Designer cuando quieras. No lo convertimos con <code>pyuic6</code> en un
+        <code>.py</code> generado: ese archivo es largo, nadie lo edita a mano y se pisa cada vez que regenerás.</td></tr>
+      <tr><td>Una clase por pantalla</td><td>Cada pantalla sabe responder a sus botones. Nadie más.</td></tr>
+      <tr><td>Autenticación simulada</td><td>Sin base de datos todavía. Pero lo que se puede hacer bien hoy, se hace bien:
+        las contraseñas nunca se guardan como texto.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="toc" id="indice">
+    <div class="th">El recorrido <span class="progress" id="progreso"></span></div>
+    <ol>
+      <li style="--c:var(--blue)"><span class="k">01</span><span class="n"><a href="#e1">Entender qué vamos a construir</a></span><span class="d">qué hay y qué pasa</span></li>
+      <li style="--c:var(--flame)"><span class="k">02</span><span class="n"><a href="#e2">Preparar el entorno</a></span><span class="d">venv · PyQt6 · Designer</span></li>
+      <li style="--c:var(--teal)"><span class="k">03</span><span class="n"><a href="#e3">Aprender Qt Designer explorando</a></span><span class="d">.ui · objectName · layouts</span></li>
+      <li style="--c:var(--violet)"><span class="k">04</span><span class="n"><a href="#e4">De <code>.ui</code> a Python</a></span><span class="d">uic.loadUi · rutas · errores</span></li>
+      <li style="--c:var(--rose)"><span class="k">05</span><span class="n"><a href="#e5">Aplicar POO</a></span><span class="d">una clase por pantalla</span></li>
+      <li style="--c:var(--blue)"><span class="k">06</span><span class="n"><a href="#e6">Conectar eventos</a></span><span class="d">señales · navegación</span></li>
+      <li style="--c:var(--flame)"><span class="k">07</span><span class="n"><a href="#e7">Validar los formularios</a></span><span class="d">reglas · mensajes</span></li>
+      <li style="--c:var(--teal)"><span class="k">08</span><span class="n"><a href="#e8">Simular el funcionamiento</a></span><span class="d">servicio · hash</span></li>
+      <li style="--c:var(--violet)"><span class="k">09</span><span class="n"><a href="#e9">Mejorar la experiencia visual</a></span><span class="d">Qt Style Sheets</span></li>
+      <li style="--c:var(--rose)"><span class="k">10</span><span class="n"><a href="#e10">Organización del proyecto</a></span><span class="d">módulos · responsabilidades</span></li>
+      <li style="--c:var(--blue)"><span class="k">11</span><span class="n"><a href="#e11">Buenas prácticas y seguridad</a></span><span class="d">revisión de código</span></li>
+      <li style="--c:var(--flame)"><span class="k">12</span><span class="n"><a href="#e12">Desafíos progresivos</a></span><span class="d">niveles 1, 2 y 3</span></li>
+      <li style="--c:var(--teal)"><span class="k">13</span><span class="n"><a href="#e13">Conexión con el futuro</a></span><span class="d">hacia MySQL</span></li>
+      <li style="--c:var(--violet)"><span class="k">14</span><span class="n"><a href="#e14">Entrega y GitHub</a></span><span class="d">README · commit · push</span></li>
+      <li style="--c:var(--rose)"><span class="k">15</span><span class="n"><a href="#e15">Autoevaluación y criterios</a></span><span class="d">checklist · rúbrica</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ==================== 01 · QUÉ VAMOS A CONSTRUIR ==================== -->
+<section class="s pb" data-a="blue" id="e1">
+  <div class="s-head"><span class="s-num">01</span><div class="t"><h2>Entender qué vamos a construir</h2>
+    <p class="dim" style="font-size:16px">Antes de abrir cualquier programa: qué se ve, qué se toca y qué pasa</p>
+    <div class="tags"><span class="tag req">Nivel 1</span></div></div></div>
+
+  <p class="st prob">El problema</p>
+  <p class="ask">Una persona abre tu programa. Si ya tiene cuenta, entra. Si no, se registra.
+  ¿Qué tiene que ver, qué puede tocar y qué pasa cada vez que toca algo?</p>
+
+  <p class="st idea">Dos pantallas, una aplicación</p>
+  <figure>
+    <div class="mocks">
+      <div class="mw" role="img" aria-label="Ilustración de la pantalla de login">
+        <div class="mw-bar"><i></i><i></i><i></i><span>Iniciar sesión</span></div>
+        <div class="mw-body"><div class="mw-card">
+          <div class="mw-title">Iniciar sesión</div>
+          <div class="mw-sub">Ingresá con tu cuenta para continuar.</div>
+          <div class="mw-lbl">Usuario o correo electrónico *</div>
+          <div class="mw-in focus">ana@correo.com</div>
+          <div class="mw-lbl">Contraseña *</div>
+          <div class="mw-in ph">Tu contraseña</div>
+          <div class="mw-chk"><b></b>Mostrar contraseña</div>
+          <div class="mw-btn">Iniciar sesión</div>
+          <div class="mw-msg err">Ingresá tu contraseña.</div>
+          <div class="mw-link">¿No tenés cuenta? Registrate</div>
+        </div></div>
+      </div>
+      <div class="mw" role="img" aria-label="Ilustración de la pantalla de registro">
+        <div class="mw-bar"><i></i><i></i><i></i><span>Crear cuenta</span></div>
+        <div class="mw-body"><div class="mw-card">
+          <div class="mw-title">Crear cuenta</div>
+          <div class="mw-row">
+            <div><div class="mw-lbl">Nombre *</div><div class="mw-in">Ana</div></div>
+            <div><div class="mw-lbl">Apellido *</div><div class="mw-in">Pérez</div></div>
+          </div>
+          <div class="mw-lbl">Usuario o correo electrónico *</div>
+          <div class="mw-in">ana@correo.com</div>
+          <div class="mw-lbl">Contraseña * (mínimo 8 caracteres)</div>
+          <div class="mw-in">••••••••••</div>
+          <div class="mw-lbl">Repetí la contraseña *</div>
+          <div class="mw-in">••••••••••</div>
+          <div class="mw-chk"><b></b>Mostrar contraseñas</div>
+          <div class="mw-btn">Crear cuenta</div>
+          <div class="mw-msg ok">Cuenta creada. Ya podés volver e iniciar sesión.</div>
+          <div class="mw-link">← Ya tengo cuenta: volver al login</div>
+        </div></div>
+      </div>
+    </div>
+    <figcaption><span class="illus">Ilustración de referencia</span> — dibujada para esta guía, <b>no es una captura
+    de PyQt</b>. Muestra una posibilidad: tarjeta centrada, un botón principal que se distingue, mensajes con color
+    y texto. Tu versión se va a ver distinta según tu sistema operativo y tus decisiones, y está bien que sea distinta.</figcaption>
+  </figure>
+
+  <div class="grid2">
+    <div class="box"><span class="lbl">Login</span>
+      <ul>
+        <li>Usuario o correo electrónico.</li>
+        <li>Contraseña, oculta mientras se escribe.</li>
+        <li>Opción para mostrar u ocultar la contraseña.</li>
+        <li>Botón para iniciar sesión.</li>
+        <li>Acceso a la pantalla de registro.</li>
+        <li>Un lugar para los mensajes de validación.</li>
+      </ul></div>
+    <div class="box"><span class="lbl">Registro</span>
+      <ul>
+        <li>Nombre y apellido.</li>
+        <li>Usuario o correo electrónico.</li>
+        <li>Contraseña y confirmación de la contraseña.</li>
+        <li>Botón para registrarse.</li>
+        <li>Acceso para volver al login.</li>
+        <li>Un lugar para los mensajes de validación.</li>
+      </ul></div>
+  </div>
+
+  <h3>Cómo se pasa de una a otra</h3>
+  <div class="navflow">
+    <div class="scr"><h4>Login</h4><p><b>Iniciar sesión</b> → revisa los datos → muestra un mensaje.</p></div>
+    <div class="arrows">
+      <span>«Registrate» → <b>btn_ir_registro</b></span>
+      <span><b>btn_volver_login</b> ← «Volver»</span>
+    </div>
+    <div class="scr"><h4>Registro</h4><p><b>Crear cuenta</b> → revisa los datos → guarda (simulado) → muestra un mensaje.</p></div>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Pensá · antes de diseñar nada</span>
+    <div class="answers">
+      <div><p class="ansq">1. ¿Qué información necesita cada pantalla para hacer su trabajo?</p>
+        <textarea class="ans" data-k="e1-q1" aria-label="Respuesta 1"></textarea></div>
+      <div><p class="ansq">2. ¿Qué elementos son solamente visuales (se ven, pero no hacen nada)?</p>
+        <textarea class="ans" data-k="e1-q2" aria-label="Respuesta 2"></textarea></div>
+      <div><p class="ansq">3. ¿Qué elementos requieren programación?</p>
+        <textarea class="ans" data-k="e1-q3" aria-label="Respuesta 3"></textarea></div>
+      <div><p class="ansq">4. ¿Qué debería ocurrir cuando se presiona cada botón? Uno por uno.</p>
+        <textarea class="ans tall" data-k="e1-q4" aria-label="Respuesta 4"></textarea></div>
+      <div><p class="ansq">5. ¿Qué responsabilidades pertenecen a la interfaz y cuáles a la lógica?</p>
+        <textarea class="ans" data-k="e1-q5" aria-label="Respuesta 5"></textarea></div>
+    </div>
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Probá &middot; clasificá cada cosa</span>
+    <p>Marcá dónde va a vivir cada una. Algunas tienen trampa: leelas despacio.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Elemento</th><th>Diseño (<code>.ui</code>)</th><th>Comportamiento (<code>.py</code>)</th></tr></thead>
+      <tbody>
+        <tr><td>El título «Iniciar sesión»</td><td class="c"><input type="checkbox" data-k="e1-c1a" aria-label="Diseño"></td><td class="c"><input type="checkbox" data-k="e1-c1b" aria-label="Comportamiento"></td></tr>
+        <tr><td>Que la contraseña se vea con puntos</td><td class="c"><input type="checkbox" data-k="e1-c2a" aria-label="Diseño"></td><td class="c"><input type="checkbox" data-k="e1-c2b" aria-label="Comportamiento"></td></tr>
+        <tr><td>Que al tildar «Mostrar» se vea la contraseña</td><td class="c"><input type="checkbox" data-k="e1-c3a" aria-label="Diseño"></td><td class="c"><input type="checkbox" data-k="e1-c3b" aria-label="Comportamiento"></td></tr>
+        <tr><td>El color del botón principal</td><td class="c"><input type="checkbox" data-k="e1-c4a" aria-label="Diseño"></td><td class="c"><input type="checkbox" data-k="e1-c4b" aria-label="Comportamiento"></td></tr>
+        <tr><td>Revisar que el usuario no esté vacío</td><td class="c"><input type="checkbox" data-k="e1-c5a" aria-label="Diseño"></td><td class="c"><input type="checkbox" data-k="e1-c5b" aria-label="Comportamiento"></td></tr>
+        <tr><td>Decidir <i>qué</i> mensaje mostrar</td><td class="c"><input type="checkbox" data-k="e1-c6a" aria-label="Diseño"></td><td class="c"><input type="checkbox" data-k="e1-c6b" aria-label="Comportamiento"></td></tr>
+        <tr><td>El lugar donde aparece el mensaje</td><td class="c"><input type="checkbox" data-k="e1-c7a" aria-label="Diseño"></td><td class="c"><input type="checkbox" data-k="e1-c7b" aria-label="Comportamiento"></td></tr>
+        <tr><td>Pasar a la pantalla de registro</td><td class="c"><input type="checkbox" data-k="e1-c8a" aria-label="Diseño"></td><td class="c"><input type="checkbox" data-k="e1-c8b" aria-label="Comportamiento"></td></tr>
+        <tr><td>El orden en que el Tab recorre los campos</td><td class="c"><input type="checkbox" data-k="e1-c9a" aria-label="Diseño"></td><td class="c"><input type="checkbox" data-k="e1-c9b" aria-label="Comportamiento"></td></tr>
+      </tbody>
+    </table></div>
+    <details class="hint"><summary>▸ Pista (abrila después de marcar)</summary><div class="hb">
+      <p>Hacete una sola pregunta por fila: <b>¿esto describe cómo es la pantalla al abrirse, o decide qué
+      pasa cuando alguien hace algo?</b> Lo primero va en el <code>.ui</code>. Lo segundo, en Python.
+      La trampa está en las filas 2 y 3: el estado inicial (puntos) es diseño; el cambio al tildar es comportamiento.
+      Lo mismo con el mensaje: el lugar es diseño, el texto que aparece lo decide el código.</p>
+    </div></details>
+  </div>
+
+  <p class="st idea">La idea</p>
+  <div class="pair">
+    <div><span class="lbl">La interfaz describe</span>
+      <ul><li>Qué widgets hay y dónde.</li><li>Cómo se llaman (<code>objectName</code>).</li>
+        <li>Cómo arrancan: textos, campos ocultos, orden del Tab.</li><li>Cómo se ven.</li></ul></div>
+    <div><span class="lbl">La lógica decide</span>
+      <ul><li>Qué pasa cuando se toca cada cosa.</li><li>Qué datos son válidos.</li>
+        <li>Qué mensaje mostrar.</li><li>A qué pantalla ir. Quién puede entrar.</li></ul></div>
+  </div>
+
+  <div class="gate">
+    <div class="gh"><span>Comprobá antes de seguir</span></div>
+    <div class="cks">
+      <label><input type="checkbox" data-k="g1-1" class="g"><span>Puedo decir qué pasa al tocar cada control interactivo de las dos pantallas.</span></label>
+      <label><input type="checkbox" data-k="g1-2" class="g"><span>Sé qué cosas van a vivir en el diseño y cuáles en Python, y puedo justificar los casos dudosos.</span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 02 · PREPARAR EL ENTORNO ==================== -->
+<section class="s pb" data-a="flame" id="e2">
+  <div class="s-head"><span class="s-num">02</span><div class="t"><h2>Preparar el entorno</h2>
+    <p class="dim" style="font-size:16px">Una carpeta, un entorno virtual, una librería y una herramienta</p>
+    <div class="tags"><span class="tag req">Nivel 1</span></div></div></div>
+
+  <p class="st prob">El problema</p>
+  <p class="ask">PyQt no viene con Python. Qt Designer tampoco. Y tener uno <b>no</b> te da el otro.</p>
+
+  <p class="st idea">La idea</p>
+  <div class="pair">
+    <div><span class="lbl">PyQt6 · una librería</span>
+      <p>Código que <b>tu programa importa</b>. Sin ella, <code>from PyQt6 import uic</code> falla. Quien
+      ejecute tu aplicación la necesita: por eso va en <code>requirements.txt</code>.</p></div>
+    <div><span class="lbl">Qt Designer · una herramienta</span>
+      <p>Un <b>programa aparte</b>, con ventanas, para dibujar pantallas. Guarda archivos <code>.ui</code>.
+      Tu aplicación no lo necesita para ejecutarse: solo vos, mientras diseñás.</p></div>
+  </div>
+  <div class="box key">
+    <span class="lbl">¿Por qué sirve un Designer «de PySide6» para PyQt6?</span>
+    <p>PyQt6 y PySide6 son dos puentes distintos hacia la <strong>misma</strong> biblioteca: Qt, escrita en C++.
+    El <code>.ui</code> es un formato de Qt, no de PyQt. Designer lo escribe; PyQt6 lo lee. Instalamos
+    <code>PySide6-Essentials</code> únicamente porque trae Designer listo para abrir con un comando, en Windows y en Mac.</p>
+  </div>
+  <div class="box">
+    <span class="lbl">¿Y para qué un entorno virtual?</span>
+    <p>Un <b>entorno virtual</b> (<code>.venv</code>) es una carpeta con su propio Python y sus propias librerías,
+    solo para este proyecto. Lo que instales ahí no rompe otros proyectos, y lo que necesita este proyecto queda
+    anotado en <code>requirements.txt</code> para que cualquiera lo reconstruya. La carpeta <code>.venv</code>
+    <b>no se sube a Git</b>: se vuelve a crear.</p>
+  </div>
+
+  <p class="st demo">Paso a paso</p>
+  <div class="steps">
+    <div><span class="k">1 · Python</span><span class="v">Comprobá la versión. Necesitás <b>Python 3.10 o más nuevo</b>.<br>
+      Windows: <code>py --version</code> (si no anda, <code>python --version</code>) &middot; Mac: <code>python3 --version</code></span></div>
+    <div><span class="k">2 · Carpeta</span><span class="v">Creá la carpeta del proyecto y entrá en ella. Desde acá, <b>todos</b> los comandos
+      se ejecutan parados en esta carpeta.<br><code>mkdir login-registro</code> y después <code>cd login-registro</code></span></div>
+    <div><span class="k">3 · Entorno</span><span class="v">Creá el entorno virtual.<br>
+      Windows: <code>py -m venv .venv</code> &middot; Mac: <code>python3 -m venv .venv</code></span></div>
+    <div><span class="k">4 · Activar</span><span class="v">Activalo. Se hace <b>en cada terminal nueva</b>; la señal de que funcionó
+      es que la línea empieza con <code>(.venv)</code>.<br>
+      Windows, PowerShell: <code>.venv\Scripts\Activate.ps1</code> &middot; Windows, CMD: <code>.venv\Scripts\activate.bat</code><br>
+      Mac (zsh o bash): <code>source .venv/bin/activate</code></span></div>
+    <div><span class="k">5 · Instalar</span><span class="v">Con el entorno activo, el comando es <b>igual en los dos sistemas</b>
+      (adentro del entorno, <code>python</code> ya apunta al Python correcto):<br>
+      <code>python -m pip install --upgrade pip</code><br>
+      <code>python -m pip install PyQt6 PySide6-Essentials</code><br>
+      Son unos 200 MB: con el Wi-Fi del aula puede tardar.</span></div>
+    <div><span class="k">6 · Designer</span><span class="v">Abrilo con <code>pyside6-designer</code> (con el entorno activo).
+      La primera vez puede tardar unos segundos. Tiene que aparecer el diálogo <b>New Form</b>.</span></div>
+    <div><span class="k">7 · PyQt</span><span class="v">Comprobá que PyQt6 se importa:
+      <code>python -c "from PyQt6 import uic; print('PyQt6 OK')"</code></span></div>
+  </div>
+
+  <div class="lab" style="--c:var(--flame)">
+    <span class="lbl">Mac con chip Apple (M1, M2, M3, M4)</span>
+    <p>Los paquetes de PyQt6 y PySide6 son <b>universales</b>: corren nativos, sin Rosetta. No hace falta Homebrew
+    ni descargar nada de qt.io, y <b>no busques Designer en Aplicaciones</b>: vive adentro de tu <code>.venv</code>
+    y se abre con <code>pyside6-designer</code>. Si una guía de internet te da una ruta tipo
+    <code>/Applications/Qt/…</code> o <code>/usr/local/…</code>, no es la tuya.</p>
+  </div>
+
+  <div class="lab find">
+    <span class="lbl">Alternativa, solo si lo anterior no funciona en tu compu</span>
+    <p>Si no podés instalar con <code>pip</code> (por ejemplo, en una computadora del laboratorio sin permisos), instalá
+    <b>Qt Creator</b> con el instalador oficial de código abierto de Qt (qt.io). Trae Designer integrado: abrís el
+    <code>.ui</code> y se edita en el modo <i>Design</i>. Es una descarga bastante más grande y pide crear una cuenta de Qt.</p>
+  </div>
+
+  <h3>La ventana de prueba</h3>
+  <figure>
+    <pre class="py"><span class="file">prueba_entorno.py</span><span class="cd-k">import</span> sys
+<span class="cd-k">from</span> PyQt6.QtWidgets <span class="cd-k">import</span> QApplication, QLabel
+
+app = <span class="cd-fn">QApplication</span>(sys.argv)
+etiqueta = <span class="cd-fn">QLabel</span>(<span class="cd-s">"Si ves esto, PyQt6 funciona."</span>)
+etiqueta.<span class="cd-fn">resize</span>(<span class="cd-n">320</span>, <span class="cd-n">80</span>)
+etiqueta.<span class="cd-fn">show</span>()
+sys.<span class="cd-fn">exit</span>(app.<span class="cd-fn">exec</span>())</pre>
+    <figcaption>Ejecutalo con <code>python prueba_entorno.py</code>. Es la misma estructura que el primer experimento
+    de la guía de PyQt. Cuando funcione, podés borrarlo: no forma parte del proyecto.</figcaption>
+  </figure>
+
+  <div class="lab try">
+    <span class="lbl">Probá &middot; que VS Code use tu entorno</span>
+    <p>Abrí la carpeta <code>login-registro</code> en VS Code. <b>Cmd/Ctrl + Shift + P</b> → «Python: Select Interpreter» →
+    elegí el que dice <code>.venv</code>. Si te salteás este paso, el botón ▶ de VS Code ejecuta con otro Python y vas a
+    ver <code>ModuleNotFoundError: No module named 'PyQt6'</code> aunque lo hayas instalado.</p>
+  </div>
+
+  <h3>El <code>.gitignore</code>, ahora</h3>
+  <figure>
+    <pre class="sh"><span class="file">.gitignore</span><span class="cd-c"># entorno virtual: se reconstruye con requirements.txt</span>
+.venv/
+
+<span class="cd-c"># archivos que genera Python solo</span>
+__pycache__/
+*.pyc
+
+<span class="cd-c"># del sistema operativo</span>
+.DS_Store
+Thumbs.db
+
+<span class="cd-c"># secretos (para cuando llegue la base de datos)</span>
+.env</pre>
+    <figcaption>Crealo <b>antes</b> del primer commit. Lo que entra al historial de Git no sale fácil.
+    Es el mismo criterio de la guía de MySQL.</figcaption>
+  </figure>
+
+  <h3>Errores frecuentes</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Lo que ves</th><th>Qué significa</th><th>Cómo salir</th></tr></thead>
+    <tbody>
+      <tr><td><code>"python" no se reconoce como un comando…</code> (Windows)</td><td>Python no está en el PATH.</td><td>Usá <code>py</code>. Si tampoco anda, reinstalá Python tildando <i>Add python.exe to PATH</i>.</td></tr>
+      <tr><td><code>zsh: command not found: python</code> (Mac)</td><td>En Mac el comando es <code>python3</code>… hasta que activás el entorno.</td><td>Usá <code>python3</code> para crear el entorno; después de activarlo, <code>python</code> funciona.</td></tr>
+      <tr><td>PowerShell: <i>la ejecución de scripts está deshabilitada en este sistema</i></td><td>Windows bloquea el script de activación.</td><td>Usá CMD con <code>activate.bat</code>, o habilitalo solo para esa ventana:
+        <code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code>.</td></tr>
+      <tr><td><code>pyside6-designer: command not found</code> / <i>no se reconoce</i></td><td>El entorno no está activo, o la instalación no terminó.</td><td>¿Ves <code>(.venv)</code>? Activalo y repetí el paso 5.</td></tr>
+      <tr><td><code>ModuleNotFoundError: No module named 'PyQt6'</code></td><td>Estás ejecutando con un Python que no es el del entorno.</td><td>Activá el entorno en esa terminal o elegí el intérprete <code>.venv</code> en VS Code.</td></tr>
+      <tr><td><code>ERROR: Could not find a version that satisfies the requirement…</code></td><td>Tu Python es demasiado viejo (o de 32 bits).</td><td>Instalá Python 3.10 o más nuevo, de 64 bits, y recreá el entorno.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="qs">
+    <span class="lbl">Pensá</span>
+    <ul>
+      <li>Si mañana borrás la carpeta <code>.venv</code>, ¿qué perdés? ¿Qué archivo te permite recuperarlo todo?</li>
+      <li>¿Por qué conviene escribir <code>python -m pip</code> en vez de <code>pip</code> a secas?</li>
+    </ul>
+  </div>
+
+  <div class="lab find">
+    <span class="lbl">Investigá</span>
+    <ul>
+      <li>PyQt6 y PySide6: ¿quién desarrolla cada una y con qué licencia? ¿Por qué su código se parece tanto?</li>
+      <li>Ejecutá <code>python -c "import PyQt6; print(PyQt6.__file__)"</code> con el entorno activo y sin él. ¿Qué cambia? ¿Qué te dice eso sobre dónde «vive» una librería?</li>
+    </ul>
+    <textarea class="ans" data-k="e2-inv" aria-label="Lo que averiguaste"></textarea>
+  </div>
+
+  <div class="gate">
+    <div class="gh"><span>Comprobá · no avances sin esto</span></div>
+    <div class="cks">
+      <label><input type="checkbox" data-k="g2-1" class="g"><span>La terminal muestra <code>(.venv)</code> al principio de la línea.</span></label>
+      <label><input type="checkbox" data-k="g2-2" class="g"><span><code>pyside6-designer</code> abre Qt Designer y aparece el diálogo <b>New Form</b>.</span></label>
+      <label><input type="checkbox" data-k="g2-3" class="g"><span><code>prueba_entorno.py</code> abre una ventana con el mensaje.</span></label>
+      <label><input type="checkbox" data-k="g2-4" class="g"><span>VS Code usa el intérprete de <code>.venv</code>.</span></label>
+      <label><input type="checkbox" data-k="g2-5" class="g"><span>Existe <code>.gitignore</code> y tiene <code>.venv/</code>.</span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 03 · QT DESIGNER ==================== -->
+<section class="s pb" data-a="teal" id="e3">
+  <div class="s-head"><span class="s-num">03</span><div class="t"><h2>Aprender Qt Designer explorando</h2>
+    <p class="dim" style="font-size:16px">Construir las dos pantallas sin escribir todavía una línea de lógica</p>
+    <div class="tags"><span class="tag req">Nivel 1</span></div></div></div>
+
+  <p class="st prob">El problema</p>
+  <p class="dim">En la guía de PyQt cada widget era una línea de código, cada posición una cuenta, y para ver cómo
+  quedaba había que ejecutar. Con diez widgets y dos pantallas, diseñar así es lento y se rompe con cualquier cambio.</p>
+
+  <p class="st idea">La idea</p>
+  <div class="box key">
+    <span class="lbl">Qué es un archivo .ui</span>
+    <p>Una <strong>descripción de la pantalla</strong>, en texto (formato XML): qué widgets hay, cómo se llama cada uno,
+    qué propiedades tiene y cómo están organizados. Designer lo escribe mientras dibujás. <strong>No contiene
+    comportamiento</strong>: no dice qué pasa cuando hacés clic.</p>
+  </div>
+  <figure>
+    <pre class="xml"><span class="cd-k">&lt;widget</span> class=<span class="cd-s">"QPushButton"</span> name=<span class="cd-s">"btn_login"</span><span class="cd-k">&gt;</span>
+ <span class="cd-k">&lt;property</span> name=<span class="cd-s">"text"</span><span class="cd-k">&gt;</span>
+  <span class="cd-k">&lt;string</span><span class="cd-k">&gt;</span>Iniciar sesión<span class="cd-k">&lt;/string</span><span class="cd-k">&gt;</span>
+ <span class="cd-k">&lt;/property</span><span class="cd-k">&gt;</span>
+<span class="cd-k">&lt;/widget</span><span class="cd-k">&gt;</span></pre>
+    <figcaption>Un pedazo real de un <code>.ui</code>. <code>class</code> es qué widget es, <code>name</code> es su
+    <b>objectName</b> y <code>text</code> es lo que se ve. Buscá la línea que dice qué hace al hacer clic: no existe.
+    Nunca lo vas a editar a mano: para eso está Designer.</figcaption>
+  </figure>
+
+  <h3>Las cinco zonas de Designer</h3>
+  <figure>
+    <div class="dz" role="img" aria-label="Ilustración conceptual de la ventana de Qt Designer con cinco zonas numeradas">
+      <div class="dz-menu"><span>File</span><span>Edit</span><span>Form</span><span>View</span><span>Settings</span><span>Window</span><span>Help</span></div>
+      <div class="dz-tools"><span class="nb">5</span><i>⇥</i><i>⇩</i><i>▦</i><i>☰</i><span class="sep"></span><i>✕</i><i>⤢</i>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--ink-3);margin-left:6px">layouts</span></div>
+      <div class="dz-main">
+        <div class="dz-panel">
+          <div class="dz-h"><span class="nb">1</span>Widget Box</div>
+          <div class="dz-cat">Layouts</div><div class="dz-it">Vertical Layout</div><div class="dz-it">Grid Layout</div>
+          <div class="dz-cat">Spacers</div><div class="dz-it">Horizontal Spacer</div><div class="dz-it">Vertical Spacer</div>
+          <div class="dz-cat">Buttons</div><div class="dz-it">Push Button</div><div class="dz-it">Check Box</div>
+          <div class="dz-cat">Containers</div><div class="dz-it">Frame</div>
+          <div class="dz-cat">Input Widgets</div><div class="dz-it">Line Edit</div>
+          <div class="dz-cat">Display Widgets</div><div class="dz-it">Label</div>
+        </div>
+        <div class="dz-panel dz-form">
+          <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:6px">
+            <div class="dz-h" style="align-self:flex-start"><span class="nb">2</span>El formulario</div>
+            <div class="dz-sheet">
+              <div class="lb" style="font-weight:700;font-size:13px">Iniciar sesión</div>
+              <div class="lb">Usuario o correo electrónico *</div>
+              <div class="w">&nbsp;</div>
+              <div class="lb">Contraseña *</div>
+              <div class="w">••••••</div>
+              <div class="lb">☐ Mostrar contraseña</div>
+              <div class="w btn sel">Iniciar sesión</div>
+              <div class="lb" style="text-align:center;color:var(--blue)">¿No tenés cuenta? Registrate</div>
+            </div>
+          </div>
+        </div>
+        <div class="dz-panel dz-right">
+          <div>
+            <div class="dz-h"><span class="nb">3</span>Object Inspector</div>
+            <div class="dz-tree">pantalla_login    QWidget
+└ frame_tarjeta   QFrame
+  ├ label_titulo  QLabel
+  ├ input_usuario QLineEdit
+  ├ input_password
+  ├ <b>btn_login     QPushButton</b>
+  └ …</div>
+          </div>
+          <div>
+            <div class="dz-h"><span class="nb">4</span>Property Editor</div>
+            <div class="dz-props">
+              <span class="g">QObject</span>
+              <div class="r on"><span>objectName</span><span>btn_login</span></div>
+              <span class="g">QWidget</span>
+              <div class="r"><span>enabled</span><span>☑</span></div>
+              <div class="r"><span>minimumSize</span><span>0 × 0</span></div>
+              <span class="g">QAbstractButton</span>
+              <div class="r on"><span>text</span><span>Iniciar sesión</span></div>
+              <div class="r"><span>checkable</span><span>☐</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <figcaption><span class="illus">Ilustración conceptual</span> — esquema dibujado para esta guía, <b>no una captura</b>.
+    La ubicación real de los paneles cambia según la versión y el sistema. Si cerrás un panel sin querer, se vuelve a abrir
+    desde el menú <i>View</i> (en algunas versiones, <i>Window</i>). Designer suele estar en inglés: la guía usa sus nombres originales.</figcaption>
+  </figure>
+
+  <div class="tw"><table>
+    <thead><tr><th>Zona</th><th>Qué es</th><th>Qué problema resuelve</th></tr></thead>
+    <tbody>
+      <tr><td>1 · Widget Box</td><td>El catálogo de piezas, por categoría.</td><td>No tenés que recordar el nombre de cada clase: lo arrastrás al formulario.</td></tr>
+      <tr><td>2 · Formulario</td><td>La pantalla que estás diseñando.</td><td>Ves el resultado mientras lo construís, sin ejecutar nada.</td></tr>
+      <tr><td>3 · Object Inspector</td><td>El árbol de quién está adentro de quién, con su nombre y su clase.</td><td>Seleccionar widgets aunque estén tapados, y ver si alguno quedó fuera de un layout.</td></tr>
+      <tr><td>4 · Property Editor</td><td>Todas las propiedades del widget seleccionado.</td><td>Configurar nombre, texto, tamaños y modos sin escribir código.</td></tr>
+      <tr><td>5 · Barra de layouts</td><td>Botones para organizar: vertical, horizontal, grilla, romper layout.</td><td>Que las posiciones se calculen solas, como en la sección 7 de la guía de PyQt.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="lab find">
+    <span class="lbl">Mirá bien el Property Editor</span>
+    <p>Las propiedades están agrupadas en bloques: <code>QObject</code>, <code>QWidget</code>, <code>QAbstractButton</code>,
+    <code>QPushButton</code>. Cada bloque es una clase padre. Un botón tiene <code>objectName</code> porque <b>es un</b>
+    <code>QObject</code>, y tiene <code>text</code> porque <b>es un</b> <code>QAbstractButton</code>. Es la herencia de la
+    clase 2, a la vista.</p>
+  </div>
+
+  <h3>Los nombres que usa toda la guía</h3>
+  <p class="dim">El código de las etapas siguientes depende de estos <code>objectName</code>. Si cambiás uno, tenés que
+  cambiarlo también en Python: elegí respetarlos. La convención es <b>prefijo según el tipo + qué es</b>, en minúscula
+  y con guion bajo.</p>
+  <div class="grid2">
+    <div class="tw"><table>
+      <thead><tr><th>login.ui</th><th>Clase</th></tr></thead>
+      <tbody>
+        <tr><td><code>pantalla_login</code></td><td>QWidget (el formulario)</td></tr>
+        <tr><td><code>frame_tarjeta</code></td><td>QFrame</td></tr>
+        <tr><td><code>label_titulo</code></td><td>QLabel</td></tr>
+        <tr><td><code>input_usuario</code></td><td>QLineEdit</td></tr>
+        <tr><td><code>input_password</code></td><td>QLineEdit</td></tr>
+        <tr><td><code>chk_mostrar_password</code></td><td>QCheckBox</td></tr>
+        <tr><td><code>btn_login</code></td><td>QPushButton</td></tr>
+        <tr><td><code>label_mensaje</code></td><td>QLabel (empieza vacío)</td></tr>
+        <tr><td><code>btn_ir_registro</code></td><td>QPushButton</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tw"><table>
+      <thead><tr><th>registro.ui</th><th>Clase</th></tr></thead>
+      <tbody>
+        <tr><td><code>pantalla_registro</code></td><td>QWidget (el formulario)</td></tr>
+        <tr><td><code>frame_tarjeta</code></td><td>QFrame</td></tr>
+        <tr><td><code>input_nombre</code></td><td>QLineEdit</td></tr>
+        <tr><td><code>input_apellido</code></td><td>QLineEdit</td></tr>
+        <tr><td><code>input_usuario</code></td><td>QLineEdit</td></tr>
+        <tr><td><code>input_password</code></td><td>QLineEdit</td></tr>
+        <tr><td><code>input_confirmar_password</code></td><td>QLineEdit</td></tr>
+        <tr><td><code>chk_mostrar_password</code></td><td>QCheckBox</td></tr>
+        <tr><td><code>btn_registrar</code></td><td>QPushButton</td></tr>
+        <tr><td><code>label_mensaje</code></td><td>QLabel (empieza vacío)</td></tr>
+        <tr><td><code>btn_volver_login</code></td><td>QPushButton</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <p class="dim" style="font-size:15px">Las etiquetas que acompañan a cada campo (<code>label_usuario</code>, <code>label_password</code>…)
+  no las usa el código, pero nombralas igual: cuando el Object Inspector tiene veinte <code>label_3</code>, nadie encuentra nada.
+  Y sí: <code>input_usuario</code> se repite en las dos pantallas. En la etapa 5 vas a ver por qué no chocan.</p>
+
+  <p class="st demo">La demostración · login.ui, paso a paso</p>
+  <div class="steps">
+    <div><span class="k">1 · Nuevo</span><span class="v"><i>File → New…</i> → plantilla <b>Widget</b> → <i>Create</i>. <b>No elijas <i>Main Window</i></b>:
+      trae barra de menú y de estado que no vamos a usar, y no encaja con la clase que vamos a escribir (en la etapa 5 vas a ver el error que produce).</span></div>
+    <div><span class="k">2 · Guardar</span><span class="v">Guardalo <b>ya</b>, vacío: <i>File → Save As</i> → entrá a <code>login-registro</code>,
+      creá la carpeta <code>ventanas</code> y guardá como <code>login.ui</code>. Guardar al principio evita el clásico «lo guardé en Descargas».
+      Después, Cmd/Ctrl + S seguido.</span></div>
+    <div><span class="k">3 · Nombre</span><span class="v">Con el fondo del formulario seleccionado, en el Property Editor cambiá <code>objectName</code> a <code>pantalla_login</code>.</span></div>
+    <div><span class="k">4 · Tarjeta</span><span class="v">Arrastrá un <b>Frame</b> (en <i>Containers</i>) al centro del formulario. Nombralo <code>frame_tarjeta</code>.
+      Todo lo demás va a vivir <b>adentro</b> de este frame.</span></div>
+    <div><span class="k">5 · Widgets</span><span class="v">Soltá dentro del frame, más o menos en columna: un <b>Label</b> (título), un Label y un
+      <b>Line Edit</b> (usuario), un Label y un Line Edit (contraseña), un <b>Check Box</b>, un <b>Push Button</b>, un Label (mensaje) y otro
+      Push Button (ir a registro). <b>No importa que queden torcidos</b>: el layout los va a alinear.</span></div>
+    <div><span class="k">6 · Textos</span><span class="v">Doble clic sobre cada widget para escribir su texto visible. Al Label del mensaje
+      <b>borrale el texto</b> (<i>TextLabel</i>): empieza vacío y lo llena Python.</span></div>
+    <div><span class="k">7 · Nombres</span><span class="v">Uno por uno, poné los <code>objectName</code> de la tabla. Revisalos en el Object Inspector.</span></div>
+    <div><span class="k">8 · Layout adentro</span><span class="v">Clic derecho en una zona vacía del frame → <i>Lay out → Lay Out Vertically</i>. Todo queda en columna.</span></div>
+    <div><span class="k">9 · Centrar</span><span class="v">Arrastrá cuatro espaciadores alrededor de la tarjeta: <b>Vertical Spacer</b> arriba y abajo,
+      <b>Horizontal Spacer</b> a izquierda y derecha. Clic en el fondo del formulario → <i>Lay out → Lay Out in a Grid</i>.
+      Los espaciadores empujan desde los cuatro lados y la tarjeta queda en el centro.</span></div>
+    <div><span class="k">10 · Contraseña</span><span class="v">Seleccioná <code>input_password</code> → propiedad <code>echoMode</code> → <b>Password</b>.
+      De paso, completá <code>placeholderText</code> en los dos campos (el texto gris de ayuda).</span></div>
+    <div><span class="k">11 · Tamaños</span><span class="v">En <code>frame_tarjeta</code>: <code>maximumSize</code> → ancho <b>400</b>, y <code>minimumSize</code> → ancho <b>360</b>.
+      Así, con la ventana maximizada, la tarjeta no se estira de punta a punta.</span></div>
+    <div><span class="k">12 · Tab</span><span class="v"><i>Edit → Edit Tab Order</i>: hacé clic en los widgets en el orden en que una persona los recorre.
+      <i>Esc</i> para salir.</span></div>
+    <div><span class="k">13 · Preview</span><span class="v"><i>Form → Preview</i> (Ctrl + R en Windows, Cmd + R en Mac). Es tu pantalla funcionando, sin Python:
+      escribí, apretá Tab, agrandá y achicá la ventana.</span></div>
+  </div>
+
+  <div class="lab" style="--c:var(--teal)">
+    <span class="lbl">¿Por qué una grilla y no un layout vertical?</span>
+    <p>Un layout vertical sobre el formulario centra la tarjeta de arriba a abajo, pero <b>no de izquierda a derecha</b>:
+    con ancho máximo, la tarjeta queda pegada a un costado. Lo comprobamos al preparar esta guía. Con la grilla y los cuatro
+    espaciadores se resuelven las dos direcciones a la vez, sin tocar código.</p>
+  </div>
+
+  <h3>Cómo detectar errores de diseño</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Señal</th><th>Qué pasó</th><th>Cómo se arregla</th></tr></thead>
+    <tbody>
+      <tr><td>En el Object Inspector, un widget con un ícono rojo tachado</td><td>Ese contenedor no tiene layout: sus hijos están a mano.</td><td>Seleccioná el contenedor → <i>Lay out</i>.</td></tr>
+      <tr><td>En Preview, al agrandar, algo queda quieto o se superpone</td><td>Ese widget quedó afuera del layout.</td><td>Arrastralo adentro del layout (aparece una línea azul donde va a caer).</td></tr>
+      <tr><td>Nombres como <code>lineEdit_2</code> o <code>pushButton</code></td><td>Te faltó poner el <code>objectName</code>.</td><td>Renombralo con la tabla.</td></tr>
+      <tr><td>Un texto aparece cortado: «Usuario o corre…»</td><td>Un tamaño fijo es más chico que el texto.</td><td>Sacá el tamaño fijo o activá <code>wordWrap</code> en el Label.</td></tr>
+      <tr><td>Al reacomodar, todo se desarma</td><td>Se rompió un layout.</td><td><i>Break Layout</i> sobre el contenedor y volvé a aplicarlo.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="chal" style="--accent:var(--teal)">
+    <div class="ch">Ahora sin pasos · registro.ui</div>
+    <div class="cb">
+      <p>Diseñá <code>ventanas/registro.ui</code> con la misma técnica y la tabla de nombres. Nadie te va a dictar los clics:
+      ya sabés hacerlo.</p>
+      <ul>
+        <li>Nombre y apellido pueden ir lado a lado: armá dos columnas (Label + Line Edit) y aplicales <i>Lay Out Horizontally</i>.</li>
+        <li>Los dos campos de contraseña, con <code>echoMode</code> en <b>Password</b>.</li>
+        <li>Podés copiar la tarjeta de <code>login.ui</code> y pegarla como punto de partida, pero <b>revisá todos los nombres</b>:
+        Designer agrega sufijos como <code>_2</code> cuando un nombre ya existe.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Probá &middot; texto visible ≠ objectName</span>
+    <p>Seleccioná el botón de login. En el formulario dice <b>Iniciar sesión</b>; en el Object Inspector dice <b>btn_login</b>.
+    Son dos propiedades distintas, para dos lectores distintos. Completá:</p>
+    <div class="tw"><table>
+      <thead><tr><th>Widget</th><th>Texto visible (lo lee…)</th><th>objectName (lo lee…)</th></tr></thead>
+      <tbody>
+        <tr><td>Botón principal</td><td>Iniciar sesión — <i>la persona</i></td><td>btn_login — <i>el código</i></td></tr>
+        <tr><td>Campo de contraseña</td><td><textarea class="ans" data-k="e3-t1" aria-label="Texto visible del campo de contraseña" style="min-height:34px"></textarea></td><td><textarea class="ans" data-k="e3-t2" aria-label="objectName del campo de contraseña" style="min-height:34px"></textarea></td></tr>
+        <tr><td>Casilla para mostrar</td><td><textarea class="ans" data-k="e3-t3" aria-label="Texto visible de la casilla" style="min-height:34px"></textarea></td><td><textarea class="ans" data-k="e3-t4" aria-label="objectName de la casilla" style="min-height:34px"></textarea></td></tr>
+        <tr><td>Enlace a registro</td><td><textarea class="ans" data-k="e3-t5" aria-label="Texto visible del enlace" style="min-height:34px"></textarea></td><td><textarea class="ans" data-k="e3-t6" aria-label="objectName del enlace" style="min-height:34px"></textarea></td></tr>
+      </tbody>
+    </table></div>
+    <ul>
+      <li>En Preview, cambiá el <code>echoMode</code> de la contraseña a <i>Normal</i>, <i>NoEcho</i> y <i>PasswordEchoOnEdit</i>. ¿Qué hace cada uno?
+        Volvé a dejarlo en <i>Password</i>.</li>
+    </ul>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Pensá</span>
+    <div class="answers">
+      <div><p class="ansq">Si cambiás el texto del botón a «Entrar», ¿hay que tocar Python? ¿Y si cambiás su <code>objectName</code> a «boton_entrar»?</p>
+        <textarea class="ans" data-k="e3-p1" aria-label="Respuesta"></textarea></div>
+      <div><p class="ansq">¿Por qué <code>label_mensaje</code> existe vacío desde el diseño, en lugar de crearse desde Python cuando hace falta?</p>
+        <textarea class="ans" data-k="e3-p2" aria-label="Respuesta"></textarea></div>
+    </div>
+  </div>
+
+  <div class="lab find">
+    <span class="lbl">Investigá</span>
+    <ul>
+      <li>¿Qué es la propiedad <b>buddy</b> de un <code>QLabel</code>? Probá <i>Edit → Edit Buddies</i>, poné un <code>&amp;</code> en el texto
+        de una etiqueta («&amp;Usuario») y usá Alt + U en Preview. ¿Para qué sirve, y a quién ayuda?</li>
+      <li>¿En qué se diferencia un <b>Form Layout</b> de un layout vertical para pares etiqueta–campo?</li>
+    </ul>
+    <textarea class="ans" data-k="e3-inv" aria-label="Lo que averiguaste"></textarea>
+  </div>
+
+  <div class="gate">
+    <div class="gh"><span>Comprobá</span></div>
+    <div class="cks">
+      <label><input type="checkbox" data-k="g3-1" class="g"><span><code>login.ui</code> y <code>registro.ui</code> están en <code>login-registro/ventanas/</code>.</span></label>
+      <label><input type="checkbox" data-k="g3-2" class="g"><span>En Preview, al agrandar la ventana, la tarjeta queda centrada y nada se superpone.</span></label>
+      <label><input type="checkbox" data-k="g3-3" class="g"><span>Ningún contenedor muestra el ícono de «sin layout» en el Object Inspector.</span></label>
+      <label><input type="checkbox" data-k="g3-4" class="g"><span>Todos los <code>objectName</code> de las tablas están puestos, sin <code>_2</code> ni mayúsculas distintas.</span></label>
+      <label><input type="checkbox" data-k="g3-5" class="g"><span>Las contraseñas se ven con puntos y Tab recorre los campos en orden.</span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 04 · DE .UI A PYTHON ==================== -->
+<section class="s pb" data-a="violet" id="e4">
+  <div class="s-head"><span class="s-num">04</span><div class="t"><h2>De <code>.ui</code> a Python</h2>
+    <p class="dim" style="font-size:16px">Que tu programa lea el diseño y lo convierta en una ventana de verdad</p>
+    <div class="tags"><span class="tag req">Nivel 1</span></div></div></div>
+
+  <p class="st prob">El problema</p>
+  <p class="ask">Tenés un <code>login.ui</code> impecable. Python no sabe que existe.</p>
+
+  <p class="st idea">La idea</p>
+  <div class="ladder">
+    <div class="fbox rung">login.ui<small>texto: qué widgets hay y cómo se llaman</small></div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>uic.loadUi() lo lee mientras el programa corre</span></div>
+    <div class="fbox rung acc">objetos de PyQt6 en memoria<small>un QPushButton por cada &lt;widget class="QPushButton"&gt;</small></div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>cada objectName se vuelve un atributo</span></div>
+    <div class="fbox rung">ventana.btn_login · ventana.input_usuario …</div>
+  </div>
+
+  <p class="st demo">La demostración</p>
+  <figure>
+    <pre class="py"><span class="file">prueba_ui.py   (en la carpeta login-registro)</span><span class="cd-k">import</span> sys
+
+<span class="cd-k">from</span> PyQt6 <span class="cd-k">import</span> uic
+<span class="cd-k">from</span> PyQt6.QtWidgets <span class="cd-k">import</span> QApplication
+
+app = <span class="cd-fn">QApplication</span>(sys.argv)
+
+ventana = uic.<span class="cd-fn">loadUi</span>(<span class="cd-s">"ventanas/login.ui"</span>)
+ventana.<span class="cd-fn">show</span>()
+
+sys.<span class="cd-fn">exit</span>(app.<span class="cd-fn">exec</span>())</pre>
+    <figcaption>Ejecutalo con <code>python prueba_ui.py</code>, parado en la carpeta del proyecto. Tu diseño, ahora como
+    programa. Es un archivo de prueba: en la etapa 5 lo reemplazamos por una clase.</figcaption>
+  </figure>
+
+  <h3>Línea por línea</h3>
+  <div class="steps">
+    <div><span class="k">QApplication</span><span class="v">La <b>aplicación</b>. Va antes que cualquier widget y hay <b>una sola</b> por programa. Sin ella:
+      <code>QWidget: Must construct a QApplication before a QWidget</code>, y el programa se cierra.</span></div>
+    <div><span class="k">uic.loadUi()</span><span class="v">Abre el <code>.ui</code>, lee el XML y <b>crea todos los widgets</b> con sus propiedades y layouts.
+      Devuelve el widget raíz: el formulario.</span></div>
+    <div><span class="k">ventana</span><span class="v">Ese widget raíz. Probá <code>type(ventana)</code>: es un <code>QWidget</code> común, porque elegiste la plantilla <i>Widget</i>.</span></div>
+    <div><span class="k">show()</span><span class="v">Crear no es mostrar. Sin <code>show()</code> la ventana existe en memoria y nadie la ve. No da error: simplemente no aparece nada.</span></div>
+    <div><span class="k">app.exec()</span><span class="v">Arranca el <b>bucle de eventos</b> y no termina hasta que cerrás la ventana. <code>sys.exit()</code> le pasa al sistema
+      operativo el código con el que terminó.</span></div>
+  </div>
+
+  <h3>El bucle de eventos</h3>
+  <div class="loop">
+    <div><span class="k">Espera</span><p>No hace nada. Espera a que pase algo.</p></div>
+    <div><span class="k">Evento</span><p>Un clic, una tecla, la ventana que cambia de tamaño.</p></div>
+    <div><span class="k">Responde</span><p>Le avisa al widget, y si conectaste un método, lo ejecuta.</p></div>
+    <div><span class="k">Redibuja</span><p>Actualiza lo que cambió en pantalla.</p></div>
+  </div>
+  <div class="loop-back">↺ vuelve a esperar &middot; así hasta que cerrás la ventana &middot; recién ahí <code>exec()</code> termina</div>
+  <p class="dim">Es la misma idea del <code>while</code> del menú de Arena de Combate, pero ya escrito por Qt. Por eso un programa con
+  interfaz no «termina» después de la última línea: se queda dando vueltas acá adentro.</p>
+
+  <h3>Acceder a los widgets por su nombre</h3>
+  <figure>
+    <pre class="py"><span class="cd-fn">print</span>(ventana.btn_login.<span class="cd-fn">text</span>())                 <span class="cd-c"># lee el texto visible</span>
+ventana.label_mensaje.<span class="cd-fn">setText</span>(<span class="cd-s">"Hola desde Python"</span>)
+<span class="cd-fn">print</span>(ventana.input_usuario.<span class="cd-fn">placeholderText</span>())</pre>
+    <figcaption>Agregá estas líneas antes de <code>ventana.show()</code>. <b>El nombre del atributo es el objectName</b>: si en Designer
+    dice <code>btn_login</code>, en Python es <code>ventana.btn_login</code>. El objectName es el puente entre los dos mundos.</figcaption>
+  </figure>
+
+  <h3>La ruta del archivo</h3>
+  <div class="lab try">
+    <span class="lbl">Probá &middot; rompelo a propósito</span>
+    <p>Salí de la carpeta del proyecto (<code>cd ..</code>) y ejecutá <code>python login-registro/prueba_ui.py</code>. Leé lo que aparece.</p>
+  </div>
+  <figure>
+    <pre class="tb">Traceback (most recent call last):
+<span class="mine">  File "…/login-registro/prueba_ui.py", line 8, in &lt;module&gt;
+    ventana = uic.loadUi("ventanas/login.ui")</span>
+  File "…/.venv/lib/…/PyQt6/uic/load_ui.py", line …, in loadUi
+  …   (varias líneas internas de PyQt6)   …
+<span class="bad">PyQt6.uic.exceptions.UIFileException: ventanas/login.ui: invalid Qt Designer file: [Errno 2] No such file or directory: 'ventanas/login.ui'</span></pre>
+  </figure>
+  <ol class="tbnotes">
+    <li><span>Un traceback se lee <b>de abajo hacia arriba</b>. La última línea dice <b>qué</b> pasó: el tipo de error y el mensaje.</span></li>
+    <li><span>No te quedes con la primera mitad del mensaje. «invalid Qt Designer file» confunde: el archivo no es inválido,
+      <b>no existe</b> en esa ruta. La causa real está al final: <code>No such file or directory</code>.</span></li>
+    <li><span>Las líneas <code>File …</code> dicen <b>dónde</b>. Buscá la primera que sea un archivo tuyo (la resaltada): ahí está la línea que lo provocó.
+      Las de adentro de <code>.venv</code> son de la librería; casi nunca el problema está ahí.</span></li>
+  </ol>
+
+  <div class="box key">
+    <span class="lbl">Por qué pasó</span>
+    <p>Una ruta relativa como <code>"ventanas/login.ui"</code> se calcula <strong>desde la carpeta en la que estás parado en la terminal</strong>,
+    no desde donde está el archivo <code>.py</code>. VS Code, según cómo lo ejecutes, puede pararse en otra carpeta.
+    La solución es construir la ruta a partir de la ubicación del propio archivo:</p>
+  </div>
+  <figure>
+    <pre class="py"><span class="cd-k">from</span> pathlib <span class="cd-k">import</span> Path
+
+RUTA_UI = <span class="cd-fn">Path</span>(__file__).parent / <span class="cd-s">"ventanas"</span> / <span class="cd-s">"login.ui"</span>
+<span class="cd-fn">print</span>(RUTA_UI, RUTA_UI.<span class="cd-fn">exists</span>())      <span class="cd-c"># para comprobar, después lo sacás</span>
+
+ventana = uic.<span class="cd-fn">loadUi</span>(RUTA_UI)</pre>
+    <figcaption><code>__file__</code> es la ruta de este <code>.py</code>; <code>.parent</code>, la carpeta que lo contiene; la <code>/</code> une partes
+    de una ruta y funciona igual en Windows y en Mac. Ahora el programa encuentra el <code>.ui</code> desde donde sea que lo ejecutes.</figcaption>
+  </figure>
+
+  <h3>Errores habituales y cómo diagnosticarlos</h3>
+  <p class="dim" style="font-size:15px">Todos estos mensajes son reales: los provocamos a propósito con PyQt6 al preparar esta guía.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Última línea del error</th><th>Causa</th><th>Qué hacer</th></tr></thead>
+    <tbody>
+      <tr><td><code>UIFileException: …: invalid Qt Designer file: [Errno 2] No such file or directory</code></td><td>La ruta al <code>.ui</code> no existe desde donde ejecutaste.</td><td>Usá <code>Path(__file__).parent</code> e imprimí <code>RUTA_UI.exists()</code>.</td></tr>
+      <tr><td><code>UIFileException: …: invalid Qt Designer file: no element found: line 1, column 0</code></td><td>El <code>.ui</code> está vacío o roto (se guardó a medias, o alguien lo editó a mano).</td><td>Abrilo en Designer y guardalo de nuevo. Si no abre, recuperalo de Git.</td></tr>
+      <tr><td><code>AttributeError: 'QWidget' object has no attribute 'boton_login'. Did you mean: 'btn_login'?</code></td><td>Usaste un nombre que no es el <code>objectName</code>.</td><td>Mirá el Object Inspector. Y leé el final: Python te sugiere el nombre correcto.</td></tr>
+      <tr><td><code>ModuleNotFoundError: No module named 'PyQt6'</code></td><td>Python equivocado.</td><td>Activá el entorno o elegí el intérprete <code>.venv</code>.</td></tr>
+      <tr><td><code>QWidget: Must construct a QApplication before a QWidget</code></td><td>Creaste o cargaste un widget antes de <code>QApplication</code>.</td><td><code>app = QApplication(sys.argv)</code> va primero.</td></tr>
+      <tr><td>No aparece nada y no hay error</td><td>Falta <code>show()</code>.</td><td>Agregalo antes de <code>app.exec()</code>.</td></tr>
+      <tr><td>La ventana aparece y desaparece al instante</td><td>Falta <code>app.exec()</code>: el programa llegó al final y terminó.</td><td><code>sys.exit(app.exec())</code> como última línea.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="lab try">
+    <span class="lbl">Probá</span>
+    <ul>
+      <li>Escribí un texto en <code>label_mensaje</code> desde Python y miralo aparecer.</li>
+      <li>Listá todos los botones del formulario:
+        <code>for boton in ventana.findChildren(QPushButton): print(boton.objectName())</code> (acordate de importar <code>QPushButton</code>).</li>
+      <li>En Designer, cambiá el texto del botón principal y guardá. Volvé a ejecutar <b>sin tocar Python</b>.</li>
+    </ul>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Pensá</span>
+    <ul>
+      <li>¿Por qué el cambio del último punto aparece sin tocar Python? ¿Qué habría pasado si hubieras convertido el <code>.ui</code> a <code>.py</code> con <code>pyuic6</code>?</li>
+      <li>¿Qué devuelve <code>ventana.objectName()</code>? ¿De dónde sale ese valor?</li>
+    </ul>
+  </div>
+
+  <div class="lab find">
+    <span class="lbl">Bitácora de errores</span>
+    <p>Anotá el primer error real que te apareció (no los provocados): qué decía la última línea, qué creíste al principio y qué era en realidad.</p>
+    <textarea class="ans tall" data-k="e4-bitacora" aria-label="Bitácora de errores"></textarea>
+  </div>
+
+  <div class="gate">
+    <div class="gh"><span>Comprobá</span></div>
+    <div class="cks">
+      <label><input type="checkbox" data-k="g4-1" class="g"><span><code>prueba_ui.py</code> muestra tu login.</span></label>
+      <label><input type="checkbox" data-k="g4-2" class="g"><span>Funciona aunque lo ejecutes desde otra carpeta (ruta con <code>Path</code>).</span></label>
+      <label><input type="checkbox" data-k="g4-3" class="g"><span>Cambiaste un texto desde Python y lo viste en la ventana.</span></label>
+      <label><input type="checkbox" data-k="g4-4" class="g"><span>Puedo explicar qué hacen <code>QApplication</code>, <code>loadUi()</code>, <code>show()</code> y <code>exec()</code>.</span></label>
+      <label><input type="checkbox" data-k="g4-5" class="g"><span>Sé encontrar en un traceback la línea de mi código que provocó el error.</span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 05 · POO ==================== -->
+<section class="s pb" data-a="rose" id="e5">
+  <div class="s-head"><span class="s-num">05</span><div class="t"><h2>Aplicar POO</h2>
+    <p class="dim" style="font-size:16px">Una clase propia para cada pantalla</p>
+    <div class="tags"><span class="tag req">Nivel 1</span></div></div></div>
+
+  <p class="st prob">El problema</p>
+  <p class="dim"><code>prueba_ui.py</code> anda, pero todo está suelto: una variable <code>ventana</code> global y, cuando haya que
+  responder a cinco controles, cinco funciones sueltas tocando esa global. Con dos pantallas, el doble. Es exactamente el problema
+  que cerró la sección 8 de la guía de PyQt.</p>
+
+  <p class="st idea">La idea</p>
+  <div class="box key">
+    <span class="lbl">Una pantalla es un objeto</span>
+    <p>Tiene estado (lo que hay escrito, qué mensaje se ve) y comportamiento (iniciar sesión, mostrar la contraseña). Entonces
+    la escribimos como una <strong>clase</strong>: <code>VentanaLogin</code>. El diseño sigue en <code>login.ui</code>; la clase
+    lo carga y le agrega lo que el diseño no puede tener: <strong>qué hacer</strong>.</p>
+  </div>
+
+  <figure>
+    <pre class="py">uic.<span class="cd-fn">loadUi</span>(RUTA_UI)          <span class="cd-c"># crea un widget nuevo y te lo devuelve</span>
+uic.<span class="cd-fn">loadUi</span>(RUTA_UI, self)    <span class="cd-c"># «llená ESTE objeto» con los widgets del .ui</span></pre>
+    <figcaption>El segundo argumento cambia todo: los widgets se convierten en atributos de <b>nuestro</b> objeto:
+    <code>self.btn_login</code>, <code>self.input_usuario</code>… Para que eso funcione, <code>self</code> tiene que ser el mismo tipo de
+    widget que la raíz del <code>.ui</code>: un <code>QWidget</code>.</figcaption>
+  </figure>
+
+  <div class="pair">
+    <div><span class="lbl">Herencia · ES UNA pantalla</span>
+      <p><code>class VentanaLogin(QWidget)</code> y <code>uic.loadUi(RUTA_UI, self)</code>. La clase <b>es</b> el widget: se puede meter
+      directamente adentro de otra ventana (lo vas a necesitar en la etapa 6) y escribís <code>self.btn_login</code>.
+      <b>Es la que usamos.</b></p></div>
+    <div><span class="lbl">Composición · TIENE UNA interfaz</span>
+      <p><code>class VentanaLogin:</code> sin padre, y adentro <code>self.ui = uic.loadUi(RUTA_UI)</code>. También funciona: escribís
+      <code>self.ui.btn_login</code> y, para mostrarla, <code>self.ui.show()</code>. Es válida, y es la misma discusión ES UN / TIENE UN de la clase 2.</p></div>
+  </div>
+  <p class="dim" style="font-size:15px">La herencia acá no está para «demostrar que existe»: la pide <code>loadUi(RUTA_UI, self)</code>, y la pide
+  la etapa 6, donde cada pantalla tiene que poder entrar en otra ventana como un widget más.</p>
+
+  <p class="st demo">La demostración</p>
+  <figure>
+    <pre class="py"><span class="file">ventanas/ventana_login.py</span><span class="cd-k">from</span> pathlib <span class="cd-k">import</span> Path
+
+<span class="cd-k">from</span> PyQt6 <span class="cd-k">import</span> uic
+<span class="cd-k">from</span> PyQt6.QtWidgets <span class="cd-k">import</span> QWidget
+
+RUTA_UI = <span class="cd-fn">Path</span>(__file__).parent / <span class="cd-s">"login.ui"</span>
+
+
+<span class="cd-k">class</span> <span class="cd-fn">VentanaLogin</span>(QWidget):
+    <span class="cd-s">"""Controla la pantalla de inicio de sesión. El diseño vive en login.ui."""</span>
+
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(self):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>()
+        <mark>uic.<span class="cd-fn">loadUi</span>(RUTA_UI, self)</mark>
+        self.<span class="cd-fn">_conectar_eventos</span>()
+
+    <span class="cd-k">def</span> <span class="cd-fn">_conectar_eventos</span>(self):
+        self.btn_login.clicked.<span class="cd-fn">connect</span>(self.iniciar_sesion)
+
+    <span class="cd-k">def</span> <span class="cd-fn">iniciar_sesion</span>(self):
+        self.label_mensaje.<span class="cd-fn">setText</span>(<span class="cd-s">"Hiciste clic en Iniciar sesión."</span>)</pre>
+  </figure>
+  <figure>
+    <pre class="py"><span class="file">main.py</span><span class="cd-k">import</span> sys
+
+<span class="cd-k">from</span> PyQt6.QtWidgets <span class="cd-k">import</span> QApplication
+
+<span class="cd-k">from</span> ventanas.ventana_login <span class="cd-k">import</span> VentanaLogin
+
+
+<span class="cd-k">def</span> <span class="cd-fn">main</span>():
+    app = <span class="cd-fn">QApplication</span>(sys.argv)
+    ventana = <span class="cd-fn">VentanaLogin</span>()
+    ventana.<span class="cd-fn">show</span>()
+    sys.<span class="cd-fn">exit</span>(app.<span class="cd-fn">exec</span>())
+
+
+<span class="cd-k">if</span> __name__ == <span class="cd-s">"__main__"</span>:
+    <span class="cd-fn">main</span>()</pre>
+    <figcaption>Ejecutá <code>python main.py</code> desde la carpeta del proyecto. <code>RUTA_UI</code> ahora es <code>"login.ui"</code> a secas
+    porque <code>ventana_login.py</code> vive en la misma carpeta que el diseño. Ya podés borrar <code>prueba_ui.py</code>.</figcaption>
+  </figure>
+
+  <div class="tw"><table>
+    <thead><tr><th>En el código</th><th>Es lo que ya sabías</th></tr></thead>
+    <tbody>
+      <tr><td><code>class VentanaLogin(QWidget)</code></td><td>Herencia: nuestra pantalla ES UN <code>QWidget</code>, más lo nuestro.</td></tr>
+      <tr><td><code>super().__init__()</code></td><td>Que el padre se arme primero, como en <code>Jugador</code>. Sin esto, el objeto no es todavía un widget.</td></tr>
+      <tr><td><code>uic.loadUi(RUTA_UI, self)</code></td><td>Llena <code>self</code> con los widgets del diseño. Desde esta línea existe <code>self.btn_login</code>.</td></tr>
+      <tr><td><code>self._conectar_eventos()</code></td><td>Un método propio con una sola tarea. El <code>_</code> avisa «uso interno de la clase»: encapsulación por convención.</td></tr>
+      <tr><td><code>def iniciar_sesion(self)</code></td><td>Un método público: la acción de esta pantalla. Por ahora solo cambia un texto.</td></tr>
+      <tr><td><code>RUTA_UI</code></td><td>Una constante del módulo: en mayúsculas porque no cambia, fuera de la clase porque no depende de ningún objeto.</td></tr>
+      <tr><td><code>if __name__ == "__main__":</code></td><td>Arranca la app solo si ejecutás <code>main.py</code>, no si alguien lo importa.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>El diseño y el código, lado a lado</h3>
+  <div class="bridge">
+    <div class="side"><span class="lbl">ventanas/login.ui · cómo es</span>
+      <pre class="xml sm"><span class="cd-k">&lt;widget</span> class=<span class="cd-s">"QPushButton"</span> name=<span class="cd-s">"btn_login"</span><span class="cd-k">&gt;</span>
+ <span class="cd-k">&lt;property</span> name=<span class="cd-s">"text"</span><span class="cd-k">&gt;</span>
+  <span class="cd-k">&lt;string</span><span class="cd-k">&gt;</span>Iniciar sesión<span class="cd-k">&lt;/string</span><span class="cd-k">&gt;</span>
+ <span class="cd-k">&lt;/property</span><span class="cd-k">&gt;</span>
+<span class="cd-k">&lt;/widget</span><span class="cd-k">&gt;</span></pre></div>
+    <div class="mid"><i>⇄</i>objectName<br>btn_login</div>
+    <div class="side"><span class="lbl">ventanas/ventana_login.py · qué hace</span>
+      <pre class="py sm">self.btn_login.clicked.<span class="cd-fn">connect</span>(
+    self.iniciar_sesion
+)</pre></div>
+  </div>
+  <p class="dim" style="font-size:15px">A la izquierda nunca hay comportamiento. A la derecha nunca hay posiciones, tamaños ni colores.
+  Lo único que comparten es el nombre.</p>
+
+  <div class="lab try">
+    <span class="lbl">Probá &middot; el orden del __init__ importa</span>
+    <p>Hacé cada cambio, ejecutá, leé la última línea del error y volvé a dejarlo bien:</p>
+    <ul>
+      <li>Poné <code>uic.loadUi(...)</code> <b>antes</b> de <code>super().__init__()</code> →
+        <code>RuntimeError: super-class __init__() of type VentanaLogin was never called</code></li>
+      <li>Poné <code>self._conectar_eventos()</code> <b>antes</b> de <code>loadUi</code> →
+        <code>AttributeError: 'VentanaLogin' object has no attribute 'btn_login'</code></li>
+      <li>Sacale el <code>self</code> a <code>def iniciar_sesion(self)</code> y hacé clic. ¿Qué dice el error?</li>
+    </ul>
+    <p>Si en Designer elegiste <i>Main Window</i> en vez de <i>Widget</i>, vas a ver
+    <code>TypeError: ('Wrong base class of toplevel widget', (…VentanaLogin…, 'QMainWindow'))</code>: el <code>.ui</code> es una ventana
+    principal y la clase es un widget común. Rehacé el formulario con la plantilla <i>Widget</i>.</p>
+  </div>
+
+  <div class="chal" style="--accent:var(--rose)">
+    <div class="ch">Tu turno · VentanaRegistro</div>
+    <div class="cb">
+      <p>Escribí <code>ventanas/ventana_registro.py</code> con la clase <code>VentanaRegistro</code>, con el mismo patrón. Por ahora,
+      <code>btn_registrar</code> conectado a un método <code>registrar()</code> que solo escribe un texto en <code>label_mensaje</code>.
+      Para probarla, cambiá temporalmente <code>main.py</code> para que muestre <code>VentanaRegistro()</code>.</p>
+    </div>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Pensá</span>
+    <div class="answers">
+      <div><p class="ansq">Las dos pantallas tienen un widget llamado <code>input_usuario</code>. ¿Chocan? ¿Por qué no?</p>
+        <textarea class="ans" data-k="e5-p1" aria-label="Respuesta"></textarea></div>
+      <div><p class="ansq">¿En qué caso te parecería mejor la composición (<code>self.ui</code>) que la herencia?</p>
+        <textarea class="ans" data-k="e5-p2" aria-label="Respuesta"></textarea></div>
+    </div>
+  </div>
+
+  <div class="lab find">
+    <span class="lbl">Investigá</span>
+    <p>¿Qué valor tiene <code>__name__</code> cuando ejecutás un archivo y cuándo lo importás? Probalo con un <code>print(__name__)</code>
+    en <code>main.py</code> y en <code>ventana_login.py</code>. ¿Qué pasaría al importar <code>main</code> desde otro archivo si no existiera el
+    <code>if __name__ == "__main__":</code>? (Es el mismo problema del desafío final de la guía de PyQt.)</p>
+  </div>
+
+  <div class="gate">
+    <div class="gh"><span>Comprobá</span></div>
+    <div class="cks">
+      <label><input type="checkbox" data-k="g5-1" class="g"><span><code>python main.py</code> abre el login desde <code>VentanaLogin</code>.</span></label>
+      <label><input type="checkbox" data-k="g5-2" class="g"><span>El clic en <code>btn_login</code> cambia <code>label_mensaje</code>.</span></label>
+      <label><input type="checkbox" data-k="g5-3" class="g"><span><code>VentanaRegistro</code> existe y carga <code>registro.ui</code>.</span></label>
+      <label><input type="checkbox" data-k="g5-4" class="g"><span>No hay ninguna variable global con widgets.</span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 06 · EVENTOS ==================== -->
+<section class="s pb" data-a="blue" id="e6">
+  <div class="s-head"><span class="s-num">06</span><div class="t"><h2>Conectar eventos</h2>
+    <p class="dim" style="font-size:16px">Cinco controles, cinco respuestas, y una ventana que cambia de pantalla</p>
+    <div class="tags"><span class="tag req">Nivel 1 · conexiones</span><span class="tag n2">Nivel 2 · navegación y contraseña</span></div></div></div>
+
+  <p class="st prob">El problema</p>
+  <p class="dim">Hay cinco cosas que una persona puede tocar y cada una necesita una respuesta. Si las conectás todas juntas y algo
+  falla, no vas a saber cuál fue.</p>
+
+  <p class="st idea">La idea · señales y slots</p>
+  <div class="anat">
+    <div class="anat-code"><span class="c1">self.btn_login</span>.<span class="c2">clicked</span>.<span class="c3">connect(</span><span class="c4">self.iniciar_sesion</span><span class="c3">)</span></div>
+    <ol>
+      <li class="c1"><b>self.btn_login</b>El <b>emisor</b>: el botón que creó <code>loadUi</code> a partir del objectName.</li>
+      <li class="c2"><b>.clicked</b>La <b>señal</b>: algo que <i>puede</i> pasar. No pasa ahora; puede pasar en cualquier momento.</li>
+      <li class="c3"><b>.connect( … )</b>La <b>conexión</b>: «cuando pase, avisale a…». Se hace una sola vez, en el <code>__init__</code>.</li>
+      <li class="c4"><b>self.iniciar_sesion</b>El <b>slot</b>: el método que responde. <b>Sin paréntesis</b>: lo entregás, no lo ejecutás.</li>
+    </ol>
+  </div>
+
+  <div class="lab warn">
+    <span class="lbl">El error más común, otra vez</span>
+    <p>Con <code>connect(self.iniciar_sesion())</code> Python ejecuta el método <b>en ese momento</b> —al abrir la ventana— y le pasa a
+    <code>connect</code> lo que devolvió: <code>None</code>. El resultado: <code>TypeError: argument 1 has unexpected type 'NoneType'</code>.
+    Si ves <code>NoneType</code> en un error de <code>connect</code>, buscá paréntesis de más.</p>
+  </div>
+
+  <h3>El contrato de este TP</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Widget</th><th>Señal</th><th>Método que responde</th><th>Qué recibe</th><th>Nivel</th></tr></thead>
+    <tbody>
+      <tr><td><code>btn_login</code></td><td><code>clicked</code></td><td><code>VentanaLogin.iniciar_sesion</code></td><td>nada</td><td>1</td></tr>
+      <tr><td><code>btn_registrar</code></td><td><code>clicked</code></td><td><code>VentanaRegistro.registrar</code></td><td>nada</td><td>1</td></tr>
+      <tr><td><code>chk_mostrar_password</code> (en las dos)</td><td><code>toggled</code></td><td><code>alternar_password</code></td><td><code>True</code> / <code>False</code></td><td>2</td></tr>
+      <tr><td><code>btn_ir_registro</code></td><td><code>clicked</code></td><td><code>VentanaPrincipal.mostrar_registro</code></td><td>nada</td><td>2</td></tr>
+      <tr><td><code>btn_volver_login</code></td><td><code>clicked</code></td><td><code>VentanaPrincipal.mostrar_login</code></td><td>nada</td><td>2</td></tr>
+    </tbody>
+  </table></div>
+
+  <p class="st demo">Experimentos, de a uno</p>
+  <div class="steps">
+    <div><span class="k">1 · print</span><span class="v">Antes de escribir lógica, conectá cada control a un método que solo haga
+      <code>print("clic en btn_login")</code>. Ejecutá, hacé clic y mirá <b>la terminal</b>, no la ventana. Si el texto aparece, la conexión está bien.</span></div>
+    <div><span class="k">2 · un dato</span><span class="v"><code>toggled</code> <b>trae un valor</b>: si la casilla quedó tildada o no. Conectala a
+      <code>def alternar_password(self, visible): print("visible:", visible)</code> y tildá y destildá varias veces.</span></div>
+    <div><span class="k">3 · Enter</span><span class="v">Conectá <code>self.input_password.returnPressed</code> también a <code>iniciar_sesion</code>.
+      Ahora Enter en la contraseña equivale a hacer clic. Dos señales, un mismo slot.</span></div>
+    <div><span class="k">4 · romper</span><span class="v">Ponele paréntesis a un slot dentro del <code>connect</code>. Leé el error. Sacáselos.</span></div>
+  </div>
+
+  <h3>Mostrar u ocultar la contraseña</h3>
+  <figure>
+    <pre class="py"><span class="cd-k">from</span> PyQt6.QtWidgets <span class="cd-k">import</span> QLineEdit, QWidget     <span class="cd-c"># QLineEdit se suma al import</span>
+
+
+<span class="cd-k">class</span> <span class="cd-fn">VentanaLogin</span>(QWidget):
+    ...
+
+    <span class="cd-k">def</span> <span class="cd-fn">alternar_password</span>(self, visible):
+        <span class="cd-k">if</span> visible:
+            self.input_password.<span class="cd-fn">setEchoMode</span>(QLineEdit.EchoMode.Normal)
+        <span class="cd-k">else</span>:
+            self.input_password.<span class="cd-fn">setEchoMode</span>(QLineEdit.EchoMode.Password)</pre>
+    <figcaption>En PyQt6 las opciones fijas van con su nombre completo: <code>QLineEdit.EchoMode.Password</code>, no <code>QLineEdit.Password</code>
+    como en ejemplos viejos de PyQt5. En el registro hay <b>dos</b> campos de contraseña: resolvelo vos.</figcaption>
+  </figure>
+
+  <h3>¿Quién cambia de pantalla?</h3>
+  <p class="ask">Si <code>VentanaLogin</code> crea una <code>VentanaRegistro</code> para mostrarla, y <code>VentanaRegistro</code> crea una
+  <code>VentanaLogin</code> para volver… ¿cuántas ventanas hay después de ir y volver diez veces?</p>
+  <div class="box key">
+    <span class="lbl">La idea</span>
+    <p>Ninguna pantalla debería saber que la otra existe. Las conoce un <strong>tercero</strong>: la ventana de la aplicación, que tiene
+    las dos y muestra una por vez. Para eso Qt trae <code>QStackedWidget</code>, <strong>una pila de pantallas</strong> —como un mazo de cartas
+    donde solo se ve la de arriba—. Nuestra <code>VentanaPrincipal</code> <strong>es una</strong> pila (herencia) y <strong>tiene</strong>
+    las dos pantallas (composición): igual que <code>Jugador</code>, que ES UN <code>Personaje</code> y TIENE UN <code>Arma</code>.</p>
+  </div>
+  <figure>
+    <pre class="py"><span class="file">ventanas/ventana_principal.py</span><span class="cd-k">from</span> PyQt6.QtWidgets <span class="cd-k">import</span> QStackedWidget
+
+<span class="cd-k">from</span> ventanas.ventana_login <span class="cd-k">import</span> VentanaLogin
+<span class="cd-k">from</span> ventanas.ventana_registro <span class="cd-k">import</span> VentanaRegistro
+
+
+<span class="cd-k">class</span> <span class="cd-fn">VentanaPrincipal</span>(QStackedWidget):
+    <span class="cd-s">"""La ventana de la aplicación: muestra una pantalla por vez."""</span>
+
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(self):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>()
+        self.login = <span class="cd-fn">VentanaLogin</span>()
+        self.registro = <span class="cd-fn">VentanaRegistro</span>()
+        self.<span class="cd-fn">addWidget</span>(self.login)
+        self.<span class="cd-fn">addWidget</span>(self.registro)
+
+        self.login.btn_ir_registro.clicked.<span class="cd-fn">connect</span>(self.mostrar_registro)
+        self.registro.btn_volver_login.clicked.<span class="cd-fn">connect</span>(self.mostrar_login)
+
+    <span class="cd-k">def</span> <span class="cd-fn">mostrar_login</span>(self):
+        ...  <span class="cd-c"># investigá: ¿qué método de QStackedWidget elige la pantalla visible?</span>
+
+    <span class="cd-k">def</span> <span class="cd-fn">mostrar_registro</span>(self):
+        ...</pre>
+    <figcaption>En <code>main.py</code>, cambiá <code>VentanaLogin()</code> por <code>VentanaPrincipal()</code>. Los dos <code>...</code> son tuyos.</figcaption>
+  </figure>
+  <details class="hint"><summary>▸ Pista para mostrar_login y mostrar_registro</summary><div class="hb">
+    <p>Buscá en la documentación de <code>QStackedWidget</code> los métodos que empiezan con <code>setCurrent</code>. Hay dos: uno recibe un
+    número de posición y el otro recibe el widget. ¿Cuál se lee mejor dentro de un método llamado <code>mostrar_registro</code>?</p>
+  </div></details>
+  <p class="dim" style="font-size:15px">¿Por qué <code>mostrar_registro()</code> no es un método de <code>VentanaLogin</code>? Porque cambiar de pantalla no es
+  responsabilidad del login: el login sabe iniciar sesión. Quien sabe qué pantallas existen es <code>VentanaPrincipal</code>.</p>
+
+  <div class="qs">
+    <span class="lbl">Pensá</span>
+    <ul>
+      <li><code>VentanaPrincipal</code> toca <code>self.login.btn_ir_registro</code>, un widget de <b>otra</b> clase. ¿Te parece prolijo? ¿Qué pasaría si
+        mañana el login tuviera dos formas de ir al registro? (Lo retoma el nivel 3.)</li>
+      <li>¿Por qué <code>toggled</code> le pasa un valor al método y <code>clicked</code> no necesita pasar nada?</li>
+    </ul>
+  </div>
+
+  <div class="lab find">
+    <span class="lbl">Investigá</span>
+    <p>¿Qué otras señales tiene un <code>QLineEdit</code>? Encontrá la diferencia entre <code>textChanged</code> y <code>textEdited</code>, y pensá
+    para qué te serviría cada una en este TP.</p>
+    <textarea class="ans" data-k="e6-inv" aria-label="Lo que averiguaste"></textarea>
+  </div>
+
+  <div class="gate">
+    <div class="gh"><span>Comprobá</span></div>
+    <div class="cks">
+      <label><input type="checkbox" data-k="g6-1" class="g"><span>Cada uno de los cinco controles hace algo visible (o imprime en la terminal).</span></label>
+      <label><input type="checkbox" data-k="g6-2" class="g"><span>Enter en la contraseña equivale a hacer clic en <b>Iniciar sesión</b>.</span></label>
+      <label><input type="checkbox" data-k="g6-3" class="g"><span><span class="tag n2">N2</span> Tildar muestra la contraseña; destildar la oculta. En el registro, las dos.</span></label>
+      <label><input type="checkbox" data-k="g6-4" class="g"><span><span class="tag n2">N2</span> Se puede ir y volver entre login y registro todas las veces que quieras, en una sola ventana.</span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 07 · VALIDAR ==================== -->
+<section class="s pb" data-a="flame" id="e7">
+  <div class="s-head"><span class="s-num">07</span><div class="t"><h2>Validar los formularios</h2>
+    <p class="dim" style="font-size:16px">Antes de pensar en una base de datos, que los datos tengan sentido</p>
+    <div class="tags"><span class="tag req">Nivel 1</span></div></div></div>
+
+  <p class="st prob">El problema</p>
+  <p class="dim">Hoy, si apretás <b>Iniciar sesión</b> con todo vacío, el programa sigue como si nada. Y si mañana mostrara
+  «¡Bienvenido!» con cualquier dato, alguien va a creer que entró… cuando nadie verificó nada.</p>
+
+  <p class="st idea">La idea · leer, validar, cortar o seguir</p>
+  <div class="ladder">
+    <div class="fbox rung">LEER<small>sacar los datos de los campos</small></div>
+    <div class="arw"><i></i><b>▼</b><i></i></div>
+    <div class="fbox rung acc">VALIDAR<small>¿hay algún problema? ¿cuál es el primero?</small></div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>si hay problema: mostrarlo y return</span></div>
+    <div class="fbox rung">PROCESAR<small>solo se llega acá con datos válidos</small></div>
+  </div>
+
+  <p class="st demo">La demostración · el login</p>
+  <figure>
+    <pre class="py"><span class="file">ventanas/ventana_login.py  (los métodos nuevos)</span>    <span class="cd-k">def</span> <span class="cd-fn">iniciar_sesion</span>(self):
+        usuario = self.input_usuario.<span class="cd-fn">text</span>().<span class="cd-fn">strip</span>()
+        password = self.input_password.<span class="cd-fn">text</span>()
+
+        error = self.<span class="cd-fn">_validar</span>(usuario, password)
+        <span class="cd-k">if</span> error:
+            self.<span class="cd-fn">_mostrar_mensaje</span>(error)
+            <span class="cd-k">return</span>
+
+        self.<span class="cd-fn">_mostrar_mensaje</span>(
+            <span class="cd-s">"Datos completos. La autenticación todavía no está implementada."</span>
+        )
+
+    <span class="cd-k">def</span> <span class="cd-fn">_validar</span>(self, usuario, password):
+        <span class="cd-k">if</span> <span class="cd-k">not</span> usuario:
+            <span class="cd-k">return</span> <span class="cd-s">"Ingresá tu usuario o correo electrónico."</span>
+        <span class="cd-k">if</span> <span class="cd-k">not</span> password:
+            <span class="cd-k">return</span> <span class="cd-s">"Ingresá tu contraseña."</span>
+        <span class="cd-k">return</span> <span class="cd-k">None</span>
+
+    <span class="cd-k">def</span> <span class="cd-fn">_mostrar_mensaje</span>(self, texto):
+        self.label_mensaje.<span class="cd-fn">setText</span>(texto)</pre>
+  </figure>
+  <div class="steps">
+    <div><span class="k">_validar</span><span class="v">Decide, no muestra. Devuelve <b>el texto del problema</b> o <code>None</code> si no hay ninguno.
+      Una responsabilidad: «¿está bien esto?».</span></div>
+    <div><span class="k">if error</span><span class="v">Una <b>cláusula de guarda</b>: si hay problema, se muestra y el <code>return</code> corta el método ahí.
+      Nada de lo que está abajo se ejecuta con datos inválidos.</span></div>
+    <div><span class="k">_mostrar_mensaje</span><span class="v">El <b>único</b> lugar que toca <code>label_mensaje</code>. En la etapa 9 le vamos a sumar
+      colores y vas a cambiar un solo método.</span></div>
+    <div><span class="k">el último texto</span><span class="v">No dice «Bienvenido». Dice la verdad: los datos están completos, pero <b>nadie los verificó</b>.</span></div>
+  </div>
+
+  <div class="chal" style="--accent:var(--flame)">
+    <div class="ch">Tu turno · validar el registro</div>
+    <div class="cb">
+      <p>Reglas: nombre, apellido y usuario obligatorios; contraseña de <b>al menos 8 caracteres</b>; contraseña y confirmación <b>iguales</b>.
+      Si algo falla, <b>no se registra nada</b>.</p>
+      <p>La regla del mínimo no es de la pantalla: es del sistema. Creá <code>controladores/autenticacion.py</code> con una sola línea por ahora,
+      <code>LONGITUD_MINIMA_PASSWORD = 8</code>, e importala desde la ventana. En la etapa 8 ese archivo crece.</p>
+      <pre class="py sm"><span class="file">ventanas/ventana_registro.py  (esqueleto)</span><span class="cd-k">from</span> controladores.autenticacion <span class="cd-k">import</span> LONGITUD_MINIMA_PASSWORD
+
+
+<span class="cd-k">class</span> <span class="cd-fn">VentanaRegistro</span>(QWidget):
+    ...
+
+    <span class="cd-k">def</span> <span class="cd-fn">registrar</span>(self):
+        datos = self.<span class="cd-fn">_leer_formulario</span>()
+        error = self.<span class="cd-fn">_validar</span>(datos)
+        <span class="cd-k">if</span> error:
+            self.<span class="cd-fn">_mostrar_mensaje</span>(error)
+            <span class="cd-k">return</span>
+        self.<span class="cd-fn">_mostrar_mensaje</span>(<span class="cd-s">"Formulario válido (todavía no se guarda)."</span>)
+
+    <span class="cd-k">def</span> <span class="cd-fn">_leer_formulario</span>(self):
+        <span class="cd-k">return</span> {
+            <span class="cd-s">"nombre"</span>: self.input_nombre.<span class="cd-fn">text</span>().<span class="cd-fn">strip</span>(),
+            <span class="cd-c"># completá: "apellido", "usuario", "password" y "confirmacion"</span>
+        }
+
+    <span class="cd-k">def</span> <span class="cd-fn">_validar</span>(self, datos):
+        ...  <span class="cd-c"># una regla por if, en el orden en que se completa el formulario</span>
+        <span class="cd-k">return</span> <span class="cd-k">None</span></pre>
+    </div>
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Probá &middot; casos de prueba</span>
+    <p>Cargá cada caso y tildá si apareció <b>exactamente</b> el mensaje esperado (o uno equivalente con tus palabras). Se muestra un
+    error por vez: el primero que encuentra.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Caso</th><th>Datos</th><th>Mensaje esperado</th><th>¿Pasó?</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Todo vacío</td><td>Completá tu nombre.</td><td class="c"><input type="checkbox" data-k="e7-c1" aria-label="Caso 1"></td></tr>
+        <tr><td>2</td><td>Nombre: tres espacios</td><td>Completá tu nombre.</td><td class="c"><input type="checkbox" data-k="e7-c2" aria-label="Caso 2"></td></tr>
+        <tr><td>3</td><td>Nombre y apellido; usuario vacío</td><td>Completá tu usuario o correo electrónico.</td><td class="c"><input type="checkbox" data-k="e7-c3" aria-label="Caso 3"></td></tr>
+        <tr><td>4</td><td>Todo completo; contraseña <code>1234567</code> (7)</td><td>La contraseña necesita al menos 8 caracteres.</td><td class="c"><input type="checkbox" data-k="e7-c4" aria-label="Caso 4"></td></tr>
+        <tr><td>5</td><td>Contraseña <code>12345678</code>, confirmación <code>12345679</code></td><td>Las contraseñas no coinciden.</td><td class="c"><input type="checkbox" data-k="e7-c5" aria-label="Caso 5"></td></tr>
+        <tr><td>6</td><td>Todo correcto</td><td>Formulario válido…</td><td class="c"><input type="checkbox" data-k="e7-c6" aria-label="Caso 6"></td></tr>
+        <tr><td>7</td><td>Login: usuario con datos, contraseña vacía</td><td>Ingresá tu contraseña.</td><td class="c"><input type="checkbox" data-k="e7-c7" aria-label="Caso 7"></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Pensá</span>
+    <div class="answers">
+      <div><p class="ansq">¿Por qué le aplicamos <code>strip()</code> al usuario y <b>no</b> a la contraseña?</p>
+        <textarea class="ans" data-k="e7-p1" aria-label="Respuesta"></textarea></div>
+      <div><p class="ansq">¿Conviene mostrar un error por vez o todos juntos? ¿Qué es más claro para quien completa el formulario?</p>
+        <textarea class="ans" data-k="e7-p2" aria-label="Respuesta"></textarea></div>
+    </div>
+  </div>
+
+  <div class="box key">
+    <span class="lbl">Validar el formulario no es asegurar el sistema</span>
+    <p>La validación de la interfaz <strong>ayuda a la persona</strong>: le avisa rápido y en su idioma qué le falta. Pero corre en su
+    computadora y se puede esquivar: otro programa, un script, una versión vieja de tu app. Por eso, cuando exista un servidor, <strong>él
+    va a tener que validar todo de nuevo</strong>. Y ninguna de las dos cosas es <strong>autenticar</strong>: comprobar que alguien es quien dice ser.</p>
+  </div>
+
+  <div class="lab find">
+    <span class="lbl">Investigá</span>
+    <p>¿Qué hacen <code>QLineEdit.setMaxLength()</code> y un <code>QRegularExpressionValidator</code>? ¿Reemplazan tu <code>_validar</code> o lo
+    complementan? Y opcional: con <code>textChanged</code> y <code>setEnabled()</code>, ¿podrías deshabilitar el botón mientras falten datos?</p>
+  </div>
+
+  <div class="gate">
+    <div class="gh"><span>Comprobá</span></div>
+    <div class="cks">
+      <label><input type="checkbox" data-k="g7-1" class="g"><span>Los siete casos de la tabla dan el mensaje esperado.</span></label>
+      <label><input type="checkbox" data-k="g7-2" class="g"><span>Con datos inválidos nunca aparece un mensaje de éxito.</span></label>
+      <label><input type="checkbox" data-k="g7-3" class="g"><span>El login nunca dice «bienvenido» sin haber verificado nada.</span></label>
+      <label><input type="checkbox" data-k="g7-4" class="g"><span>El número 8 está escrito <b>una sola vez</b> en todo el proyecto.</span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 08 · SIMULAR ==================== -->
+<section class="s pb" data-a="teal" id="e8">
+  <div class="s-head"><span class="s-num">08</span><div class="t"><h2>Simular el funcionamiento</h2>
+    <p class="dim" style="font-size:16px">Un login que recuerda usuarios… mientras la app está abierta</p>
+    <div class="tags"><span class="tag req">Nivel 1 · mensajes honestos</span><span class="tag n2">Nivel 2 · servicio compartido</span></div></div></div>
+
+  <div class="status">
+    <div style="--c:var(--good)"><span class="s1">✓ Hecho</span><h4>Interfaz</h4><p>Dos pantallas diseñadas, cargadas y conectadas.</p></div>
+    <div style="--c:var(--good)"><span class="s1">✓ Hecho</span><h4>Validaciones</h4><p>Ningún dato sin sentido pasa del formulario.</p></div>
+    <div style="--c:var(--flame)"><span class="s1">◐ Simulado</span><h4>Autenticación</h4><p>Usuarios en memoria. <b>No</b> es un sistema real: se borra al cerrar.</p></div>
+  </div>
+
+  <p class="st prob">El problema</p>
+  <p class="dim">Para que el login tenga sentido, <b>alguien tiene que acordarse</b> de quién se registró. Todavía no hay base de datos.</p>
+
+  <p class="st idea">La idea · un servicio que no sabe que existe una ventana</p>
+  <div class="box key">
+    <span class="lbl">ServicioAutenticacion</span>
+    <p>Una clase en <code>controladores/autenticacion.py</code> con dos responsabilidades: <strong>registrar</strong> y <strong>autenticar</strong>.
+    Guarda los usuarios en un diccionario. No importa nada de PyQt: no sabe que hay pantallas. Es la misma idea que
+    <code>BasededatosControlador</code> en la guía de MySQL: <strong>un lugar, una responsabilidad</strong>.</p>
+  </div>
+
+  <div class="box key" style="--accent:var(--bad)">
+    <span class="lbl">Ni siquiera en una simulación: contraseñas en texto plano</span>
+    <p>Aunque esto viva en memoria, no guardamos la contraseña. Guardamos un <strong>hash con sal</strong>: el resultado de una cuenta que
+    no se puede deshacer. Para verificar, se repite la cuenta con lo que escribió la persona y se comparan los resultados. Así, quien mire
+    los datos —vos, un compañero, alguien que los robe— no ve ninguna contraseña. Y como la gente repite contraseñas, filtrar una no
+    compromete sus otras cuentas.</p>
+  </div>
+  <div class="ladder">
+    <div class="fbox rung">"clave segura 1"<small>lo que escribió la persona</small></div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>+ sal: 16 bytes al azar, distintos para cada usuario</span></div>
+    <div class="fbox rung acc">PBKDF2-SHA256 · 600.000 vueltas<small>lento a propósito: adivinar cuesta caro</small></div>
+    <div class="arw"><i></i><b>▼</b><i></i></div>
+    <div class="fbox rung">b'\x8f\x1c\xe2…'<small>esto es lo único que se guarda (junto con la sal)</small></div>
+  </div>
+
+  <p class="st demo">La demostración</p>
+  <figure>
+    <pre class="py"><span class="file">controladores/autenticacion.py</span><span class="cd-s">"""Servicio de autenticación SIMULADO, en memoria.
+
+No es un sistema de producción: los usuarios se pierden al cerrar la app,
+no hay límite de intentos, ni sesiones, ni base de datos.
+Lo que sí hace bien desde ahora: nunca guarda la contraseña, solo su hash con sal.
+"""</span>
+<span class="cd-k">import</span> hashlib
+<span class="cd-k">import</span> hmac
+<span class="cd-k">import</span> os
+
+LONGITUD_MINIMA_PASSWORD = <span class="cd-n">8</span>
+ITERACIONES = <span class="cd-n">600_000</span>
+
+
+<span class="cd-k">class</span> <span class="cd-fn">ServicioAutenticacion</span>:
+
+    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(self):
+        <span class="cd-c"># "ana@correo.com" -&gt; {"nombre": ..., "sal": ..., "hash": ...}</span>
+        self._usuarios = {}
+
+    <span class="cd-k">def</span> <span class="cd-fn">registrar</span>(self, nombre, apellido, usuario, password):
+        clave = usuario.<span class="cd-fn">strip</span>().<span class="cd-fn">lower</span>()
+        minimo = LONGITUD_MINIMA_PASSWORD
+        <span class="cd-k">if</span> <span class="cd-fn">len</span>(password) &lt; minimo:
+            <span class="cd-k">raise</span> <span class="cd-fn">ValueError</span>(<span class="cd-s">f"La contraseña necesita al menos {minimo} caracteres."</span>)
+        <span class="cd-k">if</span> clave <span class="cd-k">in</span> self._usuarios:
+            <span class="cd-k">raise</span> <span class="cd-fn">ValueError</span>(<span class="cd-s">"Ese usuario ya está registrado."</span>)
+        <span class="cd-c"># completá: ¿qué otra regla tendría que revisar el servicio,</span>
+        <span class="cd-c"># aunque la pantalla ya la revise?</span>
+
+        sal = os.<span class="cd-fn">urandom</span>(<span class="cd-n">16</span>)
+        self._usuarios[clave] = {
+            <span class="cd-s">"nombre"</span>: nombre.<span class="cd-fn">strip</span>(),
+            <span class="cd-s">"apellido"</span>: apellido.<span class="cd-fn">strip</span>(),
+            <span class="cd-s">"sal"</span>: sal,
+            <span class="cd-s">"hash"</span>: self.<span class="cd-fn">_calcular_hash</span>(password, sal),
+        }
+
+    <span class="cd-k">def</span> <span class="cd-fn">autenticar</span>(self, usuario, password):
+        ...  <span class="cd-c"># completá: True solo si el usuario existe y la contraseña coincide</span>
+
+    <span class="cd-fn">@staticmethod</span>
+    <span class="cd-k">def</span> <span class="cd-fn">_calcular_hash</span>(password, sal):
+        <span class="cd-k">return</span> hashlib.<span class="cd-fn">pbkdf2_hmac</span>(
+            <span class="cd-s">"sha256"</span>, password.<span class="cd-fn">encode</span>(<span class="cd-s">"utf-8"</span>), sal, ITERACIONES
+        )</pre>
+    <figcaption>El cálculo del hash está completo a propósito: <b>la criptografía no se inventa</b>, se usa la que ya existe. Lo que te
+    toca escribir es la lógica: qué revisar y cuándo devolver <code>True</code>.</figcaption>
+  </figure>
+  <div class="steps">
+    <div><span class="k">raise</span><span class="v">El servicio <b>avisa</b> que algo está mal lanzando una excepción. No muestra nada: no sabe que hay pantalla.
+      La ventana decide cómo mostrarlo.</span></div>
+    <div><span class="k">.lower()</span><span class="v">«Ana@Correo.com» y «ana@correo.com» son el mismo usuario.</span></div>
+    <div><span class="k">os.urandom</span><span class="v">La sal: bytes al azar. Dos personas con la misma contraseña terminan con hashes distintos.</span></div>
+    <div><span class="k">@staticmethod</span><span class="v">Igual que en <code>BasededatosControlador</code>: <code>_calcular_hash</code> no usa nada del objeto.</span></div>
+    <div><span class="k">600_000</span><span class="v">El guion bajo es solo para leer mejor el número. Tantas vueltas hacen que probar millones de contraseñas sea lentísimo.</span></div>
+  </div>
+  <details class="hint"><summary>▸ Pista para autenticar()</summary><div class="hb">
+    <p>Tres pasos: buscá al usuario en <code>self._usuarios</code> con <code>.get()</code> (si no está, devolvé <code>False</code>); calculá el hash
+    de la contraseña que te pasaron usando <b>la sal guardada de ese usuario</b>; comparalo con el hash guardado usando
+    <code>hmac.compare_digest(a, b)</code>, que compara sin delatar —por el tiempo que tarda— cuántos bytes coinciden.</p>
+  </div></details>
+
+  <h3>Del lado de la ventana: atrapar el error</h3>
+  <figure>
+    <pre class="py"><span class="file">ventanas/ventana_registro.py  (final de registrar)</span>        <span class="cd-k">try</span>:
+            self.servicio.<span class="cd-fn">registrar</span>(datos[<span class="cd-s">"nombre"</span>], datos[<span class="cd-s">"apellido"</span>],
+                                    datos[<span class="cd-s">"usuario"</span>], datos[<span class="cd-s">"password"</span>])
+        <span class="cd-k">except</span> ValueError <span class="cd-k">as</span> error:
+            self.<span class="cd-fn">_mostrar_mensaje</span>(<span class="cd-fn">str</span>(error))
+            <span class="cd-k">return</span>
+
+        self.<span class="cd-fn">_mostrar_mensaje</span>(<span class="cd-s">"Cuenta creada. Ya podés volver e iniciar sesión."</span>)</pre>
+    <figcaption>Atrapamos <code>ValueError</code>, <b>no</b> cualquier error: si apareciera otro tipo de problema, queremos enterarnos, no esconderlo.
+    El login es parecido: si <code>autenticar()</code> da <code>True</code>, «Sesión iniciada como … (simulación)»; si no, un mensaje genérico.</figcaption>
+  </figure>
+
+  <div class="lab try">
+    <span class="lbl">Probá &middot; ¿dónde se crea el servicio?</span>
+    <ol>
+      <li>Hacé que cada pantalla cree el suyo en su <code>__init__</code>: <code>self.servicio = ServicioAutenticacion()</code>.</li>
+      <li>Registrate, volvé al login y entrá con esos datos. ¿Funciona?</li>
+      <li>Explicá por qué no. Pista: contá cuántos objetos <code>ServicioAutenticacion</code> hay y cuántos diccionarios.</li>
+    </ol>
+    <textarea class="ans" data-k="e8-dos-servicios" aria-label="Por qué no funciona con dos servicios"></textarea>
+  </div>
+  <figure>
+    <pre class="py"><span class="file">ventanas/ventana_principal.py  (la solución)</span>    <span class="cd-k">def</span> <span class="cd-fn">__init__</span>(self):
+        <span class="cd-fn">super</span>().<span class="cd-fn">__init__</span>()
+        <mark>servicio = <span class="cd-fn">ServicioAutenticacion</span>()</mark>
+        <mark>self.login = <span class="cd-fn">VentanaLogin</span>(servicio)</mark>
+        <mark>self.registro = <span class="cd-fn">VentanaRegistro</span>(servicio)</mark>
+        ...</pre>
+    <figcaption>Un solo servicio, creado por quien conoce a las dos pantallas, y <b>entregado</b> a cada una por su constructor. Cada ventana lo
+    guarda: <code>def __init__(self, servicio):</code> … <code>self.servicio = servicio</code>. Las dos pantallas <b>tienen</b> el mismo servicio: composición.</figcaption>
+  </figure>
+
+  <div class="lab try">
+    <span class="lbl">Probá &middot; buscá tu contraseña</span>
+    <p>Después de registrarte, agregá un <code>print(self.servicio._usuarios)</code> en algún método y mirá la terminal. ¿Encontrás tu contraseña?
+    Registrá dos usuarios con <b>la misma</b> contraseña: ¿los hashes coinciden? ¿Por qué? Sacá el <code>print</code> cuando termines.</p>
+  </div>
+
+  <div class="lab warn">
+    <span class="lbl">Lo que esta simulación NO es</span>
+    <ul>
+      <li><b>No persiste:</b> al cerrar la app, los usuarios desaparecen.</li>
+      <li><b>No limita intentos:</b> alguien puede probar contraseñas sin parar.</li>
+      <li><b>No maneja sesiones:</b> «sesión iniciada» es un mensaje, no un estado de la aplicación.</li>
+      <li><b>No es un sistema seguro:</b> tu README tiene que decirlo con todas las letras.</li>
+    </ul>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Pensá</span>
+    <div class="answers">
+      <div><p class="ansq">¿Por qué el login responde «Usuario o contraseña incorrectos» y no «Ese usuario no existe»?</p>
+        <textarea class="ans" data-k="e8-p1" aria-label="Respuesta"></textarea></div>
+      <div><p class="ansq">El servicio vuelve a revisar el largo de la contraseña aunque la pantalla ya lo hizo. ¿Es duplicación innecesaria?</p>
+        <textarea class="ans" data-k="e8-p2" aria-label="Respuesta"></textarea></div>
+    </div>
+  </div>
+
+  <div class="lab find">
+    <span class="lbl">Investigá</span>
+    <p>¿Por qué un SHA-256 solo, sin sal ni vueltas, no alcanza para contraseñas? ¿Qué son <b>bcrypt</b> y <b>Argon2</b>? ¿Qué es un ataque de diccionario?</p>
+    <textarea class="ans" data-k="e8-inv" aria-label="Lo que averiguaste"></textarea>
+  </div>
+
+  <div class="gate">
+    <div class="gh"><span>Comprobá</span></div>
+    <div class="cks">
+      <label><input type="checkbox" data-k="g8-1" class="g"><span>Registrarse y después iniciar sesión con esos datos funciona.</span></label>
+      <label><input type="checkbox" data-k="g8-2" class="g"><span>Con una contraseña incorrecta, el mensaje no dice cuál de los dos datos falló.</span></label>
+      <label><input type="checkbox" data-k="g8-3" class="g"><span>Un usuario repetido muestra el error del servicio y la app sigue andando.</span></label>
+      <label><input type="checkbox" data-k="g8-4" class="g"><span>En <code>_usuarios</code> no aparece ninguna contraseña legible.</span></label>
+      <label><input type="checkbox" data-k="g8-5" class="g"><span><code>autenticacion.py</code> no importa nada de PyQt6.</span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 09 · VISUAL ==================== -->
+<section class="s pb" data-a="violet" id="e9">
+  <div class="s-head"><span class="s-num">09</span><div class="t"><h2>Mejorar la experiencia visual</h2>
+    <p class="dim" style="font-size:16px">Recién ahora, con todo funcionando: que además se entienda y se vea bien</p>
+    <div class="tags"><span class="tag n2">Nivel 2 · al menos tres mejoras</span></div></div></div>
+
+  <p class="st prob">El problema</p>
+  <p class="dim">Funciona. Pero el error está en el mismo gris que todo lo demás, el botón principal no se distingue del secundario y, en
+  pantalla completa, los campos se estiran de borde a borde.</p>
+
+  <p class="st idea">La idea · Qt Style Sheets</p>
+  <p class="dim">Qt tiene su propio lenguaje de estilos, <b>QSS</b>. Se escribe parecido a CSS —y eso ayuda— pero <b>no es CSS</b>:</p>
+  <div class="tw"><table>
+    <thead><tr><th></th><th>CSS (web)</th><th>QSS (Qt)</th></tr></thead>
+    <tbody>
+      <tr><td>Qué estiliza</td><td>Elementos HTML</td><td>Widgets de Qt</td></tr>
+      <tr><td>Selector de tipo</td><td><code>button</code>, <code>input</code></td><td><code>QPushButton</code>, <code>QLineEdit</code></td></tr>
+      <tr><td>Selector por nombre</td><td><code>#id</code></td><td><code>#objectName</code></td></tr>
+      <tr><td>Estados</td><td><code>:hover</code>, <code>:focus</code>, <code>:disabled</code></td><td>Los mismos, más <code>:pressed</code> y <code>:checked</code></td></tr>
+      <tr><td>Por atributo</td><td><code>[type="password"]</code></td><td><code>[propiedad="valor"]</code>, con propiedades de Qt</td></tr>
+      <tr><td>Ubicar y alinear</td><td>flexbox, grid</td><td><b>No.</b> Eso lo hacen los layouts.</td></tr>
+      <tr><td>Animaciones</td><td><code>transition</code></td><td><b>No existen.</b></td></tr>
+      <tr><td>Sombras</td><td><code>box-shadow</code></td><td><b>No existe.</b> (Hay un efecto aparte, desde Python.)</td></tr>
+      <tr><td>Degradés</td><td><code>linear-gradient()</code></td><td><code>qlineargradient()</code>, con otra sintaxis</td></tr>
+    </tbody>
+  </table></div>
+  <p class="dim" style="font-size:15px">Si escribís una propiedad de CSS que Qt no conoce, <b>se ignora sin avisar</b>. La referencia es la página
+  «Qt Style Sheets Reference» de la documentación de Qt.</p>
+
+  <h3>¿Dónde se escriben?</h3>
+  <div class="grid3">
+    <div class="box"><span class="lbl">En Python</span><p><code>widget.setStyleSheet("…")</code>. Mezcla apariencia y comportamiento en el mismo archivo. Evitalo.</p></div>
+    <div class="box"><span class="lbl">En Designer</span><p>La propiedad <code>styleSheet</code> del formulario. Sirve para probar, pero queda copiado en cada <code>.ui</code>: dos pantallas, dos copias.</p></div>
+    <div class="box key" style="--accent:var(--violet)"><span class="lbl">En un archivo · elegimos este</span><p><code>ventanas/estilos.qss</code>, cargado <b>una vez</b> para toda la app. Un cambio, un lugar.</p></div>
+  </div>
+  <figure>
+    <pre class="py"><span class="file">main.py  (lo que se agrega)</span><span class="cd-k">from</span> pathlib <span class="cd-k">import</span> Path
+
+RUTA_ESTILOS = <span class="cd-fn">Path</span>(__file__).parent / <span class="cd-s">"ventanas"</span> / <span class="cd-s">"estilos.qss"</span>
+
+
+<span class="cd-k">def</span> <span class="cd-fn">cargar_estilos</span>(app):
+    <span class="cd-k">try</span>:
+        app.<span class="cd-fn">setStyleSheet</span>(RUTA_ESTILOS.<span class="cd-fn">read_text</span>(encoding=<span class="cd-s">"utf-8"</span>))
+    <span class="cd-k">except</span> FileNotFoundError:
+        <span class="cd-fn">print</span>(<span class="cd-s">f"Aviso: no encontré {RUTA_ESTILOS}. Sigo con el estilo por defecto."</span>)
+
+<span class="cd-c"># y en main(), después de crear app:   cargar_estilos(app)</span></pre>
+    <figcaption>Manejo de errores con criterio: si falta el archivo de estilos, la app <b>se ve peor pero funciona</b>, y avisa por qué.
+    No hay motivo para que un estilo perdido impida iniciar sesión.</figcaption>
+  </figure>
+
+  <p class="st demo">La demostración · de a un bloque</p>
+  <div class="codegrid">
+    <figure>
+      <pre class="qss sm"><span class="cd-c">/* el botón principal y sus estados */</span>
+<span class="cd-fn">QPushButton#btn_login</span> {
+    background-color: <span class="cd-n">#1548c8</span>;
+    color: white;
+    border: none;
+    border-radius: <span class="cd-n">8px</span>;
+    padding: <span class="cd-n">11px</span> <span class="cd-n">16px</span>;
+    font-weight: <span class="cd-n">600</span>;
+}
+<span class="cd-fn">QPushButton#btn_login:hover</span>    { background-color: <span class="cd-n">#1240ad</span>; }
+<span class="cd-fn">QPushButton#btn_login:pressed</span>  { background-color: <span class="cd-n">#0e3590</span>; }
+<span class="cd-fn">QPushButton#btn_login:disabled</span> { background-color: <span class="cd-n">#9aa9bd</span>; }</pre>
+    </figure>
+    <figure>
+      <pre class="qss sm"><span class="cd-c">/* campos: borde suave, y marcado al escribir */</span>
+<span class="cd-fn">QLineEdit</span> {
+    background-color: white;
+    color: <span class="cd-n">#111a26</span>;
+    border: <span class="cd-n">1px</span> solid <span class="cd-n">#ccd4e0</span>;
+    border-radius: <span class="cd-n">8px</span>;
+    padding: <span class="cd-n">8px</span> <span class="cd-n">10px</span>;
+}
+<span class="cd-fn">QLineEdit:focus</span> { border: <span class="cd-n">2px</span> solid <span class="cd-n">#1548c8</span>; }
+
+<span class="cd-c">/* la tarjeta y el fondo */</span>
+<span class="cd-fn">QFrame#frame_tarjeta</span> {
+    background-color: <span class="cd-n">#fbfcfd</span>;
+    border: <span class="cd-n">1px</span> solid <span class="cd-n">#ccd4e0</span>;
+    border-radius: <span class="cd-n">16px</span>;
+}
+<span class="cd-fn">QStackedWidget</span> { background-color: <span class="cd-n">#e7eaef</span>; }</pre>
+    </figure>
+  </div>
+
+  <div class="lab warn">
+    <span class="lbl">Dos trampas que vas a pisar</span>
+    <ul>
+      <li><b><code>QLabel</code> hereda de <code>QFrame</code>.</b> Si escribís <code>QFrame { border: 1px solid gray; }</code>, le ponés borde a
+        <b>todas las etiquetas</b>. Por eso usamos <code>QFrame#frame_tarjeta</code>. La herencia, otra vez, ahora en los estilos.</li>
+      <li><b>Modo oscuro.</b> Si pintás un fondo claro y no definís el color del texto, en una compu con modo oscuro podés terminar con texto
+        claro sobre fondo claro. Si definís un fondo, definí también <code>color</code> para <code>QLabel</code> y <code>QCheckBox</code>.</li>
+    </ul>
+  </div>
+
+  <h3>Mensajes de error y de éxito, sin mezclar responsabilidades</h3>
+  <div class="codegrid">
+    <figure>
+      <pre class="py sm">    <span class="cd-k">def</span> <span class="cd-fn">_mostrar_mensaje</span>(self, texto, tipo=<span class="cd-s">"info"</span>):
+        self.label_mensaje.<span class="cd-fn">setText</span>(texto)
+        self.label_mensaje.<span class="cd-fn">setProperty</span>(<span class="cd-s">"tipo"</span>, tipo)
+        self.label_mensaje.<span class="cd-fn">style</span>().<span class="cd-fn">unpolish</span>(self.label_mensaje)
+        self.label_mensaje.<span class="cd-fn">style</span>().<span class="cd-fn">polish</span>(self.label_mensaje)</pre>
+    </figure>
+    <figure>
+      <pre class="qss sm"><span class="cd-fn">QLabel#label_mensaje[tipo="error"]</span> {
+    color: <span class="cd-n">#b7361b</span>;
+    font-weight: <span class="cd-n">600</span>;
+}
+<span class="cd-fn">QLabel#label_mensaje[tipo="exito"]</span> {
+    color: <span class="cd-n">#0f7d55</span>;
+    font-weight: <span class="cd-n">600</span>;
+}</pre>
+    </figure>
+  </div>
+  <p class="dim">Python dice <b>qué tipo</b> de mensaje es; el QSS decide <b>cómo se ve</b>. Si mañana los errores van en naranja, no se toca
+  Python. <code>unpolish</code> y <code>polish</code> le piden a Qt que vuelva a mirar los estilos: un cambio de propiedad hecho después de
+  dibujar no se aplica solo. Y como el parámetro tiene valor por defecto, las llamadas que ya tenías siguen funcionando.</p>
+
+  <h3>Elegí al menos tres mejoras</h3>
+  <div class="grid3">
+    <div class="opt" style="--accent:var(--violet)"><span class="k">Colores y tipografía</span><p>Una paleta corta (fondo, tarjeta, texto, acento, error, éxito) y una jerarquía clara: título, etiquetas, ayuda.</p></div>
+    <div class="opt" style="--accent:var(--violet)"><span class="k">Estados de botones</span><p><code>:hover</code>, <code>:pressed</code>, <code>:disabled</code>. Bonus: deshabilitar el botón mientras falten datos.</p></div>
+    <div class="opt" style="--accent:var(--violet)"><span class="k">Mostrar contraseña</span><p>Si ya está con la casilla, llevalo más lejos: un ícono de ojo adentro del campo (investigá <code>QLineEdit.addAction</code>).</p></div>
+    <div class="opt" style="--accent:var(--violet)"><span class="k">Mensajes</span><p>Error y éxito distinguibles <b>por el texto</b> además del color: no todo el mundo distingue rojo de verde.</p></div>
+    <div class="opt" style="--accent:var(--violet)"><span class="k">Espaciado y alineación</span><p>En Designer, las propiedades <code>layoutSpacing</code> y los márgenes de cada layout. Aire entre grupos, no entre todo.</p></div>
+    <div class="opt" style="--accent:var(--violet)"><span class="k">Campos obligatorios</span><p>Un <code>*</code> en la etiqueta y, al fallar, el borde del campo en rojo con una propiedad (<code>[invalido="true"]</code>).</p></div>
+    <div class="opt" style="--accent:var(--violet)"><span class="k">Transición clara</span><p>Título de ventana distinto por pantalla, foco en el primer campo y mensajes limpios al cambiar.</p></div>
+  </div>
+
+  <div class="lab find">
+    <span class="lbl">Registro de decisiones de diseño</span>
+    <p>Una fila por mejora. Sacá una captura antes y otra después, y guardalas en <code>capturas/</code>: van a la entrega.</p>
+    <div class="tw"><table>
+      <thead><tr><th>Mejora</th><th>Por qué la elegiste</th><th>Dónde (QSS / Designer / Python)</th><th>Capturas</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><textarea class="ans" data-k="e9-d1a" aria-label="Mejora 1: por qué" style="min-height:56px"></textarea></td><td><textarea class="ans" data-k="e9-d1b" aria-label="Mejora 1: dónde" style="min-height:56px"></textarea></td><td><textarea class="ans" data-k="e9-d1c" aria-label="Mejora 1: capturas" style="min-height:56px"></textarea></td></tr>
+        <tr><td>2</td><td><textarea class="ans" data-k="e9-d2a" aria-label="Mejora 2: por qué" style="min-height:56px"></textarea></td><td><textarea class="ans" data-k="e9-d2b" aria-label="Mejora 2: dónde" style="min-height:56px"></textarea></td><td><textarea class="ans" data-k="e9-d2c" aria-label="Mejora 2: capturas" style="min-height:56px"></textarea></td></tr>
+        <tr><td>3</td><td><textarea class="ans" data-k="e9-d3a" aria-label="Mejora 3: por qué" style="min-height:56px"></textarea></td><td><textarea class="ans" data-k="e9-d3b" aria-label="Mejora 3: dónde" style="min-height:56px"></textarea></td><td><textarea class="ans" data-k="e9-d3c" aria-label="Mejora 3: capturas" style="min-height:56px"></textarea></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Pensá</span>
+    <ul>
+      <li>¿Por qué el estilo va en un archivo aparte y no adentro de cada <code>.ui</code>?</li>
+      <li>Un efecto visual llamativo que hace más difícil leer un mensaje de error, ¿es una mejora?</li>
+    </ul>
+  </div>
+
+  <div class="lab find">
+    <span class="lbl">Investigá</span>
+    <p>En la «Qt Style Sheets Reference», encontrá: ¿qué propiedades admite <code>QLineEdit</code>? ¿Existe <code>text-transform</code>? ¿Qué
+    son los subcontroles como <code>::indicator</code> de un <code>QCheckBox</code>, y qué podrías hacer con ellos?</p>
+  </div>
+
+  <div class="gate">
+    <div class="gh"><span>Comprobá</span></div>
+    <div class="cks">
+      <label><input type="checkbox" data-k="g9-1" class="g"><span>Implementé al menos tres mejoras y las registré, con capturas antes y después.</span></label>
+      <label><input type="checkbox" data-k="g9-2" class="g"><span>Los siete casos de la etapa 7 siguen dando el mensaje esperado.</span></label>
+      <label><input type="checkbox" data-k="g9-3" class="g"><span>Error y éxito se distinguen por el texto, no solo por el color.</span></label>
+      <label><input type="checkbox" data-k="g9-4" class="g"><span>Si renombro <code>estilos.qss</code>, la app abre igual y avisa en la terminal.</span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 10 · ORGANIZACIÓN ==================== -->
+<section class="s pb" data-a="rose" id="e10">
+  <div class="s-head"><span class="s-num">10</span><div class="t"><h2>Organización del proyecto</h2>
+    <p class="dim" style="font-size:16px">Cada archivo existe porque resuelve algo</p>
+    <div class="tags"><span class="tag n2">Nivel 2</span></div></div></div>
+
+  <p class="st prob">El problema</p>
+  <p class="dim">Si todo esto viviera en <code>main.py</code> serían más de trescientas líneas, con las dos pantallas mezcladas, y para cambiar
+  la regla de la contraseña habría que buscarla entre botones y colores.</p>
+
+  <p class="st idea">La estructura</p>
+  <figure>
+    <pre class="tree">login-registro/
+├── main.py                    <span class="cd-c">arranca la app y carga los estilos</span>
+├── ventanas/
+│   ├── login.ui               <span class="cd-c">diseño del login (Designer)</span>
+│   ├── registro.ui            <span class="cd-c">diseño del registro (Designer)</span>
+│   ├── estilos.qss            <span class="cd-c">apariencia de toda la app</span>
+│   ├── ventana_login.py       <span class="cd-c">VentanaLogin: qué hace el login</span>
+│   ├── ventana_registro.py    <span class="cd-c">VentanaRegistro: qué hace el registro</span>
+│   └── ventana_principal.py   <span class="cd-c">VentanaPrincipal: qué pantalla se ve</span>
+├── controladores/
+│   └── autenticacion.py       <span class="cd-c">ServicioAutenticacion (simulado)</span>
+├── capturas/                  <span class="cd-c">imágenes para el README</span>
+├── .gitignore
+├── requirements.txt
+└── README.md</pre>
+    <figcaption>Cada diseño vive <b>al lado de la clase que lo controla</b>: <code>login.ui</code> ↔ <code>ventana_login.py</code>. Por eso la ruta
+    al <code>.ui</code> es tan corta. Y no hay <code>__init__.py</code>: Python 3 reconoce estas carpetas como paquetes sin él, y no agregamos
+    archivos vacíos que no resuelven nada.</figcaption>
+  </figure>
+
+  <div class="tw"><table>
+    <thead><tr><th>Archivo</th><th>Sabe</th><th>No sabe</th></tr></thead>
+    <tbody>
+      <tr><td><code>main.py</code></td><td>Arrancar la app y aplicar los estilos.</td><td>Que existen botones o usuarios.</td></tr>
+      <tr><td><code>*.ui</code></td><td>Qué widgets hay, dónde y cómo se llaman.</td><td>Qué pasa al tocarlos.</td></tr>
+      <tr><td><code>estilos.qss</code></td><td>Cómo se ve todo.</td><td>Qué hace nada.</td></tr>
+      <tr><td><code>ventana_login.py</code><br><code>ventana_registro.py</code></td><td>Qué hacer con los eventos de su pantalla y qué mensaje mostrar.</td><td>Cómo se guardan los usuarios. Que existe la otra pantalla.</td></tr>
+      <tr><td><code>ventana_principal.py</code></td><td>Qué pantallas hay, cómo se pasa de una a otra, y quién comparte el servicio.</td><td>Qué valida cada pantalla.</td></tr>
+      <tr><td><code>autenticacion.py</code></td><td>Registrar y verificar usuarios, y las reglas del sistema.</td><td>Que existe PyQt.</td></tr>
+      <tr><td><code>requirements.txt</code></td><td>Qué instalar para <b>ejecutar</b>.</td><td>Qué usaste para diseñar.</td></tr>
+      <tr><td><code>README.md</code></td><td>Cómo instalar, ejecutar, qué hace y qué <b>no</b> hace.</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Las dependencias van para un solo lado</h3>
+  <div class="ladder">
+    <div class="fbox rung">main.py</div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>importa</span></div>
+    <div class="fbox rung">ventanas/ventana_principal.py</div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>importa</span></div>
+    <div class="fbox rung">ventana_login.py &middot; ventana_registro.py</div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>usan (sin conocer sus tripas)</span></div>
+    <div class="fbox rung acc">controladores/autenticacion.py<small>no importa nada del proyecto</small></div>
+  </div>
+
+  <div class="lab warn">
+    <span class="lbl">Error clásico de esta etapa</span>
+    <p>Ejecutar <code>python ventanas/ventana_registro.py</code> da <code>ModuleNotFoundError: No module named 'controladores'</code>.
+    Python busca los módulos a partir de la carpeta del archivo que ejecutaste, y desde <code>ventanas/</code> no se ve <code>controladores/</code>.
+    <b>Siempre se ejecuta <code>main.py</code>, parado en la carpeta del proyecto.</b></p>
+  </div>
+
+  <div class="lab try">
+    <span class="lbl">Probá &middot; que el servicio no conoce PyQt</span>
+    <p>Mac: <code>grep -n PyQt6 controladores/autenticacion.py</code> &middot; Windows: <code>findstr PyQt6 controladores\autenticacion.py</code>.
+    Si no imprime nada, está bien. Si imprime algo, la lógica se mezcló con la interfaz.</p>
+  </div>
+
+  <div class="lab" style="--c:var(--rose)">
+    <span class="lbl">Lo que no hace falta</span>
+    <p>Carpetas <code>utils/</code>, <code>models/</code>, <code>interfaces/</code> o <code>base/</code> vacías «por las dudas», clases abstractas sin
+    un segundo uso, capas que solo pasan datos de una a otra. La organización <b>resuelve problemas que tenés</b>, no los que podrías tener.</p>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Pensá</span>
+    <div class="answers">
+      <div><p class="ansq">Si mañana hicieras una versión de consola del mismo login, ¿qué archivos reutilizarías tal cual? ¿Cuáles tirarías?</p>
+        <textarea class="ans" data-k="e10-p1" aria-label="Respuesta"></textarea></div>
+    </div>
+  </div>
+
+  <div class="gate">
+    <div class="gh"><span>Comprobá</span></div>
+    <div class="cks">
+      <label><input type="checkbox" data-k="g10-1" class="g"><span>Mi proyecto tiene esta estructura, o el README explica cada diferencia.</span></label>
+      <label><input type="checkbox" data-k="g10-2" class="g"><span><code>main.py</code> tiene menos de 30 líneas y no menciona ningún widget.</span></label>
+      <label><input type="checkbox" data-k="g10-3" class="g"><span>El servicio no importa PyQt6 y no hay archivos vacíos ni carpetas sin uso.</span></label>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 11 · BUENAS PRÁCTICAS ==================== -->
+<section class="s pb" data-a="blue" id="e11">
+  <div class="s-head"><span class="s-num">11</span><div class="t"><h2>Buenas prácticas y seguridad</h2>
+    <p class="dim" style="font-size:16px">Una revisión de código: primero la de otro, después la tuya</p>
+    <div class="tags"><span class="tag req">Nivel 1</span></div></div></div>
+
+  <p class="dim">Las buenas prácticas ya aparecieron en cada etapa. Ahora las vas a <b>reconocer</b> en código ajeno. Este programa
+  «funciona»: abre una ventana, deja entrar y registra usuarios. Leelo como si tuvieras que aprobarlo antes de que llegue a producción.</p>
+
+  <figure>
+    <pre class="py"><span class="file">app_de_un_compañero.py  (no lo copies)</span><span class="cd-k">from</span> PyQt6 <span class="cd-k">import</span> uic
+<span class="cd-k">from</span> PyQt6.QtWidgets <span class="cd-k">import</span> QApplication
+<span class="cd-k">import</span> sys
+
+usuarios = {<span class="cd-s">"admin"</span>: <span class="cd-s">"admin123"</span>}
+app = <span class="cd-fn">QApplication</span>(sys.argv)
+v = uic.<span class="cd-fn">loadUi</span>(<span class="cd-s">"login.ui"</span>)
+
+<span class="cd-k">def</span> <span class="cd-fn">f</span>():
+    <span class="cd-k">global</span> usuarios
+    u = v.lineEdit.<span class="cd-fn">text</span>()
+    p = v.lineEdit_2.<span class="cd-fn">text</span>()
+    <span class="cd-k">if</span> u <span class="cd-k">in</span> usuarios <span class="cd-k">and</span> usuarios[u] == p:
+        v.label.<span class="cd-fn">setText</span>(<span class="cd-s">"Bienvenido!!"</span>)
+        v.label.<span class="cd-fn">setStyleSheet</span>(<span class="cd-s">"color: green"</span>)
+    <span class="cd-k">else</span>:
+        v.label.<span class="cd-fn">setText</span>(<span class="cd-s">"Error"</span>)
+        v.label.<span class="cd-fn">setStyleSheet</span>(<span class="cd-s">"color: red"</span>)
+
+<span class="cd-k">def</span> <span class="cd-fn">g</span>():
+    u = v.lineEdit_3.<span class="cd-fn">text</span>()
+    p = v.lineEdit_4.<span class="cd-fn">text</span>()
+    edad = <span class="cd-fn">eval</span>(v.lineEdit_5.<span class="cd-fn">text</span>())
+    <span class="cd-k">try</span>:
+        usuarios[u] = p
+        v.label_2.<span class="cd-fn">setText</span>(<span class="cd-s">"ok"</span>)
+    <span class="cd-k">except</span>:
+        <span class="cd-k">pass</span>
+
+v.pushButton.clicked.<span class="cd-fn">connect</span>(f)
+v.pushButton_2.clicked.<span class="cd-fn">connect</span>(g)
+v.<span class="cd-fn">show</span>()
+app.<span class="cd-fn">exec</span>()</pre>
+  </figure>
+
+  <div class="lab try">
+    <span class="lbl">Probá &middot; encontrá al menos diez problemas</span>
+    <p>Para cada uno: qué está mal, por qué importa y cómo lo resolviste vos en tu proyecto.</p>
+    <textarea class="ans tall" data-k="e11-revision" aria-label="Problemas encontrados" style="min-height:200px"></textarea>
+  </div>
+  <details class="hint"><summary>▸ Comparar con la lista (después de escribir la tuya)</summary><div class="hb">
+    <div class="tw"><table>
+      <thead><tr><th>Problema</th><th>Por qué importa</th><th>En este TP</th></tr></thead>
+      <tbody>
+        <tr><td>Nombres <code>f</code>, <code>g</code>, <code>v</code>, <code>lineEdit_2</code></td><td>Nadie sabe qué hace cada cosa sin ejecutarla.</td><td><code>iniciar_sesion</code>, <code>input_password</code>.</td></tr>
+        <tr><td>Todo en un archivo, sin clases</td><td>Interfaz, reglas y datos mezclados: cualquier cambio toca todo.</td><td>Una clase por pantalla y un servicio.</td></tr>
+        <tr><td>Variables globales (<code>usuarios</code>, <code>v</code>, <code>global</code>)</td><td>Cualquier función puede cambiarlas; los errores aparecen lejos de su causa.</td><td>Atributos: <code>self.servicio</code>, <code>self._usuarios</code>.</td></tr>
+        <tr><td><code>"admin123"</code> escrito en el código</td><td>Una contraseña real en el código <b>termina en GitHub</b>, a la vista.</td><td>Ningún usuario precargado; secretos en <code>.env</code>, fuera de Git.</td></tr>
+        <tr><td>Contraseñas guardadas como texto</td><td>Quien vea los datos ve todas las contraseñas.</td><td>Hash con sal (etapa 8).</td></tr>
+        <tr><td><code>eval()</code> sobre lo que escribe el usuario</td><td>Ejecuta <b>cualquier</b> código: escribí <code>__import__("os").getcwd()</code> y lo corre. Con otra línea podría borrar archivos.</td><td>Nunca <code>eval()</code>. Para un número: <code>int()</code> dentro de <code>try</code> / <code>except ValueError</code>.</td></tr>
+        <tr><td><code>except: pass</code></td><td>Se traga cualquier error, incluso los que no imaginaste. El programa falla en silencio.</td><td><code>except ValueError as error:</code> y se muestra el mensaje.</td></tr>
+        <tr><td>Sin validación</td><td>Registra usuarios vacíos y no confirma la contraseña.</td><td>Etapa 7.</td></tr>
+        <tr><td>«Bienvenido!!» / «Error»</td><td>Uno promete más de lo que hay; el otro no dice qué hacer.</td><td>Mensajes honestos y accionables.</td></tr>
+        <tr><td>Estilos con <code>setStyleSheet</code> repetidos</td><td>Apariencia mezclada con lógica y duplicada.</td><td><code>estilos.qss</code> y la propiedad <code>tipo</code>.</td></tr>
+        <tr><td>Ruta relativa <code>"login.ui"</code></td><td>Falla según desde dónde se ejecute.</td><td><code>Path(__file__).parent</code>.</td></tr>
+        <tr><td>Sin <code>sys.exit()</code> ni <code>if __name__ == "__main__"</code></td><td>Importar el archivo abre la ventana.</td><td><code>main()</code> protegido.</td></tr>
+      </tbody>
+    </table></div>
+  </div></details>
+
+  <div class="box key">
+    <span class="lbl">Secretos y Git</span>
+    <p>Si una contraseña llegó a un commit, borrarla en el commit siguiente <strong>no alcanza</strong>: queda en el historial, y el historial
+    se sube entero. Lo correcto es <strong>cambiar esa contraseña</strong>. Por eso lo sensible va en <code>.env</code> desde el principio, y el
+    <code>.env</code> en el <code>.gitignore</code>, como en la guía de MySQL.</p>
+  </div>
+
+  <h3>Auditá tu propio código</h3>
+  <div class="cks">
+    <label><input type="checkbox" data-k="e11-a1"><span>Cada nombre dice qué es o qué hace. No hay <code>f</code>, <code>aux</code>, <code>lineEdit_2</code> ni <code>pushButton</code>.</span></label>
+    <label><input type="checkbox" data-k="e11-a2"><span>Cada método hace una sola cosa y entra en la pantalla sin hacer scroll.</span></label>
+    <label><input type="checkbox" data-k="e11-a3"><span>No hay bloques copiados y pegados. (Si quedó alguno a propósito, sé explicar por qué.)</span></label>
+    <label><input type="checkbox" data-k="e11-a4"><span>Los <code>.ui</code> no tienen comportamiento y el Python no tiene posiciones ni colores.</span></label>
+    <label><input type="checkbox" data-k="e11-a5"><span><code>main.py</code> solo arranca la aplicación.</span></label>
+    <label><input type="checkbox" data-k="e11-a6"><span>No hay variables globales ni la palabra <code>global</code>.</span></label>
+    <label><input type="checkbox" data-k="e11-a7"><span>Cada <code>except</code> nombra el error que espera. No hay <code>except: pass</code>.</span></label>
+    <label><input type="checkbox" data-k="e11-a8"><span>No hay <code>eval()</code> ni <code>exec()</code>.</span></label>
+    <label><input type="checkbox" data-k="e11-a9"><span>Ninguna contraseña se guarda ni se imprime como texto. No quedaron <code>print</code> de prueba.</span></label>
+    <label><input type="checkbox" data-k="e11-a10"><span>No hay contraseñas reales, tokens ni datos personales en el código ni en el historial de Git.</span></label>
+    <label><input type="checkbox" data-k="e11-a11"><span>El README dice que la autenticación es simulada y por qué no es segura.</span></label>
+  </div>
+</section>
+
+<!-- ==================== 12 · DESAFÍOS ==================== -->
+<section class="s pb" data-a="flame" id="e12">
+  <div class="s-head"><span class="s-num">12</span><div class="t"><h2>Desafíos progresivos</h2>
+    <p class="dim" style="font-size:16px">Tres niveles. El primero es obligatorio; el tercero, una invitación a investigar</p></div></div>
+
+  <div class="chal" style="--accent:var(--blue)">
+    <div class="ch">Nivel 1 · obligatorio</div>
+    <div class="cb">
+      <div class="cks">
+        <label><input type="checkbox" data-k="n1-1"><span>Login y registro <b>diseñados en Qt Designer</b>, con layouts y los nombres de la convención.</span></label>
+        <label><input type="checkbox" data-k="n1-2"><span>Las dos pantallas se <b>cargan desde <code>.ui</code></b> con <code>uic.loadUi()</code> y una ruta construida con <code>Path</code>.</span></label>
+        <label><input type="checkbox" data-k="n1-3"><span>Una <b>clase propia</b> por pantalla, con <code>super().__init__()</code> y <code>self</code> bien usados.</span></label>
+        <label><input type="checkbox" data-k="n1-4"><span>Los botones <b>conectados</b> a métodos de esas clases.</span></label>
+        <label><input type="checkbox" data-k="n1-5"><span>Los campos <b>validados</b> según la etapa 7.</span></label>
+        <label><input type="checkbox" data-k="n1-6"><span><b>Mensajes</b> claros y honestos: ninguno promete una autenticación que no existe.</span></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="chal" style="--accent:var(--teal)">
+    <div class="ch">Nivel 2 · integración</div>
+    <div class="cb">
+      <div class="cks">
+        <label><input type="checkbox" data-k="n2-1"><span><b>Alternar</b> entre las dos pantallas en una sola ventana (<code>VentanaPrincipal</code>).</span></label>
+        <label><input type="checkbox" data-k="n2-2"><span><b>Mostrar u ocultar</b> la contraseña (en el registro, las dos).</span></label>
+        <label><input type="checkbox" data-k="n2-3"><span>Un formulario inválido <b>nunca se procesa</b>: ni registra ni autentica.</span></label>
+        <label><input type="checkbox" data-k="n2-4"><span>Registro y login <b>simulados</b> con un servicio compartido y contraseñas con hash.</span></label>
+        <label><input type="checkbox" data-k="n2-5"><span>Al menos <b>tres mejoras visuales</b> registradas (etapa 9).</span></label>
+        <label><input type="checkbox" data-k="n2-6"><span>Código <b>organizado en módulos</b> según la etapa 10.</span></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="chal" style="--accent:var(--flame)">
+    <div class="ch">Nivel 3 · ¿y si...?  (opcional)</div>
+    <div class="cb">
+      <p>No están resueltos, a propósito. Elegí uno, investigalo y documentá en el README qué hiciste, qué encontraste y qué no
+      pudiste resolver. <b>Un desafío a medias, bien explicado, vale más que tres copiados.</b></p>
+    </div>
+  </div>
+
+  <div class="lab whatif">
+    <span class="lbl">¿Y si... agregamos «Recordar mi usuario»?</span>
+    <p>Una casilla en el login. Al volver a abrir la app, el usuario ya aparece escrito.</p>
+    <details class="hint"><summary>▸ Pistas</summary><div class="hb">
+      <p>Investigá <code>QSettings</code>: guarda valores chicos entre una ejecución y otra, en el lugar que corresponde a cada sistema operativo.
+      Mirá <code>setValue()</code> y <code>value()</code>. ¿Dónde los guarda en Windows y dónde en Mac?</p>
+      <p>Se recuerda <b>el usuario</b>. La contraseña, jamás.</p>
+    </div></details>
+  </div>
+
+  <div class="lab whatif">
+    <span class="lbl">¿Y si... mostramos la fortaleza de la contraseña?</span>
+    <p>Mientras se escribe en el registro, un indicador dice si es débil, aceptable o fuerte.</p>
+    <details class="hint"><summary>▸ Pistas</summary><div class="hb">
+      <p>¿Qué señal de <code>QLineEdit</code> avisa cada vez que cambia el texto? Conectala a un método que calcule un puntaje y lo muestre
+      en un <code>QLabel</code> o un <code>QProgressBar</code>.</p>
+      <p>Para el puntaje: largo, si tiene números (<code>any(c.isdigit() for c in texto)</code>), mayúsculas, símbolos. ¿Dónde va ese cálculo:
+      en la ventana o en el servicio? ¿Por qué?</p>
+      <p>Pensá: un medidor orienta, no garantiza nada. ¿Es más fuerte <code>Ab1!</code> o <code>caballo correcto batería grapa</code>?</p>
+    </div></details>
+  </div>
+
+  <div class="lab whatif">
+    <span class="lbl">¿Y si... agregamos una pantalla para recuperar la contraseña?</span>
+    <p>Un enlace «¿Olvidaste tu contraseña?» que lleva a una tercera pantalla.</p>
+    <details class="hint"><summary>▸ Pistas</summary><div class="hb">
+      <p>Es un <code>.ui</code> más, una clase más y un <code>addWidget</code> más en <code>VentanaPrincipal</code>. Si tuviste que tocar las otras dos
+      pantallas para agregarla, algo de la organización se puede mejorar.</p>
+      <p>Pensá qué haría falta de verdad: un correo, un código de un solo uso, que venza. Acá <b>no</b> simules que se envía un mail. Y fijate el
+      mensaje: «Si el usuario existe, te enviaremos instrucciones» no revela quién está registrado. ¿Por qué importa?</p>
+    </div></details>
+  </div>
+
+  <div class="lab whatif">
+    <span class="lbl">¿Y si... necesitamos registrar los datos en MySQL?</span>
+    <p>Que los usuarios sigan ahí al cerrar la app.</p>
+    <details class="hint"><summary>▸ Pistas</summary><div class="hb">
+      <p>Volvé a las secciones 8, 9 y 11 de la guía de Python + MySQL. Pensá una tabla <code>usuarios</code>: ¿qué columnas necesita? ¿Cuál tiene
+      que ser única? ¿Dónde van la sal y el hash? (Investigá <code>VARBINARY</code>, o convertí los bytes con <code>.hex()</code>.)</p>
+      <p>La pregunta que importa: <b>¿cuántos archivos tuviste que tocar?</b> Si las ventanas cambiaron, la separación no estaba bien hecha. Solo
+      debería cambiar el interior de <code>ServicioAutenticacion</code>.</p>
+      <p>Todas las consultas con <code>%s</code>. Y los datos de conexión, en el <code>.env</code>.</p>
+    </div></details>
+  </div>
+
+  <div class="lab whatif">
+    <span class="lbl">¿Y si... varias pantallas necesitan la misma lógica de autenticación?</span>
+    <p>Después del login aparece una pantalla «Mi perfil» que necesita el servicio y saber <b>quién</b> inició sesión.</p>
+    <details class="hint"><summary>▸ Pistas</summary><div class="hb">
+      <p>¿Quién crea el servicio? ¿Quién se lo pasa a la pantalla nueva? ¿Qué pasaría si la pantalla nueva creara el suyo? (Ya lo viviste en la etapa 8.)</p>
+      <p>¿Cómo se entera <code>VentanaPrincipal</code> de que el login salió bien, sin meterse en los botones del login? Investigá <code>pyqtSignal</code>:
+      una pantalla puede <b>emitir su propia señal</b> («sesión iniciada», con el usuario) y la ventana principal conectarse a ella. Con eso también
+      podés resolver el «Pensá» de la etapa 6.</p>
+      <p>Y si <code>_mostrar_mensaje</code> está copiado en tres pantallas: ¿una clase padre <code>Pantalla(QWidget)</code> que cargue el <code>.ui</code> y
+      sepa mostrar mensajes? Herencia que nace de duplicación real, no «por las dudas».</p>
+    </div></details>
+  </div>
+</section>
+
+<!-- ==================== 13 · FUTURO ==================== -->
+<section class="s pb" data-a="teal" id="e13">
+  <div class="s-head"><span class="s-num">13</span><div class="t"><h2>Conexión con el futuro</h2>
+    <p class="dim" style="font-size:16px">Este TP prepara el terreno; no es todavía un sistema de usuarios</p></div></div>
+
+  <div class="ladder">
+    <div class="fbox rung">Qt Designer<small>hoy · dibujás las pantallas</small></div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>archivos .ui</span></div>
+    <div class="fbox rung">Interfaz PyQt<small>hoy · uic.loadUi y una clase por pantalla</small></div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>eventos</span></div>
+    <div class="fbox rung">Clases y lógica Python<small>hoy · validar, decidir, mostrar</small></div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>servicio.registrar() · servicio.autenticar()</span></div>
+    <div class="fbox rung acc">Servicio de autenticación<small>hoy, simulado · mañana, real</small></div>
+    <div class="arw"><i></i><b>▼</b><i></i><span>BasededatosControlador · SQL con %s</span></div>
+    <div class="fbox rung future">Base de datos MySQL<small>la próxima evolución</small></div>
+  </div>
+
+  <h3>Cuando llegue MySQL, ¿qué cambia?</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Pieza</th><th>Hoy</th><th>Con MySQL</th></tr></thead>
+    <tbody>
+      <tr><td><code>login.ui</code>, <code>registro.ui</code></td><td>El diseño.</td><td><b>Igual.</b></td></tr>
+      <tr><td><code>VentanaLogin</code>, <code>VentanaRegistro</code></td><td>Llaman a <code>registrar()</code> y <code>autenticar()</code>.</td><td><b>Igual.</b></td></tr>
+      <tr><td><code>VentanaPrincipal</code></td><td>Crea un servicio y lo comparte.</td><td><b>Igual</b> (o casi).</td></tr>
+      <tr><td><code>ServicioAutenticacion</code></td><td>Un diccionario en memoria.</td><td><b>Cambia por dentro:</b> consultas a través de <code>BasededatosControlador</code>.</td></tr>
+      <tr><td>Las contraseñas</td><td>Hash con sal, en memoria.</td><td>Hash con sal, en columnas. <b>Nunca</b> la contraseña.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="box key" style="--accent:var(--teal)">
+    <span class="lbl">La prueba de que lo hiciste bien</span>
+    <p>Si cuando llegue la base de datos tenés que tocar las ventanas, la separación no estaba bien hecha. Es la misma frase con la que
+    cerraba la guía de MySQL, ahora vista desde el otro lado: <strong>la interfaz no tiene por qué saber cómo se guardan los usuarios. Solo pide.</strong></p>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Lo que todavía falta para un sistema real (y está bien que falte)</span>
+    <ul>
+      <li>Persistencia: que los usuarios sobrevivan al programa.</li>
+      <li>Límite de intentos y bloqueo temporal ante muchos errores seguidos.</li>
+      <li>Sesiones: recordar quién entró, por cuánto tiempo, y poder cerrar sesión.</li>
+      <li>Verificar el correo y recuperar la contraseña con enlaces que vencen.</li>
+      <li>Roles y permisos: no todos pueden hacer lo mismo.</li>
+      <li>Si la app habla con un servidor: conexión cifrada y validación del lado del servidor.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 14 · ENTREGA ==================== -->
+<section class="s pb" data-a="violet" id="e14">
+  <div class="s-head"><span class="s-num">14</span><div class="t"><h2>Entrega y GitHub</h2>
+    <p class="dim" style="font-size:16px">Que cualquiera pueda clonarlo, instalarlo y abrirlo sin preguntarte nada</p></div></div>
+
+  <p class="lead">Cada estudiante o pareja (máximo dos personas) entrega <strong>el link a un repositorio de GitHub</strong> con:</p>
+  <div class="grid3">
+    <div class="box"><span class="lbl">1 · Diseño</span><p><code>ventanas/login.ui</code>, <code>ventanas/registro.ui</code> y, si lo usaste, <code>estilos.qss</code>.</p></div>
+    <div class="box"><span class="lbl">2 · Código</span><p><code>main.py</code>, las clases de <code>ventanas/</code> y <code>controladores/autenticacion.py</code>.</p></div>
+    <div class="box"><span class="lbl">3 · requirements.txt</span><p>Lo necesario para ejecutar. Nada más.</p></div>
+    <div class="box"><span class="lbl">4 · README.md</span><p>Instalación, ejecución, funcionalidades, limitaciones y decisiones.</p></div>
+    <div class="box"><span class="lbl">5 · Capturas</span><p>En <code>capturas/</code>: las dos pantallas, un error, un éxito y el antes/después de tus mejoras.</p></div>
+    <div class="box"><span class="lbl">6 · Evidencia</span><p>La checklist de funcionalidades y, si hiciste alguno, el desafío del nivel 3 explicado.</p></div>
+  </div>
+
+  <h3>requirements.txt</h3>
+  <figure>
+    <pre class="sh"><span class="file">requirements.txt</span>PyQt6==6.11.0</pre>
+    <figcaption>Poné la versión que tenés instalada: la ves con <code>python -m pip show PyQt6</code>. ¿Por qué no <code>pip freeze &gt; requirements.txt</code>?
+    Porque también anota <code>PySide6-Essentials</code> y <code>shiboken6</code>, que son de Designer: quien ejecuta tu app no los necesita.</figcaption>
+  </figure>
+
+  <h3>README.md · una plantilla para empezar</h3>
+  <figure>
+    <pre class="md sm"><span class="cd-k"># Login y registro con PyQt6</span>
+
+Aplicación de escritorio con dos pantallas diseñadas en Qt Designer y controladas
+con clases de Python. Trabajo práctico de Programación Orientada a Objetos.
+
+<span class="cd-c">&gt; **Importante:** la autenticación es una SIMULACIÓN. Los usuarios viven en</span>
+<span class="cd-c">&gt; memoria y se pierden al cerrar la aplicación. No es un sistema seguro ni</span>
+<span class="cd-c">&gt; apto para datos reales.</span>
+
+<span class="cd-k">## Capturas</span>
+![Login](capturas/login.png)
+![Registro](capturas/registro.png)
+
+<span class="cd-k">## Requisitos</span>
+- Python 3.10 o más nuevo
+
+<span class="cd-k">## Instalación</span>
+Windows (PowerShell):
+    py -m venv .venv
+    .venv\Scripts\Activate.ps1
+    python -m pip install -r requirements.txt
+
+macOS:
+    python3 -m venv .venv
+    source .venv/bin/activate
+    python -m pip install -r requirements.txt
+
+<span class="cd-k">## Ejecución</span>
+    python main.py
+
+<span class="cd-k">## Funcionalidades</span>
+- [x] ...
+- [ ] ...
+
+<span class="cd-k">## Desafíos realizados</span>
+<span class="cd-k">## Decisiones de diseño</span>
+<span class="cd-k">## Limitaciones conocidas</span>
+<span class="cd-k">## Autores</span></pre>
+  </figure>
+
+  <h3>Git, paso a paso</h3>
+  <figure>
+    <pre class="sh">git init                       <span class="cd-c"># solo la primera vez</span>
+git status                     <span class="cd-c"># ¿qué cambió? ¿aparece .venv? (no debería)</span>
+git add main.py ventanas controladores capturas
+git add requirements.txt README.md .gitignore
+git status                     <span class="cd-c"># revisá, archivo por archivo, lo que va a entrar</span>
+git commit -m "feat: agrega login y registro con PyQt y Qt Designer"
+git branch -M main
+git remote add origin https://github.com/TU-USUARIO/login-registro-pyqt.git
+git push -u origin main</pre>
+    <figcaption>Creá antes el repositorio vacío en GitHub (sin README, para que no choque con el tuyo). Mejor que un solo commit gigante al
+    final: <b>un commit por etapa</b>, con el formato del curso, <code>tipo: qué hace</code>, en presente:
+    <code>feat: agrega la pantalla de registro</code> · <code>fix: corrige la ruta del .ui</code> · <code>docs: completa el README</code>.</figcaption>
+  </figure>
+
+  <div class="gate">
+    <div class="gh"><span>Antes del push</span></div>
+    <div class="cks">
+      <label><input type="checkbox" data-k="g14-1" class="g"><span><code>git status</code> no muestra <code>.venv/</code>, <code>__pycache__/</code> ni <code>.env</code>.</span></label>
+      <label><input type="checkbox" data-k="g14-2" class="g"><span>No hay contraseñas reales, tokens ni datos personales en ningún archivo ni captura.</span></label>
+      <label><input type="checkbox" data-k="g14-3" class="g"><span>El README dice que la autenticación es simulada.</span></label>
+      <label><input type="checkbox" data-k="g14-4" class="g"><span><b>Prueba de cero:</b> cloné mi repo en otra carpeta, creé el entorno, instalé <code>requirements.txt</code> y <code>python main.py</code> abrió la app.</span></label>
+    </div>
+  </div>
+
+  <div class="lab warn">
+    <span class="lbl">Si trabajaron en pareja</span>
+    <p>Las dos personas tienen que poder explicar <b>todo</b> el proyecto, no solo la parte que escribieron. En la defensa se le pregunta a
+    cualquiera de las dos, sobre cualquier archivo. Y el historial de Git muestra quién hizo cada commit.</p>
+  </div>
+</section>
+
+<!-- ==================== 15 · AUTOEVALUACIÓN Y CRITERIOS ==================== -->
+<section class="s pb" data-a="rose" id="e15">
+  <div class="s-head"><span class="s-num">15</span><div class="t"><h2>Autoevaluación y criterios</h2>
+    <p class="dim" style="font-size:16px">Marcá solo lo que podrías hacer sin mirar la guía</p></div></div>
+
+  <div class="cks">
+    <label><input type="checkbox" data-k="ae-1"><span>Puedo explicar la diferencia entre instalar PyQt6 y tener Qt Designer.</span></label>
+    <label><input type="checkbox" data-k="ae-2"><span>Sé crear y activar un entorno virtual en mi sistema operativo.</span></label>
+    <label><input type="checkbox" data-k="ae-3"><span>Sé diseñar una pantalla en Designer con layouts, sin posiciones a mano.</span></label>
+    <label><input type="checkbox" data-k="ae-4"><span>Puedo explicar la diferencia entre el texto visible de un widget y su <code>objectName</code>.</span></label>
+    <label><input type="checkbox" data-k="ae-5"><span>Sé cargar un <code>.ui</code> con <code>uic.loadUi()</code> y una ruta que no depende de dónde ejecuto.</span></label>
+    <label><input type="checkbox" data-k="ae-6"><span>Puedo explicar qué hace el bucle de eventos.</span></label>
+    <label><input type="checkbox" data-k="ae-7"><span>Puedo justificar por qué mi pantalla hereda de <code>QWidget</code> y qué pasa si saco <code>super().__init__()</code>.</span></label>
+    <label><input type="checkbox" data-k="ae-8"><span>Sé conectar una señal a un método y por qué va sin paréntesis.</span></label>
+    <label><input type="checkbox" data-k="ae-9"><span>Sé validar un formulario y cortar el proceso cuando algo falla.</span></label>
+    <label><input type="checkbox" data-k="ae-10"><span>Puedo explicar por qué validar el formulario no es autenticar.</span></label>
+    <label><input type="checkbox" data-k="ae-11"><span>Puedo explicar qué es un hash con sal y por qué no se guarda la contraseña.</span></label>
+    <label><input type="checkbox" data-k="ae-12"><span>Sé escribir estilos en QSS y en qué se diferencia de CSS.</span></label>
+    <label><input type="checkbox" data-k="ae-13"><span>Puedo decir qué sabe y qué no sabe cada archivo de mi proyecto.</span></label>
+    <label><input type="checkbox" data-k="ae-14"><span>Sé leer un traceback y encontrar la línea de mi código que lo provocó.</span></label>
+    <label><input type="checkbox" data-k="ae-15"><span>Sé preparar un commit revisando antes qué entra y qué no.</span></label>
+  </div>
+
+  <div class="qs">
+    <span class="lbl">Reflexión final</span>
+    <div class="answers">
+      <div><p class="ansq">¿Qué fue lo más difícil de conectar entre el diseño y el código? ¿Cómo lo resolviste?</p>
+        <textarea class="ans" data-k="ae-r1" aria-label="Reflexión 1"></textarea></div>
+      <div><p class="ansq">Si empezaras de nuevo, ¿qué decidirías distinto?</p>
+        <textarea class="ans" data-k="ae-r2" aria-label="Reflexión 2"></textarea></div>
+    </div>
+  </div>
+
+  <h3>Cómo se evalúa · criterios para el docente</h3>
+  <p class="dim">Como en Arena de Combate, se evalúa principalmente <b>el razonamiento y la comprensión</b>, no la cantidad de funcionalidades.
+  Una aplicación chica que se entiende a fondo vale más que una enorme que no se sabe explicar.
+  <b>Para aprobar:</b> nivel 1 completo y defendido. <b>Para una nota alta:</b> nivel 2 completo y un desafío del nivel 3 bien explicado.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Qué se mira</th><th>Lo esperado</th><th>Señal de alerta</th></tr></thead>
+    <tbody>
+      <tr><td>Diseño en Designer</td><td>Layouts en todos los contenedores; nombres de la convención; tarjeta centrada; orden de Tab pensado.</td><td>Widgets ubicados a mano; <code>lineEdit_2</code>; texto cortado al cambiar el tamaño.</td></tr>
+      <tr><td>Diseño y comportamiento separados</td><td><code>.ui</code> cargados con <code>loadUi</code>; nada de lógica en el diseño ni de estilos en Python.</td><td>Un <code>.py</code> generado con <code>pyuic6</code> editado a mano; <code>setStyleSheet</code> desparramado.</td></tr>
+      <tr><td>POO</td><td>Una clase por pantalla; herencia que se puede justificar; <code>super()</code> y <code>loadUi</code> en orden; el servicio compartido por composición.</td><td>Variables globales; todo en <code>main.py</code>; herencia que no sabe explicar.</td></tr>
+      <tr><td>Eventos</td><td>Las cinco conexiones funcionan; usa bien una señal que trae un dato (<code>toggled</code>).</td><td>Conexiones que se disparan al abrir la ventana.</td></tr>
+      <tr><td>Validación y mensajes</td><td>Los casos de la etapa 7 pasan; cláusulas de guarda; mensajes claros, accionables y honestos.</td><td>«Bienvenido» sin verificar; errores que no dicen qué hacer.</td></tr>
+      <tr><td>Simulación y seguridad</td><td>Hash con sal; mensaje genérico ante un login fallido; el README declara la simulación; nada sensible en Git.</td><td>Contraseñas en texto plano; contraseñas reales en el código; <code>.venv</code> o <code>.env</code> subidos; <code>eval()</code>.</td></tr>
+      <tr><td>Organización</td><td>Estructura de la etapa 10; el servicio no importa PyQt; métodos cortos; sin duplicación evitable.</td><td>Carpetas vacías; un método que hace todo.</td></tr>
+      <tr><td>Experiencia visual</td><td>Al menos tres mejoras justificadas; la claridad está antes que el efecto.</td><td>Mejoras sin registro ni capturas; errores que solo se distinguen por el color.</td></tr>
+      <tr><td>Entrega</td><td>README completo; capturas; <code>requirements.txt</code> mínimo; se instala de cero sin ayuda.</td><td>«En mi compu anda».</td></tr>
+      <tr><td><b>Explicar las decisiones</b></td><td><b>Lo que más pesa.</b> Puede contar por qué diseñó así, qué otra opción había y qué tocaría para agregar MySQL.</td><td>Código que funciona y que no sabe explicar.</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="remember">
+    <div class="rh">Antes de cerrar la guía</div>
+    <ol>
+      <li>Instalar <b>PyQt6</b> te da una librería; instalar <b>Designer</b> te da una herramienta. El <code>.ui</code> es el puente entre las dos.</li>
+      <li>El <code>.ui</code> <b>describe</b>; Python <b>decide</b>. Lo único que comparten es el <code>objectName</code>.</li>
+      <li><code>uic.loadUi(ruta, self)</code> convierte el diseño en atributos de tu objeto. Por eso la pantalla hereda de <code>QWidget</code>.</li>
+      <li><b>Señal → slot</b>: <code>widget.señal.connect(self.metodo)</code>, sin paréntesis.</li>
+      <li>Leer, <b>validar</b>, cortar o seguir. Validar ayuda a la persona; no reemplaza al servidor ni a la autenticación.</li>
+      <li>Una contraseña <b>nunca</b> se guarda: se guarda su hash con sal. Y una simulación se presenta como simulación.</li>
+      <li>Cada archivo sabe una cosa y <b>no sabe</b> las demás. Así, cuando llegue MySQL, cambia un solo lugar.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ==================== CIERRE ==================== -->
+<div class="closing">
+  <p class="quote">Diseñamos visualmente, programamos el comportamiento y conectamos ambas partes con buenas prácticas.</p>
+  <p class="lead" style="max-width:52ch">Si al terminar podés abrir Designer, cambiar una pantalla y saber exactamente qué parte del código
+  se ve afectada —y cuál no—, el trabajo práctico cumplió su objetivo.</p>
+  <div class="printbar noprint">
+    <button class="print" type="button" onclick="window.print()">Imprimir / Guardar PDF</button>
+    <button class="ghost" type="button" id="borrar">Borrar mis respuestas de esta compu</button>
+  </div>
+  <div class="colofon">
+    <span>Trabajo práctico · Login y registro · PyQt6 + Qt Designer · Técnico Universitario en Programación</span>
+    <span>Continúa la guía de exploración de PyQt y la guía de Python + MySQL</span>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* Guarda en este navegador lo que el alumno escribe y tilda. Si el almacenamiento
+   no está disponible, la guía funciona igual: simplemente no recuerda nada. */
+(function () {
+  var PFX = "tp-login-pyqt:";
+  function leer(k) { try { return localStorage.getItem(PFX + k); } catch (e) { return null; } }
+  function guardar(k, v) { try { localStorage.setItem(PFX + k, v); } catch (e) {} }
+  function ajustar(t) {
+    if (t.tagName !== "TEXTAREA") return;
+    t.style.height = "auto";
+    t.style.height = (t.scrollHeight + 2) + "px";
+  }
+  function progreso() {
+    var gs = document.querySelectorAll("input.g"), ok = 0;
+    gs.forEach(function (g) { if (g.checked) ok++; });
+    var out = document.getElementById("progreso");
+    if (out) out.innerHTML = "<b>" + ok + "</b> de " + gs.length + " comprobaciones marcadas";
+  }
+
+  var campos = document.querySelectorAll("[data-k]");
+  campos.forEach(function (el) {
+    var v = leer(el.dataset.k);
+    if (el.type === "checkbox") {
+      if (v !== null) el.checked = v === "1";
+      el.addEventListener("change", function () { guardar(el.dataset.k, el.checked ? "1" : "0"); progreso(); });
+    } else {
+      if (v !== null) el.value = v;
+      el.addEventListener("input", function () { guardar(el.dataset.k, el.value); ajustar(el); });
+    }
+  });
+  progreso();
+  window.addEventListener("load", function () { document.querySelectorAll("textarea.ans").forEach(ajustar); });
+
+  /* Al imprimir, las pistas se despliegan y los recuadros muestran todo su texto. */
+  var estado = [];
+  function abrirParaImprimir() {
+    estado = [];
+    document.querySelectorAll("details").forEach(function (d) { estado.push(d.open); d.open = true; });
+    document.querySelectorAll("textarea.ans").forEach(ajustar);
+  }
+  window.addEventListener("beforeprint", abrirParaImprimir);
+  window.addEventListener("afterprint", function () {
+    document.querySelectorAll("details").forEach(function (d, i) { if (i < estado.length) d.open = estado[i]; });
+  });
+  if (/[?&]imprimir\b/.test(location.search)) abrirParaImprimir();
+
+  var borrar = document.getElementById("borrar");
+  if (borrar) borrar.addEventListener("click", function () {
+    if (!window.confirm("¿Borrar todas tus respuestas y marcas de esta guía en esta computadora?")) return;
+    try {
+      Object.keys(localStorage).forEach(function (k) { if (k.indexOf(PFX) === 0) localStorage.removeItem(k); });
+    } catch (e) {}
+    campos.forEach(function (el) { if (el.type === "checkbox") el.checked = false; else el.value = ""; ajustar(el); });
+    progreso();
+  });
+})();
+</script>
+</body>
+</html>
