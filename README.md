@@ -16,6 +16,7 @@ navegador, en compu o en celular. No hay que instalar nada.
 | 2 | Relacionar objetos | https://pedroibanez97.github.io/P.O.O/clase-2.html |
 | TP | Arena de Combate (integrador) | https://pedroibanez97.github.io/P.O.O/tp-arena-de-combate.html |
 | TP | Apunte del TP (para imprimir) | https://pedroibanez97.github.io/P.O.O/apunte-tp-arena-de-combate.pdf |
+| TP | Login y registro con PyQt + Qt Designer | https://pedroibanez97.github.io/P.O.O/tp-login-pyqt.html |
 
 ---
 
@@ -130,6 +131,31 @@ carilla**.
 Para regenerar el PDF después de editar el HTML: abrirlo y usar el botón *Imprimir / Guardar PDF*
 (A4, sin encabezados).
 
+### TP · Login y registro con PyQt + Qt Designer
+
+Trabajo práctico que sigue a la guía de exploración de PyQt: los alumnos diseñan un login y un
+registro en Qt Designer, cargan los `.ui` desde Python con `uic.loadUi()` y programan el
+comportamiento con una clase por pantalla. Individual o en parejas de hasta dos personas.
+
+| Etapa | Qué se construye | Concepto que entra |
+|-------|------------------|--------------------|
+| 1 | Qué vamos a construir | diseño vs. comportamiento |
+| 2 | El entorno | venv, PyQt6, Qt Designer (`pyside6-designer`) |
+| 3 | Las dos pantallas en Designer | `.ui`, `objectName`, layouts |
+| 4 | De `.ui` a Python | `uic.loadUi()`, bucle de eventos, rutas, tracebacks |
+| 5 | `VentanaLogin` y `VentanaRegistro` | herencia de `QWidget`, `super()`, `self` |
+| 6 | Eventos y navegación | señales y slots, `QStackedWidget` |
+| 7 | Validación | cláusulas de guarda, mensajes honestos |
+| 8 | Autenticación simulada | servicio en memoria, hash con sal, excepciones |
+| 9 | Experiencia visual | Qt Style Sheets |
+| 10–11 | Organización y buenas prácticas | módulos, revisión de código, seguridad |
+| 12–15 | Desafíos, futuro con MySQL, entrega y evaluación | niveles 1–3, Git, rúbrica |
+
+Cada etapa sigue la misma dinámica: problema, idea, demostración, *probá*, *pensá*, *investigá* y
+*comprobá*. Las respuestas y las casillas que marca el alumno se guardan en su navegador. No trae la
+solución completa: hay ejemplos chicos que funcionan, esqueletos para completar y pistas plegadas.
+El PDF (`tp-login-pyqt.pdf`, 50 páginas) es la misma guía lista para imprimir en blanco.
+
 ---
 
 ## 🎮 Arena de Combate, en código
@@ -166,6 +192,8 @@ que cambia es la tipografía, que se carga desde internet.
 | `apunte-tp-arena-de-combate.html` | Apunte imprimible del TP |
 | `apunte-tp-arena-de-combate.pdf` | El mismo apunte, ya en PDF (37 páginas) |
 | `arena-de-combate/` | El TP resuelto en tres versiones: consola, Tkinter y Pygame |
+| `tp-login-pyqt.html` | TP de login y registro con PyQt6 + Qt Designer (guía) |
+| `tp-login-pyqt.pdf` | La misma guía, ya en PDF (50 páginas) |
 
 Cada presentación es un único archivo HTML, sin dependencias más allá de las
 tipografías de Google Fonts.
